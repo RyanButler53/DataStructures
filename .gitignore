@@ -1,0 +1,4 @@
+build/
+
+# Cannot publicly distribute copies of papers for specific data structures
+papers/
