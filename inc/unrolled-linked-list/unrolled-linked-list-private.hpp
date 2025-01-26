@@ -105,6 +105,41 @@ const T& UnrolledLinkedList<T, K>::back() const{
     }
 }
 
+template <typename T, size_t K>
+void UnrolledLinkedList<T,K>::clear(){
+    list_.clear();
+    size_ = 0;
+}
+
+// Iterator methods:
+template <typename T, size_t K>
+typename UnrolledLinkedList<T,K>::iterator UnrolledLinkedList<T,K>::begin() {
+    // std::list<Node>::iterator iter = 
+    return Iterator(list_.begin());
+}
+
+template <typename T, size_t K>
+typename UnrolledLinkedList<T,K>::iterator UnrolledLinkedList<T,K>::end(){
+    return Iterator(list_.end());
+}
+
+template <typename T, size_t K>
+typename UnrolledLinkedList<T,K>::reverse_iterator UnrolledLinkedList<T,K>::rbegin(){
+    // size_t nodeInd = (list_.rbegin()->size_) - 1;
+    // return reverse(list_.rbegin(), nodeInd);
+    return reverse_iterator(end());
+}
+
+template <typename T, size_t K>
+typename UnrolledLinkedList<T,K>::reverse_iterator UnrolledLinkedList<T,K>::rend(){
+    // return RIterator(list_.rend(), 0);
+    return reverse_iterator(begin());
+}
+
+// END UNROLLED LINKED LIST METHODS
+
+// BEGIN NODE METHODS
+
 template<typename T, size_t K>
 UnrolledLinkedList<T,K>::Node::Node():size_{0}{}
 
@@ -127,13 +162,70 @@ void UnrolledLinkedList<T,K>::Node::insert_at(const T& value, size_t i){
     ++size_;
 }
 
+// END NODE METHODS
+
+//BEGIN ITERATOR METHODS
+
 template <typename T, size_t K>
-void UnrolledLinkedList<T,K>::clear(){
-    list_.clear();
-    size_ = 0;
+UnrolledLinkedList<T,K>::Iterator::Iterator(std::list<Node>::iterator listIter):listIter_{listIter}, nodeInd_{0}{}
+
+template <typename T, size_t K>
+typename UnrolledLinkedList<T,K>::Iterator::value_type UnrolledLinkedList<T,K>::Iterator::operator*() const {
+    Node& n = *listIter_;
+    if (nodeInd_ >= n.size_){
+        throw std::runtime_error("Invalid iterator???");
+    } else {
+        return n.data_[nodeInd_];
+    }
 }
 
-// to do
+template <typename T, size_t K>
+typename  UnrolledLinkedList<T,K>::Iterator& UnrolledLinkedList<T,K>::Iterator::operator++(){
+    Node &n = *listIter_;
+    if (nodeInd_ >= n.size_- 1){
+        ++listIter_;
+        nodeInd_ = 0;
+    } else {
+        ++nodeInd_;
+    }
+    return *this;
+}
+
+template <typename T, size_t K>
+typename  UnrolledLinkedList<T,K>::Iterator& UnrolledLinkedList<T,K>::Iterator::operator--(){
+    if (nodeInd_ == 0){
+        --listIter_;
+        Node &n = *listIter_;
+        nodeInd_ = n.size_ - 1;
+        
+    } else {
+        --nodeInd_;
+    }
+    return *this;
+}
+
+template <typename T, size_t K>
+typename UnrolledLinkedList<T, K>::Iterator::pointer UnrolledLinkedList<T,K>::Iterator::operator->() const{
+    return &(**this);
+}
+
+template <typename T, size_t K>
+bool UnrolledLinkedList<T,K>::Iterator::operator==(const Iterator& other)const {
+    if (listIter_ == other.listIter_){
+        return nodeInd_ == other.nodeInd_;
+    } else {
+        return false;
+    }
+}
+
+template <typename T, size_t K>
+bool UnrolledLinkedList<T,K>::Iterator::operator!=(const Iterator& other)const {
+    return !(*this == other);
+}
+
+// END ITERATOR METHODS
+
+// to do 
 // iteration, pop_front and pop_back (using the iterator)
 // Iteration
 // Iterater tier insertion

@@ -46,6 +46,26 @@ TEST(UnrolledLinkedListTest, testClear){
     ASSERT_EQ(ull.back(), 14);
 }
 
+TEST (UnrolledLinkedListTest, testIteration){
+    UnrolledLinkedList<int, 4> ull;
+    for (int i = 0; i < 5; ++i){
+        ull.push_back(i);
+    }
+
+    std::vector v{0, 1, 2, 3, 4};
+    for (auto x : ull)
+    {
+        std::cout << x << " ";
+    }
+    std::cout << std::endl;
+    for (UnrolledLinkedList<int, 4>::reverse_iterator it = ull.rbegin(); it != ull.rend(); ++it)
+    {
+        std::cout << *it << " " << std::flush;
+    }
+    std::cout << std::endl;
+    // ASSERT_TRUE(std::equal(v.begin(), v.end(), ull.begin(), ull.end()));
+}
+
 int main(int argc, char** argv){
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

@@ -84,11 +84,17 @@ int main(){
     }
 
     // Remove rest of tree.
+    // BREAKS!
+    // SplayTree<int, int>::const_iterator iter = st.begin();
+
     for (int x : newKeys)
     {
         st.remove(x);
     }
     assert(st.size() == 0);
+
+    
+
     cout << " All Tests Pass!" << endl;
     return 0;
 }
