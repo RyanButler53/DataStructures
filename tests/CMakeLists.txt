@@ -10,14 +10,6 @@ add_executable(scapegoat-tree scapegoat-test.cpp)
 add_executable(splay-tree splay-tree-test.cpp)
 add_executable(unrolled-ll ULL-test.cpp)
 
+
 target_include_directories(unrolled-ll PUBLIC ${CMAKE_SOURCE_DIR})
-target_link_libraries(unrolled-ll gtest ) #gtest_main
-
-# enable_testing()
-# gtest_discover_tests(unrolled-ll)
-# target_link_libraries()
-
-# add_executable(test_defaults tests/test_defaults.cpp)
-# target_include_directories(test_defaults PUBLIC ${CMAKE_SOURCE_DIR})
-# target_link_libraries(test_defaults gtest gtest_main ${PROJECT_NAME})
-# add_test(NAME test_defaults COMMAND test_defaults)
+target_link_libraries(unrolled-ll gtest) #gtest_main
