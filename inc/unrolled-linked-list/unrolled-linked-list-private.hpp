@@ -11,58 +11,79 @@ size_t UnrolledLinkedList<T, K>::size() const {
 
 template <typename T, size_t K>
 void UnrolledLinkedList<T, K>::push_front(const T& value){
-    if (list_.size() == 0){
-        Node n;
-        n.insert_back(value);
-        list_.push_back(std::move(n));
-    } else {
-        Node &n = list_.front();
-        if (n.isFull()){
-            size_t numToMove = K/2;
-
-            Node newFront;
-            newFront.insert_back(std::move(value));
-            // Move the first half of the full node to the new one
-            std::ranges::move(n.data_.begin(), n.data_.begin() + numToMove, newFront.data_.begin() + 1);
-            // Move the second half of the full node to teh start of that node
-            std::ranges::move(n.data_.begin() + numToMove, n.data_.end(), n.data_.begin());
-            
-            // Adjust Sizes
-            newFront.size_ = numToMove + 1;
-            n.size_ = K - numToMove;
-            // Add to front
-            list_.push_front(newFront);
-        } else {
-            n.insert_at(std::move(value), 0);
-        }
-    }
-    ++size_;
-
+    auto beginIter = begin();
+    insert(beginIter, value);
 }
 
 template <typename T, size_t K>
 void UnrolledLinkedList<T, K>::push_back(const T& value){
     // Empty list case is equivalent to push_front
-    if (list_.empty()){
-        push_front(value);
-        return;
-    }
-    // Non empty list case
-    Node &n = list_.back();
-    if (n.isFull()){
-        Node newNode;
-        size_t numToMove = K / 2;
-        std::ranges::move(n.data_.begin() + numToMove, n.data_.end(), newNode.data_.begin());
-        // Update sizes
-        n.size_ = K - numToMove;
-        newNode.size_ = numToMove;
-        // Insert last element and add to main list
-        newNode.insert_back(std::move(value));
-        list_.push_back(newNode);
-    } else {
-        n.insert_back(std::move(value));
+    auto endIter = end();
+    insert(endIter, value);
+}
+
+template <typename T, size_t K>
+void UnrolledLinkedList<T,K>::insert(UnrolledLinkedList<T,K>::iterator& pos, const T& value){    
+
+    if (pos.nodeInd_ == 0){    // Go back to the previous node and handle it
+        if (list_.size() == 0){ // Empty List case
+            Node n;
+            n.insert_back(value);
+            list_.push_back(std::move(n));
+            ++pos.nodeInd_;
+        } else if (pos.listIter_ == list_.begin()) { // Inserting at the beginning
+            list_.front().insert_at(value, 0);
+            ++pos.nodeInd_;
+        }
+        else
+        { // go to the previous node and insert
+            typename std::list<Node>::iterator listIter = pos.listIter_;
+            --listIter;
+            // back on he previous node
+            // n -> newNode -> pos.listIter (splitting n )
+            Node &n = *listIter; // previous node to split potentially
+            if (n.isFull()){ 
+                Node newNode;
+                size_t numToMove = K / 2;
+                std::ranges::move(n.data_.begin() + numToMove, n.data_.end(), newNode.data_.begin());
+                n.size_ = numToMove;
+                newNode.size_ = K- numToMove; // K - numToMove actually move if K is odd (shuoldn't be)
+                newNode.insert_back(value);
+                list_.insert(pos.listIter_, newNode);
+            } else { // add to back
+                n.insert_back(value);
+            }
+        }
+    } else { // nodeInd is not zero. The node may be full. 
+        Node& n = *(pos.listIter_);
+        if (n.isFull()){
+            Node newNode;
+            size_t numToMove = K / 2;
+            std::ranges::move(n.data_.begin() + numToMove, n.data_.end(), newNode.data_.begin());
+            n.size_ = numToMove;
+            newNode.size_ = K - numToMove;
+            // n -> newNode -> next
+            if (pos.nodeInd_ < numToMove){ // value was added in the current node
+                n.insert_at(value, pos.nodeInd_);
+                ++pos.listIter_; //increment since .insert inserts before
+                list_.insert(pos.listIter_, newNode);
+                --pos.listIter_; // Iterator is in the first node, decrement to where newNode is. 
+            } else { // value is inserted in the new node;
+                pos.nodeInd_ -= numToMove;
+                newNode.insert_at(value, pos.nodeInd_);
+                ++pos.listIter_;
+                list_.insert(pos.listIter_, newNode);
+            }
+            --pos.listIter_; // need to decrement once again for either case
+        }
+        else
+        {
+            n.insert_at(value, pos.nodeInd_);
+        }
+        ++pos.nodeInd_;
     }
     ++size_;
+
 }
 
 template <typename T, size_t K>
@@ -125,14 +146,11 @@ typename UnrolledLinkedList<T,K>::iterator UnrolledLinkedList<T,K>::end(){
 
 template <typename T, size_t K>
 typename UnrolledLinkedList<T,K>::reverse_iterator UnrolledLinkedList<T,K>::rbegin(){
-    // size_t nodeInd = (list_.rbegin()->size_) - 1;
-    // return reverse(list_.rbegin(), nodeInd);
     return reverse_iterator(end());
 }
 
 template <typename T, size_t K>
 typename UnrolledLinkedList<T,K>::reverse_iterator UnrolledLinkedList<T,K>::rend(){
-    // return RIterator(list_.rend(), 0);
     return reverse_iterator(begin());
 }
 
@@ -227,7 +245,6 @@ bool UnrolledLinkedList<T,K>::Iterator::operator!=(const Iterator& other)const {
 
 // to do 
 // iteration, pop_front and pop_back (using the iterator)
-// Iteration
 // Iterater tier insertion
 // Erase
 

@@ -44,7 +44,7 @@ public:
     // Insertion
     void push_front(const T& value);
     void push_back(const T &value);
-    // insert(iterator, value);
+    void insert(iterator& pos, const T& value);
 
     // Element Access
     T& front();
@@ -59,12 +59,13 @@ public:
     // void erase(iterator pos);
 
     void clear();
+
+    // Iterator fuctions
     iterator begin();
     iterator end();
 
     reverse_iterator rbegin();
     reverse_iterator rend();
-    // Iteration
 
 
     
