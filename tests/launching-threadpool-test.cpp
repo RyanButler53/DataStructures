@@ -33,21 +33,21 @@ int main(int argc, char** argv) {
     {
         n = atoi(argv[1]);
     }
-    if (argc > 2){
-        numThreads = atoi(argv[2]);
-    }
-    std::cout << "Starting launching thradpool test" << std::endl;
-    auto start = std::chrono::high_resolution_clock::now();
+    // if (argc > 2){
+    //     numThreads = atoi(argv[2]);
+    // }
+    // std::cout << "Starting launching thradpool test" << std::endl;
+    // auto start = std::chrono::high_resolution_clock::now();
 
-    LaunchingThreadQueue<long long> t(numThreads);
-    for (size_t i = 0; i < n; ++i){
-        t.submit([i]()-> long long{ return func(i); });
-    }
+    // LaunchingThreadQueue<long long> t(numThreads);
+    // for (size_t i = 0; i < n; ++i){
+    //     t.submit([i]()-> long long{ return func(i); });
+    // }
     
-    std::vector<long long> results = t.run();
-    auto end = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double> elapsed = end - start;
+    // std::vector<long long> results = t.run();
+    // auto end = std::chrono::high_resolution_clock::now();
+    // std::chrono::duration<double> elapsed = end - start;
 
-    std::cout << "Elapsed time: " << elapsed.count() << " seconds" << std::endl;
+    // std::cout << "Elapsed time: " << elapsed.count() << " seconds" << std::endl;
     
 }

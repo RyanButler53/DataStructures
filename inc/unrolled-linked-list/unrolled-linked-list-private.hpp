@@ -30,8 +30,11 @@ void UnrolledLinkedList<T,K>::insert(UnrolledLinkedList<T,K>::iterator& pos, con
             Node n;
             n.insert_back(value);
             list_.push_back(std::move(n));
-            ++pos.nodeInd_;
-        } else if (pos.listIter_ == list_.begin()) { // Inserting at the beginning
+            ++pos.listIter_; // increment once to point to the new node
+            ++pos.listIter_; // Increment a second time to reach the .end() iterator.
+        }
+        else if (pos.listIter_ == list_.begin())
+        { // Inserting at the beginning
             list_.front().insert_at(value, 0);
             ++pos.nodeInd_;
         }
@@ -83,8 +86,57 @@ void UnrolledLinkedList<T,K>::insert(UnrolledLinkedList<T,K>::iterator& pos, con
         ++pos.nodeInd_;
     }
     ++size_;
-
 }
+
+// Deletion
+template <typename T, size_t K>
+UnrolledLinkedList<T,K>::iterator UnrolledLinkedList<T,K>::erase(iterator pos){
+    if (pos == end()){
+        throw std::invalid_argument("Cannot erase from end() iterator");
+    }
+    Node &curNode = *(pos.listIter_);
+    // INVARIANT: Node size is NEVER zero.
+    curNode.delete_at(pos.nodeInd_);
+    if (curNode.size_ == 0) { // clean up an empty node;
+        typename std::list<Node>::iterator nextListIter = list_.erase(pos.listIter_);
+        pos = iterator(nextListIter);
+    }  else if (pos.nodeInd_ == curNode.size_) {
+        ++pos;
+    }
+    --size_;
+    return pos;
+}
+
+template <typename T, size_t K>
+void UnrolledLinkedList<T,K>::pop_front(){
+    if (size_ == 0){
+        throw std::invalid_argument("Can't call pop_front on an empty list");
+    } else {
+        Node &n = list_.front();
+        if (n.size_ > 0){
+            n.delete_at(0);
+        } else { // empty first node. Remove it. 
+            list_.pop_front();
+        }
+    }
+    --size_;
+}
+
+template <typename T, size_t K>
+void UnrolledLinkedList<T,K>::pop_back(){
+    if (size_ == 0){
+        throw std::invalid_argument("Can't call pop_back on an empty list");
+    } else {
+        Node &n = list_.back();
+        --n.size_;
+        if (n.size_ == 0){
+            list_.pop_back();
+        }
+    }
+    --size_;
+}
+
+// Element Access
 
 template <typename T, size_t K>
 T& UnrolledLinkedList<T,K>::front(){
@@ -135,7 +187,6 @@ void UnrolledLinkedList<T,K>::clear(){
 // Iterator methods:
 template <typename T, size_t K>
 typename UnrolledLinkedList<T,K>::iterator UnrolledLinkedList<T,K>::begin() {
-    // std::list<Node>::iterator iter = 
     return Iterator(list_.begin());
 }
 
@@ -178,6 +229,13 @@ void UnrolledLinkedList<T,K>::Node::insert_at(const T& value, size_t i){
     std::ranges::move_backward(data_.begin() + i, data_.begin() + size_, data_.begin() + size_ +1);
     data_[i] = std::move(value);
     ++size_;
+}
+
+template <typename T, size_t K>
+void UnrolledLinkedList<T,K>::Node::delete_at(size_t i){
+    // Shift everything over and insert
+    std::ranges::move(data_.begin() + i + 1, data_.begin() + size_, data_.begin() + i);
+    --size_;
 }
 
 // END NODE METHODS

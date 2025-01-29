@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
-#include <cassert>
 #include <vector>
 #include <algorithm>
+#include <random>
 
 #include "unrolled-linked-list/unrolled-linked-list.hpp"
 
@@ -34,7 +34,7 @@ TEST(PushFront, FrontOperator){
     ASSERT_EQ(x, 4);    
 }
 
-TEST(UnrolledLinkedListTest, backOperator){
+TEST(AccessOperators, backOperator){
     UnrolledLinkedList<int, 4> ull;
     ull.push_back(4);
     ull.push_back(3);
@@ -44,7 +44,7 @@ TEST(UnrolledLinkedListTest, backOperator){
     ASSERT_EQ(x, 3);    
 }
 
-TEST(UnrolledLinkedListTest, testClear){
+TEST(AccessOperators, testClear){
     UnrolledLinkedList<int, 4> ull;
     for (int i = 0; i < 16; ++i){
         ull.push_back(i);
@@ -56,7 +56,7 @@ TEST(UnrolledLinkedListTest, testClear){
     ASSERT_EQ(ull.back(), 14);
 }
 
-TEST (UnrolledLinkedListTest, testIteration){
+TEST (Iteration, testIteration){
     UnrolledLinkedList<int, 4> ull;
     for (int i = 0; i < 5; ++i){
         ull.push_back(i);
@@ -67,7 +67,7 @@ TEST (UnrolledLinkedListTest, testIteration){
     ASSERT_TRUE(std::ranges::equal(ull_values, v));
 }
 
-TEST(UnrolledLinkedListTest, testInsertion){
+TEST(Insertion, InsertIterator){
     UnrolledLinkedList<int, 4> ull;
     for (int i = 0; i < 8; ++i){
         ull.push_back(i);
@@ -119,7 +119,7 @@ TEST(UnrolledLinkedListTest, testInsertion){
     comp = {8, 0, 1, 2, 9, 10, 11, 3, 4, 5, 6, 12, 7, 13, 14};
     ASSERT_EQ(comp, toVec(ull)); 
 }
-TEST(UnrolledLinkedListTest, testInsertion2){
+TEST(Insertion, testInsertion2){
     UnrolledLinkedList<int, 5> ull;
     for (int i = 0; i < 6; ++i){
         ull.push_back(i);
@@ -130,7 +130,7 @@ TEST(UnrolledLinkedListTest, testInsertion2){
     ASSERT_EQ(comp, toVec(ull));
 }
 
-TEST(UnrolledLinkedListTest, testInsertion3){
+TEST(Insertion, InsertIterator2){
     UnrolledLinkedList<int, 5> ull;
     for (int i = 0; i < 7; ++i){
         ull.push_back(i);
@@ -153,9 +153,178 @@ TEST(UnrolledLinkedListTest, testInsertion3){
     comp = {0,1,2,7,8,3,4,5,6};
     ASSERT_EQ(comp, toVec(ull));
 }
+// Tests sneaky case of reusing the iterator after pushing front on empty list
+TEST(Insertion, IteratorInsertion){
+    UnrolledLinkedList<int, 4> ull;
+    auto it = ull.begin();
+    ull.insert(it, 1500);
+    ull.insert(it, 400);
+}
+
+TEST(Deletion, PopBack){
+    UnrolledLinkedList<int, 5> ull;
+    std::vector<int> comp;
+    for (int i = 0; i < 6; ++i)
+    {
+        ull.push_back(i);
+    }
+    ull.pop_back();
+    comp = {0,1,2,3,4};
+    ASSERT_EQ(comp, toVec(ull));
+    
+    ull.pop_back();
+    comp = {0,1,2,3};
+    ASSERT_EQ(comp, toVec(ull));
+    
+    ull.pop_back();
+    comp = {0,1,2};
+    ASSERT_EQ(comp, toVec(ull));
+
+    ull.pop_back();
+    ull.pop_back();
+    ull.pop_front();
+    comp = {};
+    ASSERT_EQ(ull.size(), 0);
+}
+
+TEST(Deletion, PopBackAndFront){
+    UnrolledLinkedList<int, 5> ull;
+    std::vector<int> comp;
+    for (int i = 0; i < 6; ++i)
+    {
+        ull.push_back(i);
+    }
+    for (size_t i = 0; i < 3; ++i){
+        ull.pop_front();
+        ull.pop_back();
+    }    
+}
+
+TEST(Deletion, EmptyListException){
+    UnrolledLinkedList<int, 5> ull;
+    std::vector<int> comp;
+    for (int i = 0; i < 6; ++i)
+    {
+        ull.push_back(i);
+    }
+    for (size_t i = 0; i < 3; ++i){
+        ull.pop_front();
+        ull.pop_back();
+    }    
+
+    try {
+        ull.pop_back();
+        FAIL() << "Expected std::out_of_range";
+    }
+    catch(std::invalid_argument const & err) {
+        EXPECT_EQ(err.what(),std::string("Can't call pop_back on an empty list"));
+    }
+    catch(...) {
+        FAIL() << "Expected std::invalid_argument";
+    }
+}
+
+TEST(Deletion, EraseIter1){
+    UnrolledLinkedList<int, 5> ull;
+    std::vector<int> comp;
+    for (int i = 0; i < 11; ++i)
+    {
+        ull.push_back(i);
+    }
+    UnrolledLinkedList<int, 5>::iterator it = ull.begin();
+    ++it;
+    ASSERT_EQ(*it, 1);
+    for (size_t i = 0; i < 4; ++i)
+    {
+        it = ull.erase(it);
+        ASSERT_EQ(*it, 2 * (i + 1));
+        ++it;
+    }
+    ASSERT_EQ(ull.size(), 7);
+    comp = {0, 2, 4, 6, 8, 9, 10};
+    ASSERT_EQ(comp, toVec(ull));
+}
+
+TEST(Deletion, InsertDelete){
+    UnrolledLinkedList<int, 4> ull;
+    auto it = ull.begin();
+    ull.insert(it, 10000);
+    ASSERT_EQ(it, ull.end());
+    try {
+        ull.erase(it);
+        FAIL() << "Expected std::invalid_argument";
+    }
+    catch(std::invalid_argument const & err) {
+        EXPECT_EQ(err.what(),std::string("Cannot erase from end() iterator"));
+    }
+    catch(...) {
+        FAIL() << "Expected std::invalid_argument";
+    }
+}
+
+TEST(Deletion, ReturnEnd){
+    UnrolledLinkedList<int, 4> ull;
+
+    auto it = ull.begin();
+    ull.insert(it, 15);
+    --it;
+    it = ull.erase(it);
+    ASSERT_EQ(it, ull.end());
+}
+
+
+TEST(Fuzz, compareList){
+    UnrolledLinkedList<int, 4> ull;
+    std::list<int> ll;
+    size_t seed = time(nullptr);
+    std::mt19937 rng(seed);
+    std::discrete_distribution<int> dist({1, 1, 1, 1});
+    // Do the same set of operations on them and expect same result at the end
+    auto ull_it = ull.begin();
+    auto ll_it = ll.begin();
+    for (int step = 0; step < 5000; ++step)
+    {
+        const int result = dist(rng);
+        switch (result)
+        {
+        case 0:
+            ull.insert(ull_it, step);
+            ll.insert(ll_it, step);
+            break;
+        case 1:
+            if (ull_it != ull.end()){
+                ++ull_it;
+            }
+            if (ll_it != ll.end()){
+                ++ll_it;
+            }
+            break;
+        case 2:
+            if (ull_it != ull.begin()){
+                --ull_it;
+            }
+            if (ll_it != ll.begin()){
+                --ll_it;
+            }
+            break;
+        case 3:
+            if (ull_it != ull.end()){
+                ull_it = ull.erase(ull_it);
+            }
+            if (ll_it != ll.end()){
+                ll_it = ll.erase(ll_it);
+            }
+            break;
+        }
+        std::vector<int> v = toVec(ull);
+        ASSERT_TRUE(std::ranges::equal(v, ll))<<" at step " << step;
+    }
+    std::vector<int> v = toVec(ull);
+    ASSERT_TRUE(std::ranges::equal(v, ll));
+}
 
 int main(int argc, char** argv){
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
-    
+
 }

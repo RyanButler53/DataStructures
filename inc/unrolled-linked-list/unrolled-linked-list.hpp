@@ -22,7 +22,7 @@ private:
         bool isFull() const;
         void insert_back(const T &value);
         void insert_at(const T &value, size_t i);
-        
+        void delete_at(size_t i);
     };
 
     std::list<Node> list_;
@@ -42,6 +42,7 @@ public:
     size_t size() const;
     
     // Insertion
+    // Iterators may be invalidated
     void push_front(const T& value);
     void push_back(const T &value);
     void insert(iterator& pos, const T& value);
@@ -53,10 +54,10 @@ public:
     T &back();
     const T &back() const;
 
-    // Removal Functions();
-    // void pop_front();
-    // void pop_back();
-    // void erase(iterator pos);
+    // Deletion Functions
+    void pop_front();
+    void pop_back();
+    iterator erase(iterator pos);
 
     void clear();
 
