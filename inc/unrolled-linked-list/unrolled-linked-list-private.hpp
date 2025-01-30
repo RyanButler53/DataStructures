@@ -32,14 +32,28 @@ void UnrolledLinkedList<T,K>::insert(UnrolledLinkedList<T,K>::iterator& pos, con
             list_.push_back(std::move(n));
             ++pos.listIter_; // increment once to point to the new node
             ++pos.listIter_; // Increment a second time to reach the .end() iterator.
-        }
-        else if (pos.listIter_ == list_.begin())
-        { // Inserting at the beginning
-            list_.front().insert_at(value, 0);
+        } else if (pos.listIter_ == list_.begin()) { // Inserting at the beginning
+            // Must check if node is full!
+            Node &n = list_.front();
+            if (n.isFull()){
+                Node newNode; // make new first node
+                size_t numToMove = K / 2; 
+                // move the LAST K/2 items into the new node
+                // n -> newNode -> rest
+                std::ranges::move(n.data_.begin() + numToMove, n.data_.end(), newNode.data_.begin());
+                n.size_ = numToMove;
+                newNode.size_ = K- numToMove; // K - numToMove actually move if K is odd (shouldn't be)
+                n.insert_at(value, 0); // insert at beginning of n
+                ++pos.listIter_;
+                list_.insert(pos.listIter_, newNode); // Add new node second node
+                --pos.listIter_;
+                --pos.listIter_;
+            } else {
+                list_.front().insert_at(value, 0);
+            }
+
             ++pos.nodeInd_;
-        }
-        else
-        { // go to the previous node and insert
+        } else { // go to the previous node and insert
             typename std::list<Node>::iterator listIter = pos.listIter_;
             --listIter;
             // back on he previous node

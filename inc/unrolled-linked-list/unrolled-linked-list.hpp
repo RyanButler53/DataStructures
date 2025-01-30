@@ -31,6 +31,8 @@ private:
 public:
     using iterator = Iterator;
     using reverse_iterator = std::reverse_iterator<iterator>;
+    using value_type = T;
+
     UnrolledLinkedList();
 
     // template <class InputIt>

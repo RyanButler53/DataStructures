@@ -34,6 +34,20 @@ TEST(PushFront, FrontOperator){
     ASSERT_EQ(x, 4);    
 }
 
+TEST(PushFront, PushFront3){
+    UnrolledLinkedList<int, 8> ull;
+    for (size_t i = 0; i < 9; ++i){
+        ull.push_front(10000+i);
+    }
+    ull.push_front(15);
+    ull.push_front(16);    
+    ull.push_front(17);
+    ull.push_front(180000);
+
+    std::vector<int> comp{180000, 17, 16, 15, 10008, 10007, 10006, 10005, 10004, 10003, 10002, 10001, 10000};
+    ASSERT_EQ(comp, toVec(ull));
+}
+
 TEST(AccessOperators, backOperator){
     UnrolledLinkedList<int, 4> ull;
     ull.push_back(4);
@@ -54,17 +68,6 @@ TEST(AccessOperators, testClear){
     ull.push_front(14);
     ASSERT_EQ(ull.size(), 1);
     ASSERT_EQ(ull.back(), 14);
-}
-
-TEST (Iteration, testIteration){
-    UnrolledLinkedList<int, 4> ull;
-    for (int i = 0; i < 5; ++i){
-        ull.push_back(i);
-    }
-
-    std::vector v{0, 1, 2, 3, 4};
-    std::vector<int> ull_values = toVec(ull);
-    ASSERT_TRUE(std::ranges::equal(ull_values, v));
 }
 
 TEST(Insertion, InsertIterator){

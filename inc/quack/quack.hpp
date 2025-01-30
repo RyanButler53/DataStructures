@@ -1,4 +1,3 @@
-
 #ifndef QUACK_HPP_INCLUDED
 #define QUACK_HPP_INCLUDED
 
@@ -18,6 +17,7 @@ private:
     void reshuffle(std::vector<T>& full, std::vector<T>& empty);
 
 public:
+    using value_type = T;
 
     // Constructors
     Quack();
@@ -33,6 +33,7 @@ public:
     bool empty();
     T front();
     T back();
+    size_t size() const { return size_; }
 
     void printToStream(std::ostream &out) const;
 };
