@@ -8,8 +8,13 @@
 #include <string>
 #include <iostream>
 #include <concepts>
+#include <thread>
+#include <mutex>
 #include <chrono>
+#include <future>
 
+/// @brief Quack needs an adapter to have the correct name for Queue concept
+/// @tparam T type
 template <typename T>
 class QuackAdapter {
     Quack<T> q_;
@@ -22,7 +27,7 @@ public:
     void push_front(const T &value) { q_.push_front(value); }
     void pop_front() { q_.dequeue(); }
     void pop_back() { q_.pop(); }
-    size_t size() { q_.size(); }
+    size_t size() { return q_.size(); }
 };
 
 template <typename Container>
@@ -34,109 +39,130 @@ concept Queue = requires(Container &container, const typename Container::value_t
     container.size();
 };
 
-template<Queue Container>
-void testPushing(size_t numOps){
-    Container c;
-    for (size_t i = 0; i < numOps; ++i) {
-        c.push_back(i);
-    }
-    for (size_t i = 0; i < numOps; ++i) {
-        c.push_front(i);
-    }
-    return;
-}
 
 template <Queue Container>
-void testAlternatingPush(size_t numOps){
-    Container c;
-    for (size_t i = 0; i < numOps; ++i) {
-        c.push_front(i);
-        c.push_back(i);
-    }
-}
+class Benchmark {
+  private:
+      std::string name_;
+      size_t numOps_;
+      std::vector<int> randomActions_;
 
-template <Queue Container>
-void testAlternatingPushPop(size_t numOps){
-    Container c;
-    for (size_t i = 0; i < numOps; ++i) {
-        c.push_front(i);
-        c.push_back(i);
-    }
-    for (size_t i = 0; i < numOps; i++)
-    {
-        c.pop_back();
-        c.pop_front();
-    }
-}
-
-template <Queue Container>
-void testRandomArguments(std::vector<int>& actions){
-    Container c;
-    for (int action : actions) {
-    switch (action)
-        {
-        case 0:
-            c.push_front(action);
-            break;
-        case 1:
-            c.push_back(action);
-            break;
-        case 2:
-            if (c.size() != 0){
-                c.pop_front();
-            }
-            break;
-        case 3:
-            if (c.size() != 0){
-                c.pop_back();
-            }
-            break;
+  public:
+    Benchmark(size_t numOps, std::string name) :numOps_{numOps}, name_{name} {
+        long seed = time(0);
+        std::mt19937 rng(seed);
+        std::discrete_distribution<int> dist({1, 1, 1, 1});
+        std::vector<int> actions;
+        for (size_t a = 0; a < numOps_; ++a) {
+            randomActions_.push_back(dist(rng));
         }
     }
-    return;
-}
 
-template <typename F, typename... Args>
-void measure(std::string data_structure, F f, Args&&... args){
-    auto start = std::chrono::high_resolution_clock::now();
-    f(std::forward<Args...>(args)...);
-    auto end = std::chrono::high_resolution_clock::now();
-    std::cout << data_structure << ": " << (end - start).count() << std::endl;
-}
+    // Functions to test. Custom for each Benchmark suite
+    void testPushing() const{
+        Container c;
+        for (size_t i = 0; i < numOps_; ++i){
+            c.push_back(i);
+        }
+        for (size_t i = 0; i < numOps_; ++i) {
+            c.push_front(i);
+        }
+        return;
+    }
+
+    void testAlternatingPush() const{
+        Container c;
+        for (size_t i = 0; i < numOps_; ++i)
+        {
+            c.push_front(i);
+            c.push_back(i);
+        }
+    }
+
+    void testAlternatingPushPop()const {
+        Container c;
+        for (size_t i = 0; i < numOps_; ++i) {
+            c.push_front(i);
+            c.push_back(i);
+        }
+        for (size_t i = 0; i < numOps_; i++)
+        {
+            c.pop_back();
+            c.pop_front();
+        }
+    }
+
+    void testRandomArguments() const{
+        Container c;
+        for (int action : randomActions_) {
+        switch (action)
+            {
+            case 0:
+                c.push_front(action);
+                break;
+            case 1:
+                c.push_back(action);
+                break;
+            case 2:
+                if (c.size() != 0){
+                    c.pop_front();
+                }
+                break;
+            case 3:
+                if (c.size() != 0){
+                    c.pop_back();
+                }
+                break;
+            }
+        }
+        return;
+    }
+
+    template <typename F, typename... Args> 
+    static double measure(F f, Args&&... args){
+        auto start = std::chrono::steady_clock::now();
+        f(std::forward<Args...>(args)...);
+        auto end = std::chrono::steady_clock::now();
+        long ms = std::chrono::duration_cast<std::chrono::milliseconds>((end - start)).count();
+        return double(ms / 1000.0);
+    }
+
+    // Runs the benchmark test suite, prints the results
+    std::string operator()() const  {
+        std::vector<double> times;
+        std::vector<std::future<double>> futures;
+        futures.emplace_back(std::async([*this]()
+                            { return measure([*this]()
+                                                { return testPushing(); }); }));
+        futures.emplace_back(std::async([*this]()
+                            { return measure([*this]()
+                                    { return testAlternatingPush(); }); }));
+        futures.emplace_back(std::async([*this]()
+                            { return measure([*this]()
+                                            { return testAlternatingPushPop(); }); }));
+        futures.emplace_back(std::async([*this]()
+                            { return measure([*this]()        
+                                            { return testRandomArguments(); }); }));
+
+        for (std::future<double> &f : futures)
+        {
+            times.push_back(f.get());
+        }
+        stringstream ss;
+        ss << "Results for " << name_ << ": " << times[0] << " " << times[1] << " " << times[2] << " " << times[3];
+        std::cout << ss.str() << std::endl;
+        return ss.str();
+    }
+};
+
 
 int main() {
 
-    size_t numActions = 10000000;
+    size_t numActions = 1000000;
 
-    measure("Linked List", testPushing<std::list<int>>, numActions);
-    measure("Unrolled Linked List K = 8 ", testPushing<UnrolledLinkedList<int, 8>>, numActions);
-    measure("Unrolled Linked List K = 64", testPushing<UnrolledLinkedList<int, 64>>, numActions);
-    measure("Unrolled Linked List K = 256", testPushing<UnrolledLinkedList<int, 256>>, numActions);
-    measure("Quack", testPushing<std::list<int>>, numActions);
-
-    measure("Linked List", testAlternatingPush<std::list<int>>, numActions);
-    measure("Unrolled Linked List K = 8 ", testAlternatingPush<UnrolledLinkedList<int, 8>>, numActions);
-    measure("Unrolled Linked List K = 64", testAlternatingPush<UnrolledLinkedList<int, 64>>, numActions);
-    measure("Unrolled Linked List K = 256", testAlternatingPush<UnrolledLinkedList<int, 256>>, numActions);
-    measure("Quack", testAlternatingPush<std::list<int>>, numActions);
-
-    measure("Linked List", testAlternatingPushPop<std::list<int>>, numActions);
-    measure("Unrolled Linked List K = 8 ", testAlternatingPushPop<UnrolledLinkedList<int, 8>>, numActions);
-    measure("Unrolled Linked List K = 64", testAlternatingPushPop<UnrolledLinkedList<int, 64>>, numActions);
-    measure("Unrolled Linked List K = 256", testAlternatingPushPop<UnrolledLinkedList<int, 256>>, numActions);
-    measure("Quack", testAlternatingPushPop<std::list<int>>, numActions);
-
-    long seed = time(0);
-    std::mt19937 rng(seed);
-    std::discrete_distribution<int> dist({1, 1, 1, 1});
-    std::vector<int> actions;
-    for (size_t a = 0; a < numActions; ++a) {   
-        actions.push_back(dist(rng));
-    }
-
-    measure("Linked List", testRandomArguments<std::list<int>>, actions);
-    measure("Unrolled Linked List K = 8 ", testRandomArguments<UnrolledLinkedList<int, 8>>, actions);
-    measure("Unrolled Linked List K = 64", testRandomArguments<UnrolledLinkedList<int, 64>>, actions);
-    measure("Unrolled Linked List K = 256", testRandomArguments<UnrolledLinkedList<int, 256>>, actions);
-    measure("Quack", testRandomArguments<std::list<int>>, actions);
+    Benchmark<std::list<int>> (numActions, "std::list")();
+    Benchmark<UnrolledLinkedList<int, 8>> (numActions, "Unrolled Linked List K = 8")();
+    Benchmark<UnrolledLinkedList<int, 64>> (numActions, "Unrolled Linked List K = 64")();
+    Benchmark<UnrolledLinkedList<int, 256>> (numActions, "Unrolled Linked List K = 256")();
+    Benchmark<QuackAdapter<int>> (numActions, "Quack")();
 }

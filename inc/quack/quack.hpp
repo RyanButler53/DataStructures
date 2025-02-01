@@ -22,8 +22,8 @@ public:
     // Constructors
     Quack();
     ~Quack() = default;
-    Quack(const Quack &other) = delete;
-    Quack &operator=(Quack &other) = delete;
+    // Quack(const Quack &other) = delete;
+    // Quack &operator=(Quack &other) = delete;
 
     // Public Methods
     void push(T val);
