@@ -12,9 +12,9 @@
 #include <mutex>
 #include <chrono>
 #include <future>
+#include "benchmark.hpp"
 
 /// @brief Quack needs an adapter to have the correct name for Queue concept
-/// @tparam T type
 template <typename T>
 class QuackAdapter {
     Quack<T> q_;
@@ -41,22 +41,14 @@ concept Queue = requires(Container &container, const typename Container::value_t
 
 
 template <Queue Container>
-class Benchmark {
+class Benchmark_Queue : Benchmark {
   private:
-      std::string name_;
-      size_t numOps_;
+
       std::vector<int> randomActions_;
 
   public:
-    Benchmark(size_t numOps, std::string name) :numOps_{numOps}, name_{name} {
-        long seed = time(0);
-        std::mt19937 rng(seed);
-        std::discrete_distribution<int> dist({1, 1, 1, 1});
-        std::vector<int> actions;
-        for (size_t a = 0; a < numOps_; ++a) {
-            randomActions_.push_back(dist(rng));
-        }
-    }
+    Benchmark_Queue(std::string name, std::vector<int>& actions) : 
+        Benchmark(actions.size(), name) {}
 
     // Functions to test. Custom for each Benchmark suite
     void testPushing() const{
@@ -118,15 +110,6 @@ class Benchmark {
         return;
     }
 
-    template <typename F, typename... Args> 
-    static double measure(F f, Args&&... args){
-        auto start = std::chrono::steady_clock::now();
-        f(std::forward<Args...>(args)...);
-        auto end = std::chrono::steady_clock::now();
-        long ms = std::chrono::duration_cast<std::chrono::milliseconds>((end - start)).count();
-        return double(ms / 1000.0);
-    }
-
     // Runs the benchmark test suite, prints the results
     std::string operator()() const  {
         std::vector<double> times;
@@ -156,13 +139,17 @@ class Benchmark {
 };
 
 
-int main() {
+int main(int argc, char** argv) {
 
-    size_t numActions = 1000000;
+    size_t numOps = 10000;
+    if (argc == 2){
+        numOps = atoi(argv[1]);
+    }
 
-    Benchmark<std::list<int>> (numActions, "std::list")();
-    Benchmark<UnrolledLinkedList<int, 8>> (numActions, "Unrolled Linked List K = 8")();
-    Benchmark<UnrolledLinkedList<int, 64>> (numActions, "Unrolled Linked List K = 64")();
-    Benchmark<UnrolledLinkedList<int, 256>> (numActions, "Unrolled Linked List K = 256")();
-    Benchmark<QuackAdapter<int>> (numActions, "Quack")();
+    std::vector<int> actions = Benchmark::getRandomActions(numOps, 4);
+    Benchmark_Queue<std::list<int>>("std::list", actions)();
+    Benchmark_Queue<UnrolledLinkedList<int, 8>> ("Unrolled Linked List K = 8", actions)();
+    Benchmark_Queue<UnrolledLinkedList<int, 64>> ("Unrolled Linked List K = 64", actions)();
+    Benchmark_Queue<UnrolledLinkedList<int, 256>> ("Unrolled Linked List K = 256", actions)();
+    Benchmark_Queue<QuackAdapter<int>> ("Quack", actions)();
 }
