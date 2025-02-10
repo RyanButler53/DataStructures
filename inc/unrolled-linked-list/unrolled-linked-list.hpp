@@ -11,7 +11,7 @@ class UnrolledLinkedList
 {
 private:
     class Iterator;
-    // class RIterator;
+
     struct Node
     {
         std::array<T, K> data_;

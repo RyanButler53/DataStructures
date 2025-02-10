@@ -35,10 +35,12 @@ void SplayTree<key_t, value_t>::insertHelper(const key_t &key, const value_t &va
         path.push_back(node);
     } else{
         path.push_back(node);
-        if (key > node->key_){
+        if (key > node->value_.first){
             insertHelper(key, value, node->right_, path);
-        } else {
+        } else if (key < node->value_.first){
             insertHelper(key, value,node->left_, path);
+        } else { // equal case
+            return;
         }
     }
     return;
@@ -51,10 +53,10 @@ SplayTree<key_t, value_t>::searchHelper(const key_t &key, Node*& node, vector<No
     if (node == nullptr){
         return end();
     }
-    if (key == node->key_)
+    if (key == node->value_.first)
     {
         return const_iterator(node);
-    } else if (key > node->key_){
+    } else if (key > node->value_.first){
         return searchHelper(key, node->right_, path);
     } else {
         return searchHelper(key, node->left_, path);
@@ -68,19 +70,25 @@ void SplayTree<key_t, value_t>::printTree(Node* tree, ostream& out) const{
     } else {
         out << "(";
         printTree(tree->left_, out);  
-        out << ", " << tree->key_ << ":" << tree->value_ << ", ";
+        out << ", " << tree->value_.first << ":" << tree->value_.second << ", ";
         printTree(tree->right_, out);
         out << ")";
     }
 }
 
-template <typename key_t, typename value_t>
-void SplayTree<key_t, value_t>::insert(const key_t& key, const value_t& value){
+template <typename key_t, typename value_t> 
+std::pair<typename SplayTree<key_t, value_t>::Iterator, bool>  SplayTree<key_t, value_t>::insert(const value_type& val){ // save this sytax for EMPLACE: const key_t& key, value_t& value
+    const key_t& key = val.first;
+    const value_t& value = val.second;
     vector<Node *> path;
     insertHelper(key, value, root_, path);
-    ++size_;
     splay(path);
-    return;
+    // success
+    bool success = (root_->value_.second == value);
+    size_ = size_ + int(success);
+
+    // Leverage Splay operation: new node or blocking node is always at the root!
+    return std::make_pair(Iterator(root_,false), success);
 }
 
 template <typename key_t, typename value_t>
@@ -97,7 +105,7 @@ bool SplayTree<key_t, value_t>::exists(const key_t& key){
 
 template <typename key_t, typename value_t>
 void SplayTree<key_t, value_t>::remove(const key_t &key){
-    // Not allowed to delete an empty treel 
+    // Not allowed to delete an empty tree! 
     if (size_ == 0){
         return;
     }
@@ -137,7 +145,7 @@ void SplayTree<key_t, value_t>::getMaxPath(Node* node, vector<Node*>& path)const
 
 
 template <typename key_t, typename value_t>
-const typename SplayTree<key_t, value_t>::const_iterator SplayTree<key_t, value_t>::find(const key_t &key){
+typename SplayTree<key_t, value_t>::const_iterator SplayTree<key_t, value_t>::find(const key_t &key){
     vector<Node *> path;
     const_iterator iter = searchHelper(key, root_, path);
     if (!path.back()){
@@ -145,7 +153,6 @@ const typename SplayTree<key_t, value_t>::const_iterator SplayTree<key_t, value_
         return end();
     }
     splay(path);
-    
     return const_iterator(root_, false);
 }
 
@@ -156,30 +163,29 @@ size_t SplayTree<key_t, value_t>::size() const{
 
 template <typename key_t, typename value_t>
 value_t& SplayTree<key_t, value_t>::operator[](const key_t& key){
-    // key MUST be in the tree;
-    vector<Node *> path;
-    const const_iterator iter = searchHelper(key, root_, path);
-    auto [k, v] = *iter;
-    splay(path);
-    if (k != key){
-        throw("Invalid Key");
-    } else {
-        return v;
+    Iterator it = find(key);
+    if (it != end()){
+        return it->second;
     }
+    return insert({key, value_t()}).first->second;
 }
 
 // Splaying functions
 
 template <typename key_t, typename value_t>
 void SplayTree<key_t, value_t>::splay(vector<Node*>& path){
-     Node *newNode = path.back();
-    const key_t newKey = newNode->key_;
+    // Nothing to splay if no path
+    if (path.size() == 0){
+        return;
+    }
+    Node *newNode = path.back();
+    const key_t newKey = newNode->value_.first;
 
     // Invariant: Path.back() = new Node
     while (path.size() > 1) {
         // Special single rotation case
         if (path.size() == 2) {
-            if (newKey > path[0]->key_){
+            if (newKey > path[0]->value_.first){
                 rotateLeft(path[0]);
             } else {
                 rotateRight(path[0]);
@@ -191,20 +197,20 @@ void SplayTree<key_t, value_t>::splay(vector<Node*>& path){
             Node *parent = path[newNodeInd - 1];
             Node *grandparent = path[newNodeInd - 2];
             
-            if(newKey > grandparent->key_ and newKey > parent->key_){
+            if(newKey > grandparent->value_.first and newKey > parent->value_.first){
                 rotateLeft(grandparent);
                 swap(path[newNodeInd - 2], path[newNodeInd - 1]);
                 rotateLeft(parent);
                 swap(path[newNodeInd - 2], path[newNodeInd]); 
                 cleanGreatGP(path, newNodeInd, newNode, newKey);
-            } else if (newKey < grandparent->key_ and newKey > parent->key_) {
+            } else if (newKey < grandparent->value_.first and newKey > parent->value_.first) {
                 rotateLeft(parent);
                 swap(path[newNodeInd - 1], path[newNodeInd]);
                 grandparent->left_ = newNode;
                 rotateRight(grandparent);
                 swap(path[newNodeInd - 2], path[newNodeInd-1]);
                 cleanGreatGP(path, newNodeInd, newNode, newKey);
-            } else if (newKey > grandparent->key_ and newKey < parent->key_) {
+            } else if (newKey > grandparent->value_.first and newKey < parent->value_.first) {
                 rotateRight(parent);
                 swap(path[newNodeInd - 1], path[newNodeInd]);
                 grandparent->right_ = newNode;
@@ -243,7 +249,7 @@ template <typename key_t, typename value_t>
 void SplayTree<key_t, value_t>::cleanGreatGP(vector<Node*>& path, size_t newNodeInd, Node*& newNode, const key_t& newKey){
     if (path.size() > 3){
         Node *ggp = path[newNodeInd - 3];
-        if (ggp->key_ < newKey){
+        if (ggp->value_.first < newKey){
             ggp->right_ = newNode;
         } else {
             ggp->left_ = newNode;
@@ -266,17 +272,17 @@ void SplayTree<key_t, value_t>::rotateLeft(Node *&node){
 // Iterator Functions:
 
 template <typename key_t, typename value_t>
-typename SplayTree<key_t, value_t>::const_iterator SplayTree<key_t, value_t>::begin() const {
-    return const_iterator(root_);
+typename SplayTree<key_t, value_t>::Iterator SplayTree<key_t, value_t>::begin() const {
+    return Iterator(root_);
 }
 
 template <typename key_t, typename value_t>
-typename SplayTree<key_t, value_t>::const_iterator SplayTree<key_t, value_t>::end() const {
-    return const_iterator(nullptr);
+typename SplayTree<key_t, value_t>::Iterator SplayTree<key_t, value_t>::end() const {
+    return Iterator(nullptr);
 }
 
 template <typename key_t, typename value_t>
-SplayTree<key_t, value_t>::const_iterator::const_iterator(Node* n, bool push){
+SplayTree<key_t, value_t>::Iterator::Iterator(Node* n, bool push){
     if (push){
         pushToMin(n);
     } else {
@@ -285,7 +291,7 @@ SplayTree<key_t, value_t>::const_iterator::const_iterator(Node* n, bool push){
 }
 
 template <typename key_t, typename value_t>
-typename SplayTree<key_t, value_t>::const_iterator& SplayTree<key_t, value_t>::const_iterator::operator++() {
+typename SplayTree<key_t, value_t>::Iterator& SplayTree<key_t, value_t>::Iterator::operator++() {
     Node *current = stack_.back();
     stack_.pop_back();
     pushToMin(current->right_);
@@ -293,28 +299,27 @@ typename SplayTree<key_t, value_t>::const_iterator& SplayTree<key_t, value_t>::c
 }
 
 template <typename key_t, typename value_t>
-typename SplayTree<key_t, value_t>::const_iterator::value_type SplayTree<key_t, value_t>::const_iterator::operator*() const{
-    Node *curLoc = stack_.back();
-    return {curLoc->key_, curLoc->value_};
+typename SplayTree<key_t, value_t>::Iterator::value_type SplayTree<key_t, value_t>::Iterator::operator*() const{
+    return stack_.back()->value_;
 }
 
 template <typename key_t, typename value_t>
-bool SplayTree<key_t, value_t>::const_iterator::operator==(const const_iterator& other) const{
+bool SplayTree<key_t, value_t>::Iterator::operator==(const Iterator& other) const{
     return (this->stack_ == other.stack_);
 }
 
 template <typename key_t, typename value_t>
-bool SplayTree<key_t, value_t>::const_iterator::operator!=(const const_iterator& other) const{
+bool SplayTree<key_t, value_t>::Iterator::operator!=(const Iterator& other) const{
     return !(*this == other);
 }
 
 template <typename key_t, typename value_t>
-typename SplayTree<key_t, value_t>::const_iterator::pointer SplayTree<key_t, value_t>::const_iterator::operator->() const{
-    return &(**this);
+typename SplayTree<key_t, value_t>::Iterator::pointer SplayTree<key_t, value_t>::Iterator::operator->() const{
+    return &(stack_.back()->value_);
 }
 
 template<typename key_t, typename value_t>
-void SplayTree<key_t, value_t>::const_iterator::pushToMin(Node* tree){
+void SplayTree<key_t, value_t>::Iterator::pushToMin(Node* tree){
     while (tree){
         stack_.push_back(tree);
         tree = tree->left_;
@@ -328,7 +333,7 @@ void SplayTree<key_t, value_t>::print(ostream& out) const{
 
 template<typename key_t, typename value_t>
 SplayTree<key_t, value_t>::Node::Node(key_t key, value_t value):
-        key_{key},value_{value},right_{nullptr},left_{nullptr}{}
+        value_{std::make_pair(key, value)},right_{nullptr},left_{nullptr}{}
 
 template <typename key_t, typename value_t>
 std::ostream& operator<<(std::ostream& out, const SplayTree<key_t, value_t> &splaytree){

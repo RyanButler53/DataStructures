@@ -17,6 +17,7 @@ add_executable(scapegoat-tree scapegoat-test.cpp)
 add_executable(splay-tree splay-tree-test.cpp)
 add_executable(unrolled-ll ULL-test.cpp)
 
-
-target_include_directories(unrolled-ll PUBLIC ${CMAKE_SOURCE_DIR})
+# Link to google test if necessary
 target_link_libraries(unrolled-ll gtest) #gtest_main
+target_link_libraries(splay-tree gtest)
+

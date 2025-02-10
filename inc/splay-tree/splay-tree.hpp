@@ -13,15 +13,16 @@
 
 #include <vector>
 #include <iterator>
-#include <tuple>
+#include <utility>
+#include <ostream>
+#include <iostream>
 
 template <typename key_t, typename value_t>
 class SplayTree {
   private:
-    class const_iterator;
+    class Iterator;
     struct Node {
-        key_t key_;
-        value_t value_;
+        std::pair<key_t, value_t> value_;
         Node *right_;
         Node *left_;
 
@@ -57,9 +58,9 @@ class SplayTree {
      * @param key key to search for
      * @param node Current node
      * @param path tracks path used for splaying
-     * @return const const_iterator Const Iterator to the item at node key. 
+     * @return Iterator  to the item at node key. 
      */
-    const const_iterator searchHelper(const key_t &key, Node*& node, std::vector<Node*>& path);
+    const Iterator searchHelper(const key_t &key, Node*& node, std::vector<Node*>& path);
 
     /**
      * @brief Helper functino for printing the tree. Used for testing. 
@@ -110,25 +111,27 @@ class SplayTree {
      */
     void cleanGreatGP(std::vector<Node *> &path, size_t newNodeInd,Node*& newNode, const key_t& newKey);
 
-
 public:
 
     // Constructors
-
     SplayTree();
     ~SplayTree();
     SplayTree(const SplayTree &other) = default;
     SplayTree &operator=(const SplayTree &other) = default;
 
-    // Interface Functions
+    // Type Names: 
+    using value_type = std::pair<key_t, value_t>;
+    using const_iterator = Iterator;
 
+    // Interface Functions
+    
     /**
      * @brief Insert into the splay tree
      * 
      * @param key Key to inset
      * @param value Value to insert
-     */
-    void insert(const key_t& key, const value_t& value);
+     */     //
+    std::pair<Iterator, bool>  insert(const value_type& value); //const key_t& key, value_t& value
 
     /**
      * @brief Deletes the given key from splay tree.
@@ -153,7 +156,7 @@ public:
      * @param key key to lookup
      * @return const const_iterator. Iterator being returned. 
      */
-    const const_iterator find(const key_t &key);
+    const_iterator find(const key_t &key);
 
     /**
      * @brief Returns the size of the tree. 
@@ -186,7 +189,7 @@ public:
     value_t& operator[](const key_t &key);
 
   private:
-    class const_iterator {
+    class Iterator {
         friend class SplayTree;
 
     private:
@@ -196,23 +199,23 @@ public:
     public:
 
         // Required for std::iterator
-        using value_type = std::tuple<key_t, value_t>;
+        using value_type = std::pair<key_t, value_t>;
         using reference = const value_type&;
-        using pointer = const value_type*;
+        using pointer =  value_type*;
         using difference_type = std::ptrdiff_t;
         using iterator_category = std::forward_iterator_tag;
 
-        const_iterator() = default;
-        const_iterator(Node *node, bool push = true);
-        const_iterator(const const_iterator &other) = delete;
-        const_iterator &operator=(const const_iterator &other) = default;
-        ~const_iterator() = default;
+        Iterator() = default;
+        Iterator(Node *node, bool push = true);
+        Iterator(const Iterator &other) = default;
+        Iterator &operator=(const Iterator &other) = default;
+        ~Iterator() = default;
 
         value_type operator*() const;
-        const_iterator &operator++();
+        Iterator &operator++();
         pointer operator->() const;
-        bool operator==(const const_iterator &other) const;
-        bool operator!=(const const_iterator &other) const;
+        bool operator==(const Iterator &other) const;
+        bool operator!=(const Iterator &other) const;
         
     };
 };
