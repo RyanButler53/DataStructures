@@ -104,17 +104,17 @@ bool SplayTree<key_t, value_t>::exists(const key_t& key){
 }
 
 template <typename key_t, typename value_t>
-void SplayTree<key_t, value_t>::remove(const key_t &key){
+size_t SplayTree<key_t, value_t>::erase(const key_t &key){
     // Not allowed to delete an empty tree! 
     if (size_ == 0){
-        return;
+        return 0;
     }
     vector<Node *> path;
     searchHelper(key, root_, path);
     if (!path.back()){
         path.pop_back();
         splay(path);
-        return;
+        return 0;
     }
     --size_;
     splay(path);
@@ -123,16 +123,16 @@ void SplayTree<key_t, value_t>::remove(const key_t &key){
     delete root_;
     if (!leftSubtree) {
         root_ = rightSubtree;
-        return;
+        return 1;
     } else if (!rightSubtree) {
         root_ = leftSubtree;
-        return;
+        return 1;
     }
     path.clear();
     getMaxPath(leftSubtree, path);
     splay(path);
     root_->right_ = rightSubtree;
-    return;
+    return 1;
 }
 
 template<typename key_t, typename value_t> 
@@ -327,6 +327,13 @@ void SplayTree<key_t, value_t>::Iterator::pushToMin(Node* tree){
 }
 
 template<typename key_t, typename value_t>
+void SplayTree<key_t, value_t>::clear(){
+    destructorHelper(root_);
+    root_ = nullptr;
+    size_ = 0;
+}
+
+template<typename key_t, typename value_t>
 void SplayTree<key_t, value_t>::print(ostream& out) const{
     printTree(root_, out);
 }
@@ -339,4 +346,26 @@ template <typename key_t, typename value_t>
 std::ostream& operator<<(std::ostream& out, const SplayTree<key_t, value_t> &splaytree){
     splaytree.print(out);
     return out;
+}
+
+// Temp functions: 
+template<typename key_t, typename value_t>
+double SplayTree< key_t,  value_t>::averageDepth() const {
+    if (size() == 0) {
+        return 0;  // average depth of empty tree is defined to be zero
+    }
+    int totalDepth = depthHelper(0, root_);
+    return double(totalDepth) / double(size());
+}
+
+template<typename key_t, typename value_t>
+int SplayTree< key_t,  value_t>::depthHelper(int currDepth, SplayTree<key_t, value_t>::Node* tree) const {
+    if (tree == nullptr) {
+        return 0;
+    } else {
+        // recursive calls for both left and right subtrees
+        int leftDepth = depthHelper(currDepth + 1, tree->left_);
+        int rightDepth = depthHelper(currDepth + 1, tree->right_);
+        return currDepth + leftDepth + rightDepth;
+    }
 }

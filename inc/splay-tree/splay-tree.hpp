@@ -121,8 +121,13 @@ public:
 
     // Type Names: 
     using value_type = std::pair<key_t, value_t>;
+    using key_type = key_t;
+    using mapped_type = value_t;
     using const_iterator = Iterator;
 
+    double averageDepth() const;
+    int depthHelper(int currDepth, Node *tree) const;
+    
     // Interface Functions
     
     /**
@@ -139,7 +144,7 @@ public:
      * @param key Key to be removed
      * @note If key is not present, the closest node to the key gets splayed 
      */
-    void remove(const key_t &key);
+    size_t erase(const key_t &key);
 
     /**
      * @brief Checks if a key is present
@@ -169,6 +174,8 @@ public:
 
     const_iterator begin() const;
     const_iterator end() const;
+
+    void clear();
 
     // Other functions
 
@@ -218,6 +225,8 @@ public:
         bool operator!=(const Iterator &other) const;
         
     };
+
+
 };
 
 template <typename key_t,typename value_t>
@@ -226,3 +235,39 @@ std::ostream &operator<<(std::ostream& out, const SplayTree<key_t, value_t> &spl
 #include "splay-tree-private.hpp"
 
 #endif // SPLAY_TREE_HPP_INCLUDED
+
+/*
+FUNCTIONS TO IMPLEMENT: 
+TEMPLATE ARGUMENT: Compare
+
+at
+crbegin()?
+crend()?
+
+empty
+max_size
+
+clear
+insert_range
+insert_or_assign
+emplace
+emplace_hint
+try_emplace
+erase (remove renamed)
+swap (swap elemnts)
+merge
+
+count (0 or 1)
+contains (rename exist)
+equal_range 
+lower_bound
+upper_bound
+
+key_comp
+value_comp
+
+crazy equal operator
+std::swap specialization
+
+std::erase_if (linear time?)
+*/

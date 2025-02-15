@@ -20,16 +20,16 @@ TEST(SplayTreeTest, general){
     std::stringstream ss1;
     ss1 << st2;
     
-    assert(ss1.str() == empty);
+    ASSERT_EQ(ss1.str(), empty);
 
     std::string insertTest{"(-, 5:105, ((-, 10:110, (((-, 20:120, -), 30:130, -), 35:135, -)), 38:138, ((((-, 40:140, (-, 50:150, -)), 55:155, -), 60:160, -), 65:165, -)))"};
     std::stringstream ss;
     ss << st;
     assert(ss.str() == insertTest);
-    st.remove(60);
-    st.remove(40);
-    st.remove(38);
-    st.remove(41);
+    ASSERT_EQ(st.erase(60), 1);
+    ASSERT_EQ(st.erase(40), 1);
+    ASSERT_EQ(st.erase(38), 1);
+    ASSERT_EQ(st.erase(41), 0);
 
     std::string deleteTest{"((((-, 5:105, -), 10:110, ((-, 20:120, -), 30:130, -)), 35:135, -), 50:150, (-, 55:155, (-, 65:165, -)))"};
     std::stringstream ss2;
@@ -63,8 +63,8 @@ TEST(SplayTreeTest, general){
     ASSERT_EQ(iter, st.end());
 
     // Test removing after insertion, finding and iterating. 
-    st.remove(30);
-    st.remove(50);
+    ASSERT_EQ(st.erase(30),1);
+    ASSERT_EQ(st.erase(50),1);
 
     // Test size after insertion and removal;
     ASSERT_EQ(st.size(), 6);
@@ -86,7 +86,7 @@ TEST(SplayTreeTest, general){
     // Remove rest of tree.
     for (int x : newKeys)
     {
-        st.remove(x);
+        st.erase(x);
     }
     ASSERT_EQ(st.size(), 0);
 
