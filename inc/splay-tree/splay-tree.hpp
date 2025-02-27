@@ -42,25 +42,18 @@ class SplayTree {
      */
     void destructorHelper(Node*& node);
 
-    /**
-     * @brief Helper function for insertion
-     * 
-     * @param key key to insert
-     * @param value value to insert
-     * @param node current node in teh tree
-     * @param path path, used for splaying
-     */
-    void insertHelper(const key_t &key, const value_t &value, Node*& node, std::vector<Node *> &path);
+    void pushToMin(std::vector<Node *> &stack, Node *startNode);
 
     /**
      * @brief Searches for a specific key and returns an iterator to the node. 
+     * @note does NOT splay the tree. 
      * 
      * @param key key to search for
      * @param node Current node
-     * @param path tracks path used for splaying
+     * @param path tracks path to use for splaying
      * @return Iterator  to the item at node key. 
      */
-    const Iterator searchHelper(const key_t &key, Node*& node, std::vector<Node*>& path);
+    const Iterator search(const key_t &key, std::vector<Node*>& path);
 
     /**
      * @brief Helper functino for printing the tree. Used for testing. 
@@ -125,9 +118,6 @@ public:
     using mapped_type = value_t;
     using const_iterator = Iterator;
 
-    double averageDepth() const;
-    int depthHelper(int currDepth, Node *tree) const;
-    
     // Interface Functions
     
     /**
