@@ -23,7 +23,6 @@ concept Tree = requires(TreeType &tree,
     tree.find(key);
     tree.clear();
     tree.erase(key);
-    // tree.averageDepth();
 };
 
 class Setup {
@@ -139,29 +138,26 @@ private:
         T tree;
         std::stringstream ss("Results for ");
         ss << name_ << ": ";
-        // ss << Benchmark::measure([&tree, this]()
-        //                          { insert(tree); });
-        // std::cout << tree.averageDepth() << std ::endl;
+        ss << Benchmark::measure([&tree, this]()
+                                 { insert(tree); });
 
-        // ss << " ";
-        // ss << Benchmark::measure([&tree]()
-        //                          { tree.clear(); });
+        ss << " ";
+        ss << Benchmark::measure([&tree]()
+                                 { tree.clear(); });
 
-        // ss << " ";
-        // ss << Benchmark::measure([&tree, this]()
-        //                          { insertBalanced(tree); });
-        // ss << " ";
-        // std::cout << tree.averageDepth() << std ::endl;
-        // ss << Benchmark::measure([&tree, this]()
-        //                          { find(tree); });
-        // ss << " ";
-        // std::cout << tree.averageDepth() << std ::endl;
+        ss << " ";
+        ss << Benchmark::measure([&tree, this]()
+                                 { insertBalanced(tree); });
+        ss << " ";
+        ss << Benchmark::measure([&tree, this]()
+                                 { find(tree); });
+        ss << " ";
 
         tree.clear();
         ss << Benchmark::measure([&tree, this]()
                                  { insertShuffled(tree); });
         ss << " ";
-        std::cout << tree.averageDepth() << std ::endl;
+
         ss << Benchmark::measure([&tree, this]()
                                  { findDup(tree); });
         ss << " ";
@@ -196,4 +192,10 @@ int main(int argc, char** argv) {
     Benchmark_Tree<SplayTree<int, int>> b("splay tree", balanced, shuffled, duplicates);
     std::cout << map() << std::endl;
     std::cout << b() << std::endl;
+
+    // SplayTree<int, int> st;
+    // for (int i = 0; i < 200000; ++i){
+    //     st.insert({i, i});
+    // }
+    // auto it = st.find(0);
 }

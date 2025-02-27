@@ -25,7 +25,7 @@ TEST(SplayTreeTest, general){
     std::string insertTest{"(-, 5:105, ((-, 10:110, (((-, 20:120, -), 30:130, -), 35:135, -)), 38:138, ((((-, 40:140, (-, 50:150, -)), 55:155, -), 60:160, -), 65:165, -)))"};
     std::stringstream ss;
     ss << st;
-    assert(ss.str() == insertTest);
+    ASSERT_EQ(ss.str() , insertTest);
     ASSERT_EQ(st.erase(60), 1);
     ASSERT_EQ(st.erase(40), 1);
     ASSERT_EQ(st.erase(38), 1);
@@ -91,6 +91,14 @@ TEST(SplayTreeTest, general){
     ASSERT_EQ(st.size(), 0);
 
     
+}
+
+TEST(SplayTreeTest, destructor){
+    SplayTree<int, int> st;
+    int keys[11] = {50, 40, 30, 20, 10, 60, 55, 35, 38, 65, 5};
+    for (int x : keys){
+        st.insert({x, x + 4});
+    }
 }
 
 int main(int argc, char** argv){
