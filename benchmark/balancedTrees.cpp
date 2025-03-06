@@ -193,9 +193,4 @@ int main(int argc, char** argv) {
     std::cout << map() << std::endl;
     std::cout << b() << std::endl;
 
-    // SplayTree<int, int> st;
-    // for (int i = 0; i < 200000; ++i){
-    //     st.insert({i, i});
-    // }
-    // auto it = st.find(0);
 }

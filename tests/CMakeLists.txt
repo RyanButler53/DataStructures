@@ -16,8 +16,10 @@ add_executable(launching-threadpool launching-threadpool-test.cpp)
 add_executable(scapegoat-tree scapegoat-test.cpp)
 add_executable(splay-tree splay-tree-test.cpp)
 add_executable(unrolled-ll ULL-test.cpp)
+add_executable(heap heap-test.cpp)
 
 # Link to google test if necessary
 target_link_libraries(unrolled-ll gtest) #gtest_main
 target_link_libraries(splay-tree gtest)
+target_link_libraries(heap gtest)
 
