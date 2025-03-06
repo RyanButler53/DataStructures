@@ -10,42 +10,49 @@ bool compare(int x, int y){
     return x > y;
 }
 
+template<typename T, typename priority_t, size_t D>
+bool checkHeap(DAryHeap<T, priority_t, D> heap){
+    if (!heap.checkMaps()){
+        return false;
+    }
+    std::vector<typename DAryHeap<T, priority_t, D>::Item> elements = heap.getElements();
+    // heap property in a min heap means that 
+    // every node is greater than their children.
+    for (size_t i = 1; i < elements.size(); ++i){
+        size_t parent = (i - 1) / D;
+        if (elements[parent].priority_ > elements[i].priority_){
+            return false;
+        }
+    }
+    return true;
+}
+
 TEST(Push, basicPushing){
     BinaryHeap<int> heap;
-    heap.push(1);
-    heap.push(2);
-    heap.push(3);
-    heap.push(-1);
+    heap.push(1,1);
+    heap.push(2,2);
+    heap.push(-80,3);
+    heap.push(-1,-1);
 
     ASSERT_EQ(heap.size(), 4);
     ASSERT_FALSE(heap.empty());
 
     ASSERT_EQ(heap.top(), -1);
 
-    std::vector<int> cmp{-1, 1, 3, 2};
-    std::vector<int> elems = heap.getElements();
-    ASSERT_EQ(cmp, elems);
-    ASSERT_TRUE(std::ranges::is_heap(elems, compare));
+    ASSERT_TRUE(checkHeap(heap));
 }
 
 TEST(PushPop, basicPopping){
     BinaryHeap<int> heap;
-    heap.push(1);
-    heap.push(2);
-    heap.push(3);
-    heap.push(-1);
+    heap.push(2,1);
+    heap.push(3,2);
+    heap.push(4,4);
+    heap.push(-14, -1);
 
-    auto elems = heap.getElements();
-    ASSERT_TRUE(heap.checkMaps());
-    ASSERT_TRUE(std::ranges::is_heap(elems, compare));
+    ASSERT_TRUE(checkHeap(heap));
     heap.pop();
-    ASSERT_TRUE(heap.checkMaps());
-    ASSERT_TRUE(std::ranges::is_heap(elems, compare));
-    std::vector<int> cmp = {1, 2, 3};
-    ASSERT_EQ(cmp, heap.getElements());
-    heap.pop();
-    cmp = {2, 3};
-    ASSERT_EQ(cmp, heap.getElements());
+    ASSERT_EQ(heap.top(), 2);
+    ASSERT_TRUE(checkHeap(heap));
 }
 
 TEST(Push, Fuzz){
@@ -59,9 +66,8 @@ TEST(Push, Fuzz){
 
     std::ranges::shuffle(v, rng);
     for (auto x : v){
-        heap.push(x);
-        ASSERT_TRUE(heap.checkMaps());
-        ASSERT_TRUE(std::ranges::is_heap(heap.getElements(), compare));
+        heap.push(x, x);
+        ASSERT_TRUE(checkHeap(heap));
     }
 }
 
@@ -77,30 +83,25 @@ TEST(PushPop, Fuzz){
 
     std::ranges::shuffle(v, rng);
     for (auto x : v){
-        heap.push(x);
+        heap.push(x-10,x);
     }
 
     while (!heap.empty()){
         heap.pop();
-        ASSERT_TRUE(heap.checkMaps());
-        ASSERT_TRUE(std::ranges::is_heap(heap.getElements(), compare));
+        ASSERT_TRUE(checkHeap(heap));
     }
-    std::cout << std::endl;
 }
 
 TEST(DecreaseKey, Basic){
     BinaryHeap<int> heap;
-    heap.push(1);
-    heap.push(2);
-    heap.push(5);
-    heap.push(-1);
-    heap.push(7);
+    heap.push(1,1);
+    heap.push(2,2);
+    heap.push(5,5);
+    heap.push(-1,-1);
+    heap.push(7,7);
 
     heap.decreaseKey(5, -2);
-    ASSERT_TRUE(std::ranges::is_heap(heap.getElements(), compare));
-    ASSERT_TRUE(heap.checkMaps());
-    std::vector<int> cmp = {-2, 1, -1, 2, 7};
-    ASSERT_EQ(heap.getElements(), cmp);
+    ASSERT_TRUE(checkHeap(heap));
 
     try
     {
@@ -117,6 +118,11 @@ TEST(DecreaseKey, Basic){
     }
     heap.decreaseKey(7, 5);
     heap.decreaseKey(5, -10);
+    ASSERT_EQ(heap.top(), 5);
+    heap.pop();
+    heap.decreaseKey(2, -2);
+    ASSERT_EQ(heap.top(), 2);
+
 }
 
 int main(int argc, char** argv){

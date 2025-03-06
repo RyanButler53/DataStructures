@@ -1,30 +1,30 @@
 #include "heap.hpp"
 #include <algorithm>
 
-template <typename T, size_t D>
-DAryHeap<T, D>::DAryHeap():size_{0} {}
+template <typename T, typename priority_t, size_t D>
+DAryHeap<T, priority_t, D>::DAryHeap():size_{0} {}
 
-template <typename T, size_t D>
-bool DAryHeap<T, D>::empty() const{
+template <typename T, typename priority_t, size_t D>
+bool DAryHeap<T, priority_t, D>::empty() const{
     return size_ == 0;
 }
 
-template <typename T, size_t D>
-size_t DAryHeap<T, D>::size() const{
+template <typename T, typename priority_t, size_t D>
+size_t DAryHeap<T, priority_t, D>::size() const{
     return size_;
 }
 
-template <typename T, size_t D>
-const T& DAryHeap<T,D>::top() const{
+template <typename T, typename priority_t, size_t D>
+const T& DAryHeap<T, priority_t, D>::top() const{
     if (size_ == 0){
         throw std::logic_error("Cannot get top of empty heap");
     } else {
-        return elements_[0];
+        return elements_[0].item_;
     }
 }
 
-template <typename T, size_t D>
-size_t DAryHeap<T,D>::parent(size_t i) const{
+template <typename T, typename priority_t, size_t D>
+size_t DAryHeap<T, priority_t, D>::parent(size_t i) const{
     if (i > 0){
         return (i - 1) / D;
     } else {
@@ -32,26 +32,26 @@ size_t DAryHeap<T,D>::parent(size_t i) const{
     }
 }
 
-template <typename T, size_t D>
-size_t DAryHeap<T,D>::leftmostChild(size_t i)const {
+template <typename T, typename priority_t, size_t D>
+size_t DAryHeap<T, priority_t, D>::leftmostChild(size_t i)const {
     return D * i + 1;
 }
 
-template <typename T, size_t D>
-void DAryHeap<T,D>::swap(size_t i1, size_t i2) {
-    std::swap(elem_to_index_[elements_[i1]], elem_to_index_[elements_[i2]]);
+template <typename T, typename priority_t, size_t D>
+void DAryHeap<T, priority_t, D>::swap(size_t i1, size_t i2) {
+    std::swap(itemToIndex_[elements_[i1].item_], itemToIndex_[elements_[i2].item_]);
     std::swap(elements_[i1], elements_[i2]);
 }
 
-template <typename T, size_t D>
-std::vector<T> DAryHeap<T,D>::getElements(){
+template <typename T, typename priority_t, size_t D>
+std::vector<typename DAryHeap<T, priority_t, D>::Item> DAryHeap<T, priority_t, D>::getElements(){
     return elements_;
 }
 
-template <typename T, size_t D>
-bool DAryHeap<T,D>::checkMaps() const {
-    for (const T& elem : elements_){
-        auto ind = elem_to_index_.at(elem);
+template <typename T, typename priority_t, size_t D>
+bool DAryHeap<T, priority_t, D>::checkMaps() const {
+    for (const Item& elem : elements_){
+        auto ind = itemToIndex_.at(elem.item_);
         if (elements_[ind] != elem){
             return false;
         }
@@ -59,8 +59,8 @@ bool DAryHeap<T,D>::checkMaps() const {
     return true;
 }
 
-template <typename T, size_t D>
-size_t DAryHeap<T,D>::getMinChild(size_t i) const{
+template <typename T, typename priority_t, size_t D>
+size_t DAryHeap<T, priority_t, D>::getMinChild(size_t i) const{
     size_t lchild = leftmostChild(i);
     // function will not be called if size_ is zero
     size_t end = std::min(size_, lchild + D);
@@ -68,16 +68,16 @@ size_t DAryHeap<T,D>::getMinChild(size_t i) const{
     return (it - elements_.begin());
 }
 
-template <typename T, size_t D>
-bool DAryHeap<T, D>::isLeaf(size_t i) const{
+template <typename T, typename priority_t, size_t D>
+bool DAryHeap<T, priority_t, D>::isLeaf(size_t i) const{
     return leftmostChild(i) >= size_;
 }
 
 // Modification Functions
-template <typename T, size_t D>
-void  DAryHeap<T,D>::push(const T &value){
-    elements_.push_back(value);
-    elem_to_index_[value] = size_;
+template <typename T, typename priority_t, size_t D>
+void  DAryHeap<T, priority_t, D>::push(const T &item, priority_t key){
+    elements_.push_back(Item{item, key});
+    itemToIndex_[item] = size_;
     size_t current_i = size_;
 
     // While current isn't zero and current is less than its parent
@@ -89,8 +89,8 @@ void  DAryHeap<T,D>::push(const T &value){
     ++size_;
 }
 
-template <typename T, size_t D>
-void DAryHeap<T,D>::pop(){
+template <typename T, typename priority_t, size_t D>
+void DAryHeap<T, priority_t, D>::pop(){
     if (!size_){
         throw("Cannot pop from an empty heap");
     }
@@ -98,7 +98,7 @@ void DAryHeap<T,D>::pop(){
     // Move last element to "root"
     swap(0, size_-1);
     size_t cur = 0;
-    elem_to_index_.erase(elements_.back());
+    itemToIndex_.erase(elements_.back().item_);
     elements_.pop_back();
     --size_;
     while (!isLeaf(cur))
@@ -113,21 +113,18 @@ void DAryHeap<T,D>::pop(){
     }
 }
 
-template <typename T, size_t D>
-void DAryHeap<T, D>::decreaseKey(T key, T newKey){
-    
-    if (newKey >= key){
+template <typename T, typename priority_t, size_t D>
+void DAryHeap<T, priority_t, D>::decreaseKey(T item, priority_t newKey){
+
+    priority_t curPriority = elements_[itemToIndex_[item]].priority_;
+    if (newKey >= curPriority) {
         throw std::invalid_argument("Cannot decrease a key value to a greater value");
-    } else if (!elem_to_index_.contains(key)){
+    }  else if (!itemToIndex_.contains(item)) {
         throw std::invalid_argument("Cannot decrease a key value for a key not in the heap");
     }
     // Update current index
-    size_t current_i = elem_to_index_[key];
-    elements_[current_i] = newKey;
-
-    // Update elem_to_index_ lookup
-    elem_to_index_[newKey] = current_i;
-    elem_to_index_.erase(key);
+    size_t current_i = itemToIndex_[item];
+    elements_[current_i].priority_ = newKey;
 
     // While current isn't zero and current is less than its parent
     while (current_i && elements_[current_i] < elements_[parent(current_i)]){

@@ -5,11 +5,26 @@
 #include <unordered_map>
 
 
-template <typename T,  size_t D=2>
+template <typename T, typename priority_t, size_t D=2>
 class DAryHeap {
 
-    std::vector<T> elements_;
-    std::unordered_map<T, size_t> elem_to_index_;
+  public: 
+
+  struct Item{
+    T item_;
+    priority_t priority_;
+
+    bool operator==(const Item &other) const { return (priority_ == other.priority_) && (item_ == other.item_); }
+    bool operator<(const Item &other) const { return priority_ < other.priority_; }
+    void swap(Item& left, Item& right){
+        std::swap(left.item_, right.item_);
+        std::swap(left.priority_, left.item_);
+    }
+    };
+
+  private:
+    std::vector<Item> elements_;
+    std::unordered_map<T, size_t> itemToIndex_;
     size_t size_;
 
     // Gets the index of the parent node
@@ -25,7 +40,8 @@ class DAryHeap {
 
     void swap(size_t i1, size_t i2);
 
-public:
+  public:
+
     DAryHeap();
     ~DAryHeap() = default;
 
@@ -34,18 +50,19 @@ public:
     
     void pop();
 
-    void push(const T& value);
+    void push(const T& item, priority_t key);
     const T& top() const;
 
-    void decreaseKey(T key, T newKey);
+    void decreaseKey(T item, priority_t newKey);
 
-    std::vector<T> getElements();
+    // Checking correctness functions
+    std::vector<Item> getElements();
 
     bool checkMaps() const;
 };
 
 template <typename T>
-using BinaryHeap = DAryHeap<T, 2>;
+using BinaryHeap = DAryHeap<T, T, 2>;
 
 #include "heap-private.hpp"
 
