@@ -1,4 +1,6 @@
 // Define a benchmark base class
+#pragma once
+
 #include <string>
 #include <random>
 #include <concepts>

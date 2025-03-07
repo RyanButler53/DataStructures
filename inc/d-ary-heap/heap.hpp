@@ -10,7 +10,7 @@ class DAryHeap {
 
   public: 
 
-  struct Item{
+    struct Item{
     T item_;
     priority_t priority_;
 
@@ -22,7 +22,10 @@ class DAryHeap {
     }
     };
 
-  private:
+    using value_type = T;
+    using priority_type = priority_t;
+
+private:
     std::vector<Item> elements_;
     std::unordered_map<T, size_t> itemToIndex_;
     size_t size_;
