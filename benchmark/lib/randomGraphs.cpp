@@ -7,18 +7,18 @@ RandomGraphGenerator::RandomGraphGenerator(double sparsity, size_t n):sparsity_{
     }
     long long seed_ = time(0);
     rng_ = std::mt19937(seed_);
-    for (size_t i = 0; i < n; ++i) {
+    for (size_t i = 0; i < n*(n-1); ++i) {
         values_.push_back(i);
     }
-    std::vector<int> weights(n, 1);
-    std::discrete_distribution<int> dist_(weights.begin(), weights.end());
+    std::vector<int> weights(n);
+    std::ranges::fill(weights, 1);
 }
 
 std::vector<std::tuple<GraphAdjList, GraphAdjMatrix>> RandomGraphGenerator::makeGraphs(size_t n){
     std::vector<std::tuple<GraphAdjList, GraphAdjMatrix>> graphs;
     for (size_t i = 0; i < n; ++i) {
-        std::vector<size_t> edges = getEdges();
-        std::vector<size_t> weights = getWeights();
+        std::vector<size_t> edges = getRandom();
+        std::vector<size_t> weights = getRandom();
         GraphAdjList g1(n_);
         GraphAdjMatrix g2(n_);
         populateGraph(&g1, weights, edges);
@@ -28,23 +28,13 @@ std::vector<std::tuple<GraphAdjList, GraphAdjMatrix>> RandomGraphGenerator::make
     return graphs;
 }
 
-std::vector<size_t> RandomGraphGenerator::getEdges(){
+std::vector<size_t> RandomGraphGenerator::getRandom(){
     size_t numEdges = n_ * (n_ - 1) * sparsity_;
     std::ranges::shuffle(values_, rng_);
-    std::vector<size_t> edgeIds(values_.begin(), values_.begin() + numEdges);
-    return edgeIds;
+    return std::vector<size_t>(values_.begin(), values_.begin() + numEdges);
 }
 
-std::vector<size_t> RandomGraphGenerator::getWeights() {
-    size_t numEdges = n_ * (n_ - 1) * sparsity_;
-    std::vector<size_t> weights;
-    for (size_t i = 0; i < numEdges; ++i) {
-        weights.push_back(dist_(rng_));
-    }
-    return weights;
-}
-
-void RandomGraphGenerator::populateGraph(Graph *g, std::vector<size_t> weights, std::vector<size_t> edges){
+void RandomGraphGenerator::populateGraph(Graph *g, std::vector<size_t>& weights, std::vector<size_t>& edges){
     for (size_t i = 0; i < edges.size();  ++i) {
         size_t matrixInd = edges[i] / n_ + 1 + edges[i];
         size_t start = matrixInd/n_;

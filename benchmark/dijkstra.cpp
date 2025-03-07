@@ -1,8 +1,10 @@
 // Benchmark heaps with Dijkstra's algorithm
-#include "graph.hpp"
 #include <limits>
 #include <iostream>
+
 #include "d-ary-heap/heap.hpp"
+#include "graph.hpp"
+#include "randomGraphs.hpp"
 
 template <typename T>
 concept Heap = requires(T &heap,
@@ -95,24 +97,21 @@ void populate2(Graph* g){
 }
 
 int main(){
-    GraphAdjList g(7);
-    GraphAdjList g2(7);
-    populate2(&g);
-    populate2(&g2);
+    // GraphAdjList g(7);
+    // GraphAdjList g2(7);
+    // populate2(&g);
+    // populate2(&g2);
 
-
-    std::vector<size_t> results = dijkstra<DAryHeap<size_t, size_t, 3>>(&g,1);
-
-    std::vector<size_t> results2 = dijkstra<DAryHeap<size_t, size_t, 3>>(&g2,1);
-    for (auto x : results){
-        std::cout << x << " ";
+    RandomGraphGenerator gen(0.35, 4);
+    auto graphs = gen.makeGraphs(1);
+    for (auto& [adj, mat] : graphs){
+        std::vector<size_t> results = dijkstra<DAryHeap<size_t, size_t, 3>>(&adj);
+        std::vector<size_t> results2 = dijkstra<DAryHeap<size_t, size_t, 3>>(&mat);
+        if (!std::ranges::equal(results, results2)){
+            std::cout << "ERROR" << std::endl;
+        }
     }
-    std::cout << std::endl;
 
-    for (auto x : results2){
-        std::cout << x << " ";
-    }
-    std::cout << std::endl;
 
     return 0;
 }
