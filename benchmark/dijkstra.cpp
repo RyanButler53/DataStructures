@@ -95,9 +95,9 @@ void populate2(Graph* g){
     g->addEdge(6, 5, 8);
 }
 
-int add(int x, int y){
-    return x + y;
-}
+// int add(int x, int y){
+//     return x + y;
+// }
 
 int main(){
     // GraphAdjList g(7);
@@ -105,30 +105,20 @@ int main(){
     // populate2(&g);
     populate2(&g2);
 
-    BenchmarkTest test("benchamrk", 10, 3, dijkstra<BinaryHeap<size_t>>, &g2,0);
-
-    BenchmarkResults res = test();
-    std::cout << res.to_string() << std::endl;
-
     // How I want to use the Benchmark Library
     BenchmarkSuite suite("Dijkstra");
-    RandomGraphGenerator gen(0.35, 4);
-    auto graphs = gen.makeGraphs(10);
+    RandomGraphGenerator gen(0.35, 4000);
+    auto graphs = gen.makeGraphs(1);
 
+    std::cout << "made graphs" << std::endl;
     for (auto &[adj, mat] : graphs)
     {
-        // BenchmarkTest t1("Dijkstra DAryHeap 3 List", 4, 10, dijkstra<DAryHeap<size_t, size_t, 3>>, &adj, 0);
-        // BenchmarkTest t2("Dijkstra DAryHeap 3 adj", 4, 10, dijkstra<DAryHeap<size_t, size_t, 3>>, &mat, 0);
-        BenchmarkTest t1("add1", 2, 15, add, 6, 7);
-        BenchmarkTest t2("add2", 2, 15, add, 6, 7);
-
-        suite.addTest(t1);
-        suite.addTest(t2);
+        suite.addTest("Dijkstra DAryHeap 3 List", 4, 10, dijkstra<DAryHeap<size_t, size_t, 3>>, &adj, 0);
+        suite.addTest("Dijkstra DAryHeap 3 adj", 4, 10, dijkstra<DAryHeap<size_t, size_t, 3>>, &mat, 0);
     }
 
     suite.run();
     // suite.plot();
-
 
     return 0;
 }

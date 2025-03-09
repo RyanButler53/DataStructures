@@ -47,34 +47,6 @@ void Benchmark::getActions(size_t numActions,
 
 // NEW BENCHMARKING LIBRARY
 
-double BenchmarkTest::average(std::vector<double>& vec) const {
-    double sum = std::accumulate(vec.begin(), vec.end(), 0);
-    return sum / numTrials_;
-}
-
-double BenchmarkTest::stdev(std::vector<double> &vec) const {
-    double avg = average(vec);
-    double deviation = std::accumulate(vec.begin(), vec.end(), 0.0, [&avg](double acc, double newVal)
-                                       { return (avg - newVal) * (avg - newVal); });
-    return std::sqrt(deviation / numTrials_);
-}
-
-double BenchmarkTest::measure(){
-    auto start = std::chrono::steady_clock::now();
-    fn_();
-    auto end = std::chrono::steady_clock::now();
-    long ms = std::chrono::duration_cast<std::chrono::milliseconds>((end - start)).count();
-    return double(ms / 1000.0);
-}
-
-BenchmarkResults BenchmarkTest::operator()(){
-    std::vector<double> times;
-    for (size_t i = 0; i < numTrials_; ++i) {
-        times.push_back(measure());
-    }
-    return BenchmarkResults{name_, inputSize_, numTrials_, average(times), stdev(times)};
-}
-
 std::string BenchmarkResults::to_string() const {
     std::stringstream ss;
     ss << testName_ << ", " << inputSize_ << ", " << numTrials_ << ", " << avgTime_ << ", " << stdev_;
@@ -85,8 +57,10 @@ std::string BenchmarkResults::to_string() const {
 
 BenchmarkSuite::BenchmarkSuite(std::string suitename):suiteName_{suitename}{}
 
-void BenchmarkSuite::addTest(BenchmarkTest& test){
-    tests_.push_back(std::move(test));
+BenchmarkSuite::~BenchmarkSuite(){
+    for (BenchmarkConcept* test : tests_){
+        delete test;
+    }
 }
 
 void BenchmarkSuite::run(std::string filename){
@@ -96,9 +70,10 @@ void BenchmarkSuite::run(std::string filename){
     // not parallel
     std::vector<std::string> results;
     results.push_back("testName, n, numSamples, avgTime, stdev");
-    for (BenchmarkTest &test : tests_) {
-        BenchmarkResults res = test();
+    for (BenchmarkConcept* test : tests_) {
+        BenchmarkResults res = test->runTest();
         results.push_back(res.to_string());
+        std::cout << res.to_string() << std::endl;
     }
     std::ofstream out(filename);
     for (std::string& s : results){
