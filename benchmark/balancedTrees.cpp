@@ -14,7 +14,6 @@ concept Tree = requires(TreeType &tree,
                         TreeType::const_iterator iter,
                         const TreeType::key_type &key,
                         TreeType::mapped_type value) {
-    // tree();
     tree.insert(pair);
     iter = tree.find(key);
     iter = tree.begin();
@@ -73,101 +72,73 @@ class Setup {
 };
 
 template <Tree T>
-class Benchmark_Tree : Benchmark
-{
-private:
-
-    // Insert to make a balanced tree
-    std::vector<int> balanced_;
-    // shuffled to make a random tree
-    std::vector<int> shuffled_;
-    // keys but not necessarily all there and not once. 
-    std::vector<int> findDup_;
-
-  public:
-    Benchmark_Tree(std::string name, std::vector<int>& balanced, std::vector<int>& random, std::vector<int>& findDup) : 
-        Benchmark(balanced.size(), name),shuffled_{random}, balanced_{balanced}, findDup_{findDup} {}
-
-    // Delete a bunch of random keys in the container
-
-    // Insert a bunch of items in sorted order into RB tree and Splay Tree (Later SG tree)
-    void insert(T& tree) const {
-        for (int i = 0; i < numOps_; ++i){
-            tree.insert({i, i});
-        }
+void insert(size_t numOps){
+    T tree;
+    for (int i = 0; i < numOps; ++i)
+    {
+        tree.insert({i, i});
     }
+}
 
-    // Insert a bunch of items in balanced order
-    void insertBalanced(T& tree) const {
-        for (int x : balanced_) {
-            tree.insert({x, x});
-        }
+template <Tree T>
+void insertElements(std::vector<int>& elements){
+    T tree;
+    for (int x : elements){
+        tree.insert({x, x});
     }
-    
-    // Insert a bunch of items in random order
-    void insertShuffled(T& tree) const {
-        for (int x : shuffled_){
-            tree.insert({x, x});
-        }
+}
+
+// Not used for benchmarking
+template <typename T>
+void insertItems(T& tree, std::vector<int>& elements){
+    for (int x : elements){
+        tree.insert({x, x});
     }
+}
 
-    // Find a bunch of random keys in the container. 
-    // Find needs an already populated tree. 
-    void find(T& tree) const {
-        for (int x : shuffled_){
-            tree.find(x);
-        }
-        
+template <Tree T>
+void insertAndClear(std::vector<int>& elements){
+    T tree;
+    insertItems(tree, elements);
+    tree.clear();
+}
+
+template <Tree T>
+void insertAndDelete(std::vector<int>& toInsert,std::vector<int>& toDelete){
+    T tree;
+    insertItems(tree, toInsert);
+    for (int x : toDelete){
+        tree.erase(x);
     }
+}
 
-    // Find with duplicates needs an already populated tree. 
-    void findDup(T &tree) const {
-        for (int x : findDup_){
-            tree.find(x);
-        }
+template <Tree T>
+void findDuplicates(std::vector<int>& toInsert, std::vector<int> toFind){
+    T tree;
+    insertItems(tree, toInsert);
+    for (int x : toFind){
+        tree.find(x);
     }
+}
 
-    void deleteKeys(T& tree) const {
-        for (int key : shuffled_){
-            tree.erase(key);
-        }
+template <Tree T>
+std::vector<int> treeSort(std::vector<int>& elements){
+    T tree;
+    for (int x : elements){
+        tree.insert({x, x});
     }
-
-
-    std::string operator()() const {
-        T tree;
-        std::stringstream ss("Results for ");
-        ss << name_ << ": ";
-        ss << Benchmark::measure([&tree, this]()
-                                 { insert(tree); });
-
-        ss << " ";
-        ss << Benchmark::measure([&tree]()
-                                 { tree.clear(); });
-
-        ss << " ";
-        ss << Benchmark::measure([&tree, this]()
-                                 { insertBalanced(tree); });
-        ss << " ";
-        ss << Benchmark::measure([&tree, this]()
-                                 { find(tree); });
-        ss << " ";
-
-        tree.clear();
-        ss << Benchmark::measure([&tree, this]()
-                                 { insertShuffled(tree); });
-        ss << " ";
-
-        ss << Benchmark::measure([&tree, this]()
-                                 { findDup(tree); });
-        ss << " ";
-
-        ss << Benchmark::measure([&tree, this]()
-                                 { deleteKeys(tree); });
-
-        return ss.str();
+    std::vector<int> sorted;
+    sorted.reserve(elements.size());
+    for (int x : elements){
+        sorted.push_back(x);
     }
-};
+    return sorted;
+}
+
+template <typename T>
+int add(T x, T y){
+    return x + y;
+}
 
 int main(int argc, char** argv) {
 
@@ -187,10 +158,29 @@ int main(int argc, char** argv) {
     balancedThread.join();
     shuffledThread.join();
     duplicatesThread.join();
+    // Setup phase: 
 
-    Benchmark_Tree<std::map<int, int>> map("rb tree", balanced, shuffled, duplicates);
-    Benchmark_Tree<SplayTree<int, int>> b("splay tree", balanced, shuffled, duplicates);
-    std::cout << map() << std::endl;
-    std::cout << b() << std::endl;
+    // Make a benchmark suite:
+    BenchmarkSuite suite("Balanced Trees Suite");
+    suite.setConfig(10000, 10);
+
+    suite.addConfiguredTest("In order insertion RB Tree", insert<std::map<int, int>>, 10000);
+    suite.addConfiguredTest("Balanced insertion RB Tree", insertElements<std::map<int, int>>, std::ref(balanced));
+    suite.addConfiguredTest("Random insertion RB Tree", insertElements<std::map<int, int>>, std::ref(shuffled));
+    suite.addConfiguredTest("Clear RB Tree", insertAndClear<std::map<int, int>>, std::ref(shuffled));
+    suite.addConfiguredTest("Delete from RB Tree", insertAndDelete<std::map<int, int>>, std::ref(shuffled), std::ref(shuffled));
+    suite.addConfiguredTest("Find Duplicates RB Tree", findDuplicates<std::map<int, int>>, std::ref(shuffled), std::ref(duplicates));
+    suite.addConfiguredTest("RB Tree Sort", treeSort<std::map<int, int>>, std::ref(shuffled));
+
+
+    suite.addConfiguredTest("In order insertion Splay Tree", insert<SplayTree<int, int>>, 10000);
+    suite.addConfiguredTest("Balanced insertion Splay Tree", insertElements<SplayTree<int, int>>, std::ref(balanced));
+    suite.addConfiguredTest("Random insertion Splay Tree", insertElements<SplayTree<int, int>>, std::ref(shuffled));
+    suite.addConfiguredTest("Clear Splay Tree", insertAndClear<SplayTree<int, int>>, std::ref(shuffled));
+    suite.addConfiguredTest("Delete from Splay Tree", insertAndDelete<SplayTree<int, int>>, std::ref(shuffled), std::ref(shuffled));
+    suite.addConfiguredTest("Find Duplicates Splay Tree", findDuplicates<SplayTree<int, int>>, std::ref(shuffled), std::ref(duplicates));
+    suite.addConfiguredTest("Splay Tree Sort", treeSort<SplayTree<int, int>>, std::ref(shuffled));
+
+    suite.run("balancedTrees.csv");
 
 }

@@ -95,9 +95,6 @@ void populate2(Graph* g){
     g->addEdge(6, 5, 8);
 }
 
-// int add(int x, int y){
-//     return x + y;
-// }
 
 int main(){
     // GraphAdjList g(7);
@@ -109,6 +106,17 @@ int main(){
     BenchmarkSuite suite("Dijkstra");
     RandomGraphGenerator gen(0.35, 4000);
     auto graphs = gen.makeGraphs(1);
+
+    // A dijkstra benchmark looks like this:
+    // to trials 
+    // n values from n = 10, 100, 1000, 10000, 100000
+    // sparsity from 0.1, 0.4, 0.7, 1
+    // D values 2, 5, 10 
+    // binomial heap
+    // fibonacci heap
+    // 5 * 4 * 5 = 100 trials. BRUH 
+    // Plots: Set sparsity constant. Graph time vs n
+
 
     std::cout << "made graphs" << std::endl;
     for (auto &[adj, mat] : graphs)

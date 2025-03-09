@@ -63,6 +63,11 @@ BenchmarkSuite::~BenchmarkSuite(){
     }
 }
 
+void BenchmarkSuite::setConfig(size_t inputSize, size_t numTrials){
+    testInputSizes_ = inputSize;
+    testTrials_ = numTrials;
+}
+
 void BenchmarkSuite::run(std::string filename){
     if (filename == ""){
         filename = suiteName_+ ".csv";

@@ -124,21 +124,30 @@ class BenchmarkSuite {
         };
     };
 
-  public:
-
-    // for setting configs
+    // Private Data
     std::string suiteName_;
+    size_t testInputSizes_;
+    size_t testTrials_;
 
     std::vector<BenchmarkConcept *> tests_;
 
+  public:
+
     BenchmarkSuite(std::string suiteName); // make this parallel?
+
     ~BenchmarkSuite();
 
     template <typename F, typename... Args>
-    void addTest(std::string testName, size_t inputSize, size_t numTrials, F func, Args &&...args)
-    {
+    void addTest(std::string testName, size_t inputSize, size_t numTrials, F func, Args &&...args) {
         tests_.push_back(new BenchmarkTest(testName, inputSize, numTrials, std::move(func), std::forward<Args>(args)...));
     }
+
+    template <typename F, typename... Args>
+    void addConfiguredTest(std::string testName, F func, Args &&...args) {
+        tests_.push_back(new BenchmarkTest(testName, testInputSizes_, testTrials_, std::move(func), std::forward<Args>(args)...));
+    }
+
+    void setConfig(size_t inputSize, size_t numTrials);
 
     // Runs and sends output to CSV
     void run(std::string filename = "");

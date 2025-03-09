@@ -9,11 +9,11 @@ set (GRAPH_LIB_SRC
     )
 
 # Benchmark Library: Holds a benchmark class
-add_library(benchmark SHARED ${BENCHMARK_LIB_SRC}) #lib/benchmark.cpp lib/graph.cpp lib/randomGraphs.cpp
+add_library(benchmark STATIC ${BENCHMARK_LIB_SRC}) #lib/benchmark.cpp lib/graph.cpp lib/randomGraphs.cpp
 target_include_directories(benchmark PUBLIC inc)
 
 # Graph library: Holds Graph classes and random graph generator
-add_library(graph SHARED ${GRAPH_LIB_SRC})
+add_library(graph STATIC ${GRAPH_LIB_SRC})
 target_include_directories(graph PUBLIC inc)
 
 # All benchmark suites need this include directory
@@ -26,7 +26,7 @@ add_executable(iteration listIteration.cpp)
 add_executable(tree balancedTrees.cpp)
 add_executable(dijkstra dijkstra.cpp)
 
-# Link with benchmark Library
+# Link with appropriate libraries
 target_link_libraries(queue benchmark)
 target_link_libraries(iteration benchmark)
 target_link_libraries(tree benchmark)
