@@ -5,6 +5,7 @@
 #include "d-ary-heap/heap.hpp"
 #include "graph.hpp"
 #include "randomGraphs.hpp"
+#include "benchmark.hpp"
 
 template <typename T>
 concept Heap = requires(T &heap,
@@ -76,8 +77,6 @@ void populate1(Graph *g){
 }
 
 void populate2(Graph* g){
-    g->addEdge(1, 2, 4);
-    g->addEdge(1, 6, 2);
     g->addEdge(2, 6, 3);
     g->addEdge(2, 3, 7);
     g->addEdge(2, 1, 4);
@@ -96,21 +95,39 @@ void populate2(Graph* g){
     g->addEdge(6, 5, 8);
 }
 
+int add(int x, int y){
+    return x + y;
+}
+
 int main(){
     // GraphAdjList g(7);
-    // GraphAdjList g2(7);
+    GraphAdjList g2(7);
     // populate2(&g);
-    // populate2(&g2);
+    populate2(&g2);
 
+    BenchmarkTest test("benchamrk", 10, 3, dijkstra<BinaryHeap<size_t>>, &g2,0);
+
+    BenchmarkResults res = test();
+    std::cout << res.to_string() << std::endl;
+
+    // How I want to use the Benchmark Library
+    BenchmarkSuite suite("Dijkstra");
     RandomGraphGenerator gen(0.35, 4);
-    auto graphs = gen.makeGraphs(1);
-    for (auto& [adj, mat] : graphs){
-        std::vector<size_t> results = dijkstra<DAryHeap<size_t, size_t, 3>>(&adj);
-        std::vector<size_t> results2 = dijkstra<DAryHeap<size_t, size_t, 3>>(&mat);
-        if (!std::ranges::equal(results, results2)){
-            std::cout << "ERROR" << std::endl;
-        }
+    auto graphs = gen.makeGraphs(10);
+
+    for (auto &[adj, mat] : graphs)
+    {
+        // BenchmarkTest t1("Dijkstra DAryHeap 3 List", 4, 10, dijkstra<DAryHeap<size_t, size_t, 3>>, &adj, 0);
+        // BenchmarkTest t2("Dijkstra DAryHeap 3 adj", 4, 10, dijkstra<DAryHeap<size_t, size_t, 3>>, &mat, 0);
+        BenchmarkTest t1("add1", 2, 15, add, 6, 7);
+        BenchmarkTest t2("add2", 2, 15, add, 6, 7);
+
+        suite.addTest(t1);
+        suite.addTest(t2);
     }
+
+    suite.run();
+    // suite.plot();
 
 
     return 0;
