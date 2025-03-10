@@ -17,7 +17,7 @@ size_t DAryHeap<T, priority_t, D>::size() const{
 template <typename T, typename priority_t, size_t D>
 const T& DAryHeap<T, priority_t, D>::top() const{
     if (size_ == 0){
-        throw std::logic_error("Cannot get top of empty heap");
+        throw std::logic_error("Cannot get top of an empty heap");
     } else {
         return elements_[0].item_;
     }
