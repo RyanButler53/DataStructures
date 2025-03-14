@@ -54,7 +54,7 @@ class HeapTest : public testing::Test {
 using testing::Types;
 
 typedef Types<BinaryHeap<int>, DAryHeap<int, int, 4>, BinomialHeap<int, int>> Implementations;
-// typedef Types<BinomialHeap<int, int>> Implementations;
+// typedef Types<FibonacciHeap<int, int>> Implementations;
 
 TYPED_TEST_SUITE(HeapTest, Implementations, NameGenerator);
 
@@ -150,21 +150,34 @@ TYPED_TEST(HeapTest, DecreaseKey){
     this->heap_.push(7,7);
 
     this->heap_.decreaseKey(5, -2);
-
+    ASSERT_EQ(this->heap_.top(), 5);
     try {
         this->heap_.decreaseKey(-1, 2);
         FAIL() << "Expected invalid argument";
-    } catch (std::invalid_argument &e) {
+    }
+    catch (std::invalid_argument &e)
+    {
         ASSERT_EQ(e.what(), std::string("Cannot decrease a key value to a greater value"));
-    }  catch (...) {
+    }
+    catch (...)
+    {
         FAIL() << "Expected invalid_argument";
     }
+    // Push an element with minimum priority the pop to trigger re-shuffle
+    this->heap_.push(15, -15);
+    this->heap_.pop();
+
     this->heap_.decreaseKey(7, 5);
-    this->heap_.decreaseKey(5, -10);
+    this->heap_.decreaseKey(5, -3);
+    this->heap_.decreaseKey(7, -2);
+    ASSERT_EQ(this->heap_.top(), 5);
+    this->heap_.decreaseKey(2, -5);
+    ASSERT_EQ(this->heap_.top(), 2);
+    this->heap_.pop();
+    this->heap_.decreaseKey(5, -5);
     ASSERT_EQ(this->heap_.top(), 5);
     this->heap_.pop();
-    this->heap_.decreaseKey(2, -2);
-    ASSERT_EQ(this->heap_.top(), 2);
+    ASSERT_EQ(this->heap_.top(), 7);
 }
 
 int main(int argc, char** argv){

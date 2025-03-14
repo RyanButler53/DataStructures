@@ -19,7 +19,7 @@ private:
     {
         Item item_;
         std::vector<Node *> children_;
-        // Add parent later.
+        Node *parent_;
 
         Node(Item item_);
         ~Node();
@@ -29,10 +29,12 @@ private:
     std::list<Node *> nodes_;
     std::map<T, Node *> nodeMap_;
     // (*min_)->item_.item_ is min value. 
-    std::list<Node *>::iterator min_;
+    // std::list<Node *>::iterator min_;
+    Node *min_;
     size_t size_;
 
-    void cleanup();
+    void
+    cleanup();
     Node* mergeNodes(Node*n1, Node* n2);
 
   public:
