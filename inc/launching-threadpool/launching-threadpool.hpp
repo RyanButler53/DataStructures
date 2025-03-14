@@ -27,7 +27,6 @@ private:
     size_t numJobs_;
 
     std::queue<std::packaged_task<R()>> queue_; 
-    // std::vector<std::queue<std::packaged_task<R()>>> queueVec_;
     std::vector<std::thread> threads_;
     std::vector<std::future<R>> futures_;
 
@@ -36,7 +35,7 @@ private:
     // thread that does the actual work
     void workerThread(size_t thread_i);
 
-    unsigned int calcNumThreads(unsigned int numThreads);
+    unsigned int calcNumThreads(unsigned int numThreads=0);
 
     void setupThreads();
 

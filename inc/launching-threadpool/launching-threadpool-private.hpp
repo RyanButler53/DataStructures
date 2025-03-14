@@ -21,7 +21,9 @@ void LaunchingThreadQueue<R>::setupThreads(){
 template <typename R>
 unsigned int LaunchingThreadQueue<R>::calcNumThreads(unsigned int numThreads){
     unsigned int hardwareMax = std::thread::hardware_concurrency();
-    if (hardwareMax == 0){ // if less than 2 or error
+    if (numThreads == 0 and hardwareMax == 0){
+        return 2
+    } else if (hardwareMax == 0){ // if less than 2 or error
         return 2;
     } else {
         return std::min(numThreads, hardwareMax);
