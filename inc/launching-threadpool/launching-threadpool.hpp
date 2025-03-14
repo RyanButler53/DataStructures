@@ -35,7 +35,7 @@ private:
     // thread that does the actual work
     void workerThread(size_t thread_i);
 
-    unsigned int calcNumThreads(unsigned int numThreads=0);
+    unsigned int calcNumThreads(unsigned int numThreads);
 
     void setupThreads();
 
@@ -44,7 +44,7 @@ private:
     bool emptyQueue();
 
 public:
-    LaunchingThreadQueue(size_t numThreads);
+    LaunchingThreadQueue(size_t numThreads = 0);
     ~LaunchingThreadQueue();
 
     /**

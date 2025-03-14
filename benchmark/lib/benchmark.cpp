@@ -73,16 +73,29 @@ void BenchmarkSuite::run(std::string filename){
         filename = suiteName_+ ".csv";
     }
     // not parallel
-    std::vector<std::string> results;
-    results.push_back("testName, n, numSamples, avgTime, stdev");
-    for (BenchmarkConcept* test : tests_) {
-        BenchmarkResults res = test->runTest();
-        results.push_back(res.to_string());
-        std::cout << res.to_string() << std::endl;
+    // std::vector<std::string> results;
+    // results.push_back("testName, n, numSamples, avgTime, stdev");
+    LaunchingThreadQueue<std::string> pool;
+    for (BenchmarkConcept *test : tests_)
+    {
+        pool.submit([test]()
+                    { return test->runTest().to_string(); });
+        // BenchmarkResults res = test->runTest();
+        // results.push_back(res.to_string());
+        // std::cout << res.to_string() << std::endl;
     }
+    std::vector<std::string> results = pool.run();
     std::ofstream out(filename);
-    for (std::string& s : results){
+    out << "testName, n, numSamples, avgTime, stdev\n";
+    for (std::string &s : results)
+    {
         out << s << "\n";
     }
     out.close();
 }
+
+// TODOS in Benchmark Library: 
+
+// INPUT Generator: 
+// Give a benchmark suite an input generator. 
+// Input Generator generates the INPUTS for a function. 

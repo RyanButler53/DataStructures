@@ -162,9 +162,9 @@ int main(int argc, char** argv) {
 
     // Make a benchmark suite:
     BenchmarkSuite suite("Balanced Trees Suite");
-    suite.setConfig(10000, 10);
+    suite.setConfig(numOps, 10);
 
-    suite.addConfiguredTest("In order insertion RB Tree", insert<std::map<int, int>>, 10000);
+    suite.addConfiguredTest("In order insertion RB Tree", insert<std::map<int, int>>, std::ref(numOps));
     suite.addConfiguredTest("Balanced insertion RB Tree", insertElements<std::map<int, int>>, std::ref(balanced));
     suite.addConfiguredTest("Random insertion RB Tree", insertElements<std::map<int, int>>, std::ref(shuffled));
     suite.addConfiguredTest("Clear RB Tree", insertAndClear<std::map<int, int>>, std::ref(shuffled));
@@ -173,14 +173,13 @@ int main(int argc, char** argv) {
     suite.addConfiguredTest("RB Tree Sort", treeSort<std::map<int, int>>, std::ref(shuffled));
 
 
-    suite.addConfiguredTest("In order insertion Splay Tree", insert<SplayTree<int, int>>, 10000);
+    suite.addConfiguredTest("In order insertion Splay Tree", insert<SplayTree<int, int>>, std::ref(numOps));
     suite.addConfiguredTest("Balanced insertion Splay Tree", insertElements<SplayTree<int, int>>, std::ref(balanced));
     suite.addConfiguredTest("Random insertion Splay Tree", insertElements<SplayTree<int, int>>, std::ref(shuffled));
     suite.addConfiguredTest("Clear Splay Tree", insertAndClear<SplayTree<int, int>>, std::ref(shuffled));
     suite.addConfiguredTest("Delete from Splay Tree", insertAndDelete<SplayTree<int, int>>, std::ref(shuffled), std::ref(shuffled));
     suite.addConfiguredTest("Find Duplicates Splay Tree", findDuplicates<SplayTree<int, int>>, std::ref(shuffled), std::ref(duplicates));
     suite.addConfiguredTest("Splay Tree Sort", treeSort<SplayTree<int, int>>, std::ref(shuffled));
-
+    std::cout << "Running" << std::endl;
     suite.run("balancedTrees.csv");
-
 }
