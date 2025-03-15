@@ -9,7 +9,7 @@ set (GRAPH_LIB_SRC
     )
 
 # Benchmark Library: Holds a benchmark class
-add_library(benchmark STATIC ${BENCHMARK_LIB_SRC}) #lib/benchmark.cpp lib/graph.cpp lib/randomGraphs.cpp
+add_library(benchmark STATIC ${BENCHMARK_LIB_SRC})
 target_include_directories(benchmark PUBLIC inc)
 
 # Graph library: Holds Graph classes and random graph generator
@@ -19,13 +19,15 @@ target_include_directories(graph PUBLIC inc)
 # All benchmark suites need this include directory
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/inc)
 
+add_subdirectory(matplotplusplus)
+
 # Add executables
 add_executable(queue queueInterface.cpp)
 add_executable(quack quack.cpp)
 add_executable(iteration listIteration.cpp)
 add_executable(tree balancedTrees.cpp)
 add_executable(dijkstra dijkstra.cpp)
-# add_executable(heap2 heaps.cpp)
+add_executable(heaps2 heaps.cpp)
 
 # Link with appropriate libraries
 target_link_libraries(queue benchmark)
@@ -33,3 +35,4 @@ target_link_libraries(quack benchmark)
 target_link_libraries(iteration benchmark)
 target_link_libraries(tree benchmark)
 target_link_libraries(dijkstra graph benchmark)
+target_link_libraries(heaps2 PUBLIC matplot)

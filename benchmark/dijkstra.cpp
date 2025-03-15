@@ -3,6 +3,7 @@
 #include <iostream>
 
 #include "d-ary-heap/heap.hpp"
+#include "binomial-heap/heap.hpp"
 #include "graph.hpp"
 #include "randomGraphs.hpp"
 #include "benchmark.hpp"
@@ -28,11 +29,11 @@ concept Heap = requires(T &heap,
  * @return std::vector<size_t> Vector of the distances. 
  */
 template <Heap heap_t>
-std::vector<size_t> dijkstra(Graph *g){
+std::vector<uint32_t> dijkstra(Graph *g){
 
-    size_t n = g->getNumVertices();
-    std::vector<size_t> paths(n);
-    std::ranges::fill(paths, std::numeric_limits<size_t>::max());
+    uint16_t n = g->getNumVertices();
+    std::vector<uint32_t> paths(n);
+    std::ranges::fill(paths, std::numeric_limits<uint32_t>::max());
     paths[0] = 0;
 
     heap_t h;
@@ -56,47 +57,9 @@ std::vector<size_t> dijkstra(Graph *g){
                     paths[e.outgoing] = offer;
                 }
             }
-
-            
         }
     }
     return paths;
-}
-
-void populate1(Graph *g){
-    g->addEdge(0, 1, 10);
-    g->addEdge(0, 2, 5);
-    g->addEdge(1, 2, 2);
-    g->addEdge(2, 1, 3);
-    g->addEdge(2, 3, 9);
-    g->addEdge(1, 3, 1);
-    g->addEdge(3, 4, 4);
-    g->addEdge(4, 3, 6);
-    g->addEdge(2, 4, 2);
-    g->addEdge(4, 0, 7);
-}
-
-void populate2(Graph* g){
-    g->addEdge(2, 6, 3);
-    g->addEdge(2, 3, 7);
-    g->addEdge(2, 1, 4);
-    g->addEdge(2, 5, 4);
-    g->addEdge(3, 2, 7);
-    g->addEdge(3, 5, 4);
-    g->addEdge(3, 4, 7);
-    g->addEdge(4, 3, 9);
-    g->addEdge(4, 5, 6);
-    g->addEdge(5, 6, 8);
-    g->addEdge(5, 2, 4);
-    g->addEdge(5, 3, 4);
-    g->addEdge(5, 4, 6);
-    g->addEdge(6, 1, 2);
-    g->addEdge(6, 2, 3);
-    g->addEdge(6, 5, 8);
-}
-
-int sq(int x){
-    return x * x;
 }
 
 int main(){
@@ -111,32 +74,45 @@ int main(){
     // 5 * 4 * 5 = 100 trials. BRUH 
     // Plots: Set sparsity constant. Graph time vs n
 
-    // Input Generation:
-    // Generator g(args);
-    // Generator has operator();
-    // suite.addTest(generator);
-
     BenchmarkSuite suite("Dijkstra");
-    // std::vector<int> inputs{1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
-    // suite.addVaryingInputs("test", sq, inputs);
-    RandomGraphGenerator gen(0.35, 1000);
-    const auto [list, mat]  = gen.makeGraphs(10);
-    suite.setConfig(1000, 10);
 
-    suite.addVaryingInputs("Dijkstra DAryHeap 3 List", dijkstra<DAryHeap<size_t, size_t, 3>>, list);
-    suite.addVaryingInputs("Dijkstra DAryHeap 3 Matrix", dijkstra<DAryHeap<size_t, size_t, 3>>, mat);
+    // Max size for a graph is n = 65536 for memory reasons. 
+    for (size_t n : std::vector<size_t>{50,100,2000, 500, 1000}) {
+        for (double sparsity : std::vector<double>{0.4}){ // 0.1, 0.4, 0.7, 1
 
-    suite.run();
+            RandomGraphGenerator gen(sparsity, n);
+            std::cout << "Started Generating inputs for n = " << n << std::endl;
+            auto [list, mat] = gen.makeGraphs(10);
+            std::cout << "Finished Generating inputs for n = " << n << std::endl;
+            suite.setConfig(n, 10);
+            suite.addVaryingInputs("Dijkstra Binary Heap List", dijkstra<BinaryHeap<size_t>>, list);
+            suite.addVaryingInputs("Dijkstra Binary Heap Matrix", dijkstra<BinaryHeap<size_t>>, mat);
+            suite.addVaryingInputs("Dijkstra DAry Heap 5 List", dijkstra<DAryHeap<size_t, size_t, 5>>, list);
+            suite.addVaryingInputs("Dijkstra DAry Heap 5 Matrix", dijkstra<DAryHeap<size_t, size_t, 5>>, mat);
+            suite.addVaryingInputs("Dijkstra DAry Heap 10 List", dijkstra<DAryHeap<size_t, size_t, 10>>, list);
+            suite.addVaryingInputs("Dijkstra DAry Heap 10 Matrix", dijkstra<DAryHeap<size_t, size_t, 10>>, mat);
+            suite.addVaryingInputs("Dijkstra Binomial Heap List", dijkstra<BinomialHeap<size_t, size_t>>, list);
+            suite.addVaryingInputs("Dijkstra Binomial Heap Matrix", dijkstra<BinomialHeap<size_t, size_t>>, mat);
+            // suite.addVaryingInputs("Dijkstra Fibonacci Heap List", dijkstra<FibonacciHeap<size_t, size_t>>, list);
+            // suite.addVaryingInputs("Dijkstra Fibonacci Heap Matrix", dijkstra<FibonacciHeap<size_t, size_t>>, mat);
+            std::cout << "Running n = " << n << " sparsity = " << sparsity << std::endl;
+            suite.run();
+
+            // Clean up memory NOW
+            for (auto &g : list) {
+                delete g;
+            }
+            for (auto& g : mat){
+                delete g;
+            }
+
+        }
+    }
+    suite.resultsToCSV("DijkstraResults");
     // suite.plot();
 
-    // Clean up memory
-    for (auto &g : list)
-    {
-        delete g;
-    }
-    for (auto& g : mat){
-        delete g;
-    }
+    // Plotting. 
+
 
     return 0;
 }

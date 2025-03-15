@@ -4,11 +4,18 @@ add_subdirectory(googletest)
 
 set (CMAKE_CURRENT_BINARY_DIR bin)
 
-if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-    message("DEBUG")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0 -fsanitize=undefined -fsanitize=address")
-    set(CMAKE_LINKER_FLAGS "${CMAKE_LINKER_FLAGS} -fsanitize=undefined  -fsanitize=address")
-endif()
+# if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+#     message("DEBUG")
+#     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0 -fsanitize=undefined -fsanitize=address")
+#     set(CMAKE_LINKER_FLAGS "${CMAKE_LINKER_FLAGS} -fsanitize=undefined  -fsanitize=address")
+# endif()
+
+# add_compile_options(-fsanitize=address)
+# add_link_options(-fsanitize=address)
+
+add_compile_options(-fsanitize=undefined)
+add_link_options(-fsanitize=undefined)
+
 
 
 add_executable(cuckoo-hash cuckoo-test.cpp)

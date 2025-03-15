@@ -82,11 +82,8 @@ class BenchmarkSuite {
       public:
         virtual BenchmarkResults runTest() = 0;
         virtual ~BenchmarkConcept() = default;
-
     };
 
-
-    // Model
     template <typename F, typename... Args>
     class BenchmarkTest : public BenchmarkConcept {
     
@@ -158,13 +155,16 @@ class BenchmarkSuite {
     };
 
     // Private Data
+    std::vector<BenchmarkConcept *> tests_;
+    std::vector<BenchmarkResults> results_;
     std::string suiteName_;
     size_t testInputSizes_;
     size_t testTrials_;
 
-    std::vector<BenchmarkConcept *> tests_;
+    // Clears out already run tests. Cleans up their memory;
+    void clearTests();
 
-  public:
+public:
 
     BenchmarkSuite(std::string suiteName);
     ~BenchmarkSuite();
@@ -189,4 +189,7 @@ class BenchmarkSuite {
     // Runs and sends output to CSV
     void run(std::string filename = "");
 
+    void resultsToCSV(std::string filename);
+
+    void resultsToPlot(std::string filename);
 };

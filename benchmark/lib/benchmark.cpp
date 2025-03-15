@@ -82,28 +82,55 @@ void BenchmarkSuite::setConfig(size_t inputSize, size_t numTrials){
 
 void BenchmarkSuite::run(std::string filename){
     if (filename == ""){
-        filename = suiteName_+ ".csv";
+        // filename = suiteName_+ ".csv";
     }
 
-    LaunchingThreadQueue<std::string> pool;
+    LaunchingThreadQueue<BenchmarkResults> pool;
     for (BenchmarkConcept *test : tests_)
     {
         pool.submit([test]()
-                    { return test->runTest().to_string(); });
+                    { return test->runTest(); });
     }
-    std::vector<std::string> results = pool.run();
-    std::ofstream out(filename);
-    out << "testName, n, numSamples, avgTime, stdev\n";
-    for (std::string &s : results)
+    std::vector<BenchmarkResults> results = pool.run();
+    clearTests();
+    
+    if (filename != "") {
+        std::ofstream out(filename);
+        out << "testName, n, numSamples, avgTime, stdev\n";
+        for (BenchmarkResults &s : results)
+        {
+            out << s.to_string() << "\n";
+        }
+        out.close();
+    }
+    else
     {
-        out << s << "\n";
+        // Store results in memory (cheaper than inputs).
+        for (BenchmarkResults &r : results) {
+            results_.push_back(r);
+        }
     }
-    out.close();
 }
 
-// TODOS in Benchmark Library: 
+void BenchmarkSuite::resultsToCSV(std::string filename){
+    try {
+        std::ofstream out(filename);
+        out << "testName, n, numSamples, avgTime, stdev\n";
+        for (BenchmarkResults &s : results_)
+        {
+            out << s.to_string() << "\n";
+        }
+        out.close();
+    } catch(const std::exception& e) {
+        std::cerr << e.what() << '\n';
+        return;
+    }
+}
 
-// INPUT Generator: 
-// Give a benchmark suite an input generator. 
-// Input Generator generates the INPUTS for a function. 
-// Then measures them. Its an "Add Test"
+void BenchmarkSuite::clearTests(){
+    for (BenchmarkConcept*& test : tests_){
+        delete test;
+    }
+    tests_.clear();
+}
+void BenchmarkSuite::resultsToPlot(std::string filename){}

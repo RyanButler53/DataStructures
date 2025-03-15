@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <list>
+#include <map>
 #include <cmath>
 template <typename T, typename P>
 class BinomialHeap

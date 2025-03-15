@@ -9,15 +9,13 @@
 
 class RandomGraphGenerator
 {
-private:    
-    std::mt19937 rng_;
-    std::vector<size_t> values_;
-    long long seed_;
+private:
+    std::vector<size_t> primes_;
     double sparsity_; // Edge Density
     size_t n_;
 
     // Get edges and weights
-    std::vector<size_t> getRandom();
+    void getRandom(std::vector<size_t>& values, size_t prime);
 
     // Populate graph, regardless of its type. 
     void populateGraph(Graph *g, std::vector<size_t>& weights, std::vector<size_t>& edges);
