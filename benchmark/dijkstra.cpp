@@ -28,12 +28,12 @@ concept Heap = requires(T &heap,
  * @return std::vector<size_t> Vector of the distances. 
  */
 template <Heap heap_t>
-std::vector<size_t> dijkstra(Graph *g, size_t start = 0){
+std::vector<size_t> dijkstra(Graph *g){
 
     size_t n = g->getNumVertices();
     std::vector<size_t> paths(n);
     std::ranges::fill(paths, std::numeric_limits<size_t>::max());
-    paths[start] = 0;
+    paths[0] = 0;
 
     heap_t h;
     for (size_t vertex_i = 0; vertex_i < n; ++vertex_i){
@@ -95,17 +95,11 @@ void populate2(Graph* g){
     g->addEdge(6, 5, 8);
 }
 
+int sq(int x){
+    return x * x;
+}
 
 int main(){
-    // GraphAdjList g(7);
-    GraphAdjList g2(7);
-    // populate2(&g);
-    populate2(&g2);
-
-    // How I want to use the Benchmark Library
-    BenchmarkSuite suite("Dijkstra");
-    RandomGraphGenerator gen(0.35, 4000);
-    auto graphs = gen.makeGraphs(1);
 
     // A dijkstra benchmark looks like this:
     // to trials 
@@ -117,16 +111,32 @@ int main(){
     // 5 * 4 * 5 = 100 trials. BRUH 
     // Plots: Set sparsity constant. Graph time vs n
 
+    // Input Generation:
+    // Generator g(args);
+    // Generator has operator();
+    // suite.addTest(generator);
 
-    std::cout << "made graphs" << std::endl;
-    for (auto &[adj, mat] : graphs)
-    {
-        suite.addTest("Dijkstra DAryHeap 3 List", 4, 10, dijkstra<DAryHeap<size_t, size_t, 3>>, &adj, 0);
-        suite.addTest("Dijkstra DAryHeap 3 adj", 4, 10, dijkstra<DAryHeap<size_t, size_t, 3>>, &mat, 0);
-    }
+    BenchmarkSuite suite("Dijkstra");
+    // std::vector<int> inputs{1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+    // suite.addVaryingInputs("test", sq, inputs);
+    RandomGraphGenerator gen(0.35, 1000);
+    const auto [list, mat]  = gen.makeGraphs(10);
+    suite.setConfig(1000, 10);
+
+    suite.addVaryingInputs("Dijkstra DAryHeap 3 List", dijkstra<DAryHeap<size_t, size_t, 3>>, list);
+    suite.addVaryingInputs("Dijkstra DAryHeap 3 Matrix", dijkstra<DAryHeap<size_t, size_t, 3>>, mat);
 
     suite.run();
     // suite.plot();
+
+    // Clean up memory
+    for (auto &g : list)
+    {
+        delete g;
+    }
+    for (auto& g : mat){
+        delete g;
+    }
 
     return 0;
 }

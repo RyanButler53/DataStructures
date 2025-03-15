@@ -53,6 +53,18 @@ std::string BenchmarkResults::to_string() const {
     return ss.str();
 }
 
+double BenchmarkLib::average(std::vector<double>& vec) {
+    double sum = std::accumulate(vec.begin(), vec.end(), 0.0);
+    return sum / double(vec.size());
+}
+
+double BenchmarkLib::stdev(std::vector<double> &vec) {
+    double avg = average(vec);
+    double deviation = std::accumulate(vec.begin(), vec.end(), 0.0, [&avg](double acc, double newVal)
+                                       { return (avg - newVal) * (avg - newVal); });
+    return std::sqrt(deviation / vec.size());
+}
+
 // BENCHMARK SUITE
 
 BenchmarkSuite::BenchmarkSuite(std::string suitename):suiteName_{suitename}{}
@@ -94,3 +106,4 @@ void BenchmarkSuite::run(std::string filename){
 // INPUT Generator: 
 // Give a benchmark suite an input generator. 
 // Input Generator generates the INPUTS for a function. 
+// Then measures them. Its an "Add Test"

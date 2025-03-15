@@ -26,5 +26,5 @@ public:
     RandomGraphGenerator(double sparsity, size_t n);
     ~RandomGraphGenerator()= default;
 
-    std::vector<std::tuple<GraphAdjList, GraphAdjMatrix>> makeGraphs(size_t n);
+    std::pair<std::vector<GraphAdjList*>, std::vector<GraphAdjMatrix*>> makeGraphs(size_t n);
 };

@@ -14,16 +14,23 @@ RandomGraphGenerator::RandomGraphGenerator(double sparsity, size_t n):sparsity_{
     std::ranges::fill(weights, 1);
 }
 
-std::vector<std::tuple<GraphAdjList, GraphAdjMatrix>> RandomGraphGenerator::makeGraphs(size_t n){
-    std::vector<std::tuple<GraphAdjList, GraphAdjMatrix>> graphs;
-    for (size_t i = 0; i < n; ++i) {
+std::pair<std::vector<GraphAdjList*>, std::vector<GraphAdjMatrix*>>  RandomGraphGenerator::makeGraphs(size_t n){
+    std::pair<std::vector<GraphAdjList*>, std::vector<GraphAdjMatrix*>> graphs;
+    auto &[adjLists, adjMatrices] = graphs;
+    for (size_t i = 0; i < n; ++i)
+    {
+        // do these in parallel
         std::vector<size_t> edges = getRandom();
         std::vector<size_t> weights = getRandom();
-        GraphAdjList g1(n_);
-        GraphAdjMatrix g2(n_);
-        populateGraph(&g1, weights, edges);
-        populateGraph(&g2, weights, edges);
-        graphs.push_back(std::make_tuple(g1, g2));
+
+        // Do these in parallel
+        GraphAdjList* g1 = new GraphAdjList(n_);
+        populateGraph(g1, weights, edges);
+        adjLists.push_back(g1);
+
+        GraphAdjMatrix* g2 = new GraphAdjMatrix(n_);
+        populateGraph(g2, weights, edges);
+        adjMatrices.push_back(g2);
     }
     return graphs;
 }
