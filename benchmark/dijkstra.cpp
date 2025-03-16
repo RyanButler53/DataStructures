@@ -77,7 +77,7 @@ int main(){
     BenchmarkSuite suite("Dijkstra");
 
     // Max size for a graph is n = 65536 for memory reasons. 
-    for (size_t n : std::vector<size_t>{50,100,2000, 500, 1000}) {
+    for (size_t n : std::vector<size_t>{50,100,200, 500, 1000}) {
         for (double sparsity : std::vector<double>{0.4}){ // 0.1, 0.4, 0.7, 1
 
             RandomGraphGenerator gen(sparsity, n);
@@ -109,7 +109,7 @@ int main(){
         }
     }
     suite.resultsToCSV("DijkstraResults");
-    // suite.plot();
+    suite.resultsToPlot("plot.svg");
 
     // Plotting. 
 

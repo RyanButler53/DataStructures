@@ -14,6 +14,7 @@
 #include <filesystem>
 #include <iostream>
 #include <fstream>
+#include <map>
 #include "launching-threadpool/launching-threadpool.hpp"
 
 namespace BenchmarkLib {
@@ -77,9 +78,15 @@ struct BenchmarkResults {
 
 class BenchmarkSuite {
 
+    struct GroupedResults {
+        std::vector<size_t> inputSizes_;
+        std::vector<double> times_;
+        std::vector<double> stdevs_;
+    };
     // Simply defines the interface
-    class BenchmarkConcept {
-      public:
+    class BenchmarkConcept
+    {
+    public:
         virtual BenchmarkResults runTest() = 0;
         virtual ~BenchmarkConcept() = default;
     };

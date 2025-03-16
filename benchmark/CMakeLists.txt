@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.24.0)
 
+
+
 set (BENCHMARK_LIB_SRC
     lib/benchmark.cpp)
 
@@ -10,7 +12,8 @@ set (GRAPH_LIB_SRC
 
 # Benchmark Library: Holds a benchmark class
 add_library(benchmark STATIC ${BENCHMARK_LIB_SRC})
-target_include_directories(benchmark PUBLIC inc)
+target_include_directories(benchmark PUBLIC inc )
+target_link_libraries(benchmark PUBLIC matplot)
 
 # Graph library: Holds Graph classes and random graph generator
 add_library(graph STATIC ${GRAPH_LIB_SRC})
