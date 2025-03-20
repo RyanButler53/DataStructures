@@ -1,5 +1,4 @@
 #include "benchmark.hpp"    
-#include <matplot/matplot.h>
 
 Benchmark::Benchmark(size_t numOps, std::string name):numOps_{numOps}, name_{name}{}
 
@@ -134,11 +133,8 @@ void BenchmarkSuite::clearTests(){
     }
     tests_.clear();
 }
-void BenchmarkSuite::resultsToPlot(std::string filename){
-    // Plotting results: Need to group by the test name. 
-    //Test name has xs, avgs, stdevs
-    using namespace matplot;
 
+std::map<std::string, GroupedResults> BenchmarkSuite::getGroupedResults(){
     std::map<std::string, GroupedResults> groupedResults;
     for (BenchmarkResults res : results_){
         if (!groupedResults.contains(res.testName_)){
@@ -154,25 +150,7 @@ void BenchmarkSuite::resultsToPlot(std::string filename){
             g.stdevs_.push_back(res.stdev_);
         }
     }
-    title(suiteName_);
-    xlabel("Input Size");
-    ylabel("Time (s)");
-
-    for (auto &[name, g] : groupedResults)
-    {
-        hold(on);
-        error_bar_handle h = errorbar(g.inputSizes_, g.times_, g.stdevs_, "-");
-        h->display_name(name);
-        h->line_width(1.5);
-        hold(off);
-    }
-    legend_handle l = ::matplot::legend({});
-    l->location(legend::general_alignment::topleft);
-    // axis({0, std::ranges::max(g.inputSizes_)*1.1, 0, std::ranges::max(g.times_)*1.1});
-
-    if (filename == ""){
-        show();
-    } else {
-        save(filename, "svg");
-    }
+    return groupedResults;
 }
+
+// Is there a way to make matplot++ an optional dependency? 

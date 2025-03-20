@@ -13,7 +13,6 @@ set (GRAPH_LIB_SRC
 # Benchmark Library: Holds a benchmark class
 add_library(benchmark STATIC ${BENCHMARK_LIB_SRC})
 target_include_directories(benchmark PUBLIC inc )
-target_link_libraries(benchmark PUBLIC matplot)
 
 # Graph library: Holds Graph classes and random graph generator
 add_library(graph STATIC ${GRAPH_LIB_SRC})
@@ -37,5 +36,5 @@ target_link_libraries(queue benchmark)
 target_link_libraries(quack benchmark)
 target_link_libraries(iteration benchmark)
 target_link_libraries(tree benchmark)
-target_link_libraries(dijkstra graph benchmark)
+target_link_libraries(dijkstra graph benchmark matplot)
 target_link_libraries(heaps2 PUBLIC matplot)

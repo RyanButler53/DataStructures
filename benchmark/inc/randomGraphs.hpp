@@ -25,4 +25,6 @@ public:
     ~RandomGraphGenerator()= default;
 
     std::pair<std::vector<GraphAdjList*>, std::vector<GraphAdjMatrix*>> makeGraphs(size_t n);
+
+    GraphAdjList *makeGraph();
 };

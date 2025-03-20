@@ -1,4 +1,4 @@
-// Define a benchmark base class
+// Define a benchmark library
 #pragma once
 
 #include <string>
@@ -21,6 +21,16 @@ namespace BenchmarkLib {
     // Utiility Functions 
     double average(std::vector<double> &vec);
     double stdev(std::vector<double> &vec);
+
+    // Single Function Measuring
+    template <typename F, typename... Args>
+    double measure(F func, Args... args){
+        auto start = std::chrono::steady_clock::now();
+        func(std::forward<Args...>(args)...);
+        auto end = std::chrono::steady_clock::now();
+        long ms = std::chrono::duration_cast<std::chrono::milliseconds>((end - start)).count();
+        return double(ms / 1000.0);
+    }
 }
 
 class Benchmark {
@@ -75,14 +85,14 @@ struct BenchmarkResults {
     std::string to_string() const;
 };
 
+struct GroupedResults {
+    std::vector<size_t> inputSizes_;
+    std::vector<double> times_;
+    std::vector<double> stdevs_;
+};
 
 class BenchmarkSuite {
 
-    struct GroupedResults {
-        std::vector<size_t> inputSizes_;
-        std::vector<double> times_;
-        std::vector<double> stdevs_;
-    };
     // Simply defines the interface
     class BenchmarkConcept
     {
@@ -102,7 +112,7 @@ class BenchmarkSuite {
         size_t numTrials_;
     
       public:
-        BenchmarkTest(std::string name, size_t inputSize, size_t numTrials, F&& func, Args &&...args):
+        BenchmarkTest(std::string name, size_t inputSize, size_t numTrials, F&& func, Args &&... args):
             name_{name}, inputSize_{inputSize}, numTrials_{numTrials}, func_{std::move(func)}, 
             args_{std::forward_as_tuple(args...)} {
         }
@@ -198,5 +208,11 @@ public:
 
     void resultsToCSV(std::string filename);
 
-    void resultsToPlot(std::string filename);
+    std::string getName() const { return suiteName_; }
+
+    std::vector<BenchmarkResults> getResults() const { return results_;} 
+
+    std::map<std::string, GroupedResults> getGroupedResults();
+
+    // void plot(std::string filename);
 };
