@@ -67,22 +67,17 @@ void RandomGraphGenerator::populateGraph(Graph *g, std::vector<size_t>& weights,
 GraphAdjList* RandomGraphGenerator::makeGraph() {
     std::vector<size_t> edges;
     std::vector<size_t> weights;
-    auto start = std::chrono::high_resolution_clock::now();
-    auto f = [&start](std::chrono::steady_clock::time_point end) -> double
-    { return std::chrono::duration_cast<std::chrono::milliseconds>((end - start)).count(); };
     size_t p1 = primes_[rand() % primes_.size()];
     size_t p2 = primes_[rand() % primes_.size()];
 
 
-    std::thread helper([this, &weights, p2]()
-                       { getRandom(weights, p2); });
+    // std::thread helper([this, &weights, p2]()
+    //                    { getRandom(weights, p2); });
     getRandom(edges, p1);
-    auto made = std::chrono::high_resolution_clock::now();
-    helper.join();
-    auto joined = std::chrono::high_resolution_clock::now();
+    getRandom(weights, p2);
+    // helper.join();
 
     GraphAdjList *g = new GraphAdjList(n_);
     populateGraph(g, weights, edges);
-    auto finish = std::chrono::high_resolution_clock::now();
     return g;
 }

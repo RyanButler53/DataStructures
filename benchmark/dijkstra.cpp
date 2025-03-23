@@ -11,6 +11,9 @@
 #include "benchmark.hpp"
 #include <matplot/matplot.h>
 
+#include <thread>
+#include <future>
+
 template <typename T>
 concept Heap = requires(T &heap,
                         T::value_type item,
@@ -140,8 +143,7 @@ int main(){
 
         }
     }
-    // suite.resultsToCSV("DijkstraResults");
-    // plot(suite, "plot1.svg");
+
 
     // A dijkstra benchmark looks like this:
     // to trials
@@ -157,19 +159,40 @@ int main(){
     for (std::string sparsityStr : std::vector<std::string>{"0.1", "0.4", "0.7"}) {
         double sparsity = std::stod(sparsityStr);
         BenchmarkSuite suite("Dijkstra: Sparsity = " + sparsityStr);
-        for (size_t n : std::vector<size_t>{1000, 5000, 10000, 30000}){
-            suite.setConfig(n, 10);
+        // Want to make graphs for all the things first, but also want to be launching them
+        // std::vector<GraphAdjList*> graphs(6);
+        std::vector<size_t> sizes{5000, 10000, 30000, 50000, 75000, 100000};
+        std::vector<std::future<GraphAdjList*>> futures;
+
+        auto makeGraphs = [&sparsity](size_t n){
             RandomGraphGenerator gen(sparsity, n);
-            std::cout << "making graph " << n << std::endl;
-            Graph *g = gen.makeGraph();
-            std::cout << "Made Graph" << n << std::endl;
+            GraphAdjList *g = gen.makeGraph();
+            return g;
+        };
+
+        // 6 threads start making graphs 
+        for (size_t i = 0; i < 6; ++i){
+            futures.push_back(std::async(std::launch::async, makeGraphs, sizes[i]));
+            std::cout << "Launched n = " << sizes[i] << " case" << std::endl;
+        }
+        // problem: The thread finishes and it terminates. 
+        for (size_t i = 0; i < 6; ++i){
+            // Wait for the future to be finished
+            std::cout << "Waiting for " << sizes[i] << " graph" << std::endl;
+            GraphAdjList* g = futures[i].get();
+            std::cout << "Got a graph for n = " << sizes[i] << std::endl;
+            size_t n = sizes[i];
+            suite.setConfig(n, 10);
+
             suite.addConfiguredTest("Dijkstra DAry Heap D = 2", dijkstra<BinaryHeap<uint32_t>>, std::ref(g));
             suite.addConfiguredTest("Dijkstra DAry Heap D = 5", dijkstra<DAryHeap<uint32_t, uint32_t>>, std::ref(g));
             suite.addConfiguredTest("Dijkstra DAry Heap D = 10", dijkstra<DAryHeap<uint32_t, uint32_t>>, std::ref(g));
             suite.addConfiguredTest("Dijkstra Binomial Heap", dijkstra<BinomialHeap<uint32_t, uint32_t>>, std::ref(g));
             suite.addConfiguredTest("Dijkstra Fibonacci Heap", dijkstra<FibonacciHeap<uint32_t, uint32_t>>, std::ref(g));
+            std::cout << "Launching n = " << n << " test" << std::endl;
             suite.run();
-            suite.resultsToCSV("dijkstra" + sparsityStr + ".csv");
+            suite.resultsToCSV("dijkstra1" + sparsityStr + ".csv");
+            
             delete g;
         }
         // plot(suite, "dijkstra" + sparsityStr + ".svg");
