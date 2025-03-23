@@ -48,8 +48,10 @@ void RandomGraphGenerator::getRandom(std::vector<size_t>& values, size_t prime){
     size_t numEdges = n_ * (n_ - 1) * sparsity_;
     size_t maxEdges = n_ * (n_ - 1);
     values.reserve(numEdges);
+    size_t ind = 0;
     for (size_t i = 0; i < numEdges; ++i){
-        values.push_back((i * prime) % maxEdges);
+        values.push_back(ind % maxEdges);
+        ind += prime;
     }
 }
 
@@ -82,6 +84,5 @@ GraphAdjList* RandomGraphGenerator::makeGraph() {
     GraphAdjList *g = new GraphAdjList(n_);
     populateGraph(g, weights, edges);
     auto finish = std::chrono::high_resolution_clock::now();
-    std::cout << f(start) <<  " " << f(made) <<" " << f(joined) << " " << f(finish) << std::endl;
     return g;
 }

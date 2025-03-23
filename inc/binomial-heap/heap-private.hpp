@@ -33,7 +33,6 @@ T BinomialHeap<T,P>::top() const{
 
 template <typename T, typename P>
 void BinomialHeap<T,P>::push(T item, P priority){
-    
     nodes_.push_front(new Node({item, priority}));
     nodeMap_.insert({item, nodes_.front()});
     if (min_ == nullptr or priority < min_->item_.priority_) {
@@ -106,7 +105,6 @@ void BinomialHeap<T,P>::cleanup() {
         } 
         // After all the combining, add to the list at the appropriate index.
         nodeArray[rank] = n;
-        
     }
 
     // Re add to node list

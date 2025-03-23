@@ -7,6 +7,7 @@
 #include <random>
 #include "d-ary-heap/heap.hpp"
 #include "binomial-heap/heap.hpp"
+#include "fibonacci-heap/heap.hpp"
 
 template <typename T>
 concept Heap = requires(T& heap,
@@ -27,7 +28,7 @@ class NameGenerator {
        if constexpr (std::is_same_v<T, BinaryHeap<int>>) return "Binary Heap";
        if constexpr (std::is_same_v<T, DAryHeap<int,int,4>>) return "D-Ary Heap (d=4)";
        if constexpr (std::is_same_v<T, BinomialHeap<int, int>>) return "Binomial Heap";
-    //    if constexpr (std::is_same_v<T, FibonacciHeap<int, int>>) return "Fibonacci Heap";
+       if constexpr (std::is_same_v<T, FibonacciHeap<int, int>>) return "Fibonacci Heap";
     }
 };
 
@@ -53,8 +54,10 @@ class HeapTest : public testing::Test {
 
 using testing::Types;
 
-typedef Types<BinaryHeap<int>, DAryHeap<int, int, 4>, BinomialHeap<int, int>> Implementations;
-// typedef Types<FibonacciHeap<int, int>> Implementations;
+typedef Types<BinaryHeap<int>, 
+              DAryHeap<int, int, 4>, 
+              BinomialHeap<int, int>,
+              FibonacciHeap<int, int>> Implementations;
 
 TYPED_TEST_SUITE(HeapTest, Implementations, NameGenerator);
 

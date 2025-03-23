@@ -33,8 +33,7 @@ private:
     Node *min_;
     size_t size_;
 
-    void
-    cleanup();
+    void cleanup();
     Node* mergeNodes(Node*n1, Node* n2);
 
   public:

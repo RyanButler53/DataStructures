@@ -111,11 +111,9 @@ void BenchmarkSuite::run(){
     auto func = [this](size_t start, size_t end, std::vector<BenchmarkResults>& ret){
         runTests(start, end, ret);};
     for (size_t i = 0; i < numThreads; ++i){
-        std::cout << i * perThread << " " << (i+1)*perThread << std::endl;
         threads.emplace_back(func, i * perThread, (i+1)*perThread, std::ref(results)); 
     }
     // Main thread does the remainder (if there is one);
-    std::cout << "Main Thread: " << perThread*numThreads << " " << tests_.size() << std::endl;
     runTests(perThread*numThreads, tests_.size(), results);
     for (std::thread& t : threads){
         t.join();

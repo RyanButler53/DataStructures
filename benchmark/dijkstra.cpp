@@ -5,6 +5,7 @@
 
 #include "d-ary-heap/heap.hpp"
 #include "binomial-heap/heap.hpp"
+#include "fibonacci-heap/heap.hpp"
 #include "graph.hpp"
 #include "randomGraphs.hpp"
 #include "benchmark.hpp"
@@ -92,9 +93,13 @@ void plot(BenchmarkSuite& suite, std::string filename){
         save(filename, "svg");
     }
 }
-using namespace std::chrono_literals;
 
 int main(){
+
+    // RandomGraphGenerator gen(0.55, 12);
+    // GraphAdjList* g = gen.makeGraph();
+    // auto path = dijkstra<BinomialHeap<uint32_t, uint32_t>>(g);
+
 
     // A dijkstra benchmark looks like this:
     // to trials 
@@ -121,8 +126,8 @@ int main(){
             suite.addVaryingInputs("Dijkstra DAry Heap 10 Matrix", dijkstra<DAryHeap<size_t, size_t, 10>>, mat);
             suite.addVaryingInputs("Dijkstra Binomial Heap List", dijkstra<BinomialHeap<size_t, size_t>>, list);
             suite.addVaryingInputs("Dijkstra Binomial Heap Matrix", dijkstra<BinomialHeap<size_t, size_t>>, mat);
-            // suite.addVaryingInputs("Dijkstra Fibonacci Heap List", dijkstra<FibonacciHeap<size_t, size_t>>, list);
-            // suite.addVaryingInputs("Dijkstra Fibonacci Heap Matrix", dijkstra<FibonacciHeap<size_t, size_t>>, mat);
+            suite.addVaryingInputs("Dijkstra Fibonacci Heap List", dijkstra<FibonacciHeap<size_t, size_t>>, list);
+            suite.addVaryingInputs("Dijkstra Fibonacci Heap Matrix", dijkstra<FibonacciHeap<size_t, size_t>>, mat);
             suite.run();
 
             // Clean up memory NOW
@@ -138,16 +143,6 @@ int main(){
     // suite.resultsToCSV("DijkstraResults");
     // plot(suite, "plot1.svg");
 
-    RandomGraphGenerator testGen(0.4, 10000);
-    BenchmarkSuite s("Graph Generation");
-    s.setConfig(30000, 1);
-    for (size_t i = 0; i < 5; ++i){
-        s.addConfiguredTest("test", [&testGen]()
-        { testGen.makeGraph(); });
-    }
-
-    s.run();
-    s.resultsToCSV("gen.csv");
     // A dijkstra benchmark looks like this:
     // to trials
     // n values from n = 10, 100, 1000, 10000, 100000
@@ -156,8 +151,10 @@ int main(){
     // binomial heap
     // fibonacci heap
     // 5 * 4 * 5 = 100 trials. BRUH
-    for (std::string sparsityStr : std::vector<std::string>{"0.1", "0.4", "0.7"})
-    {
+    
+    // Alternative idea: Build the graphs for the larger N values while the smaller n values are testing.
+    // Space isn't as much as an issue here:  
+    for (std::string sparsityStr : std::vector<std::string>{"0.1", "0.4", "0.7"}) {
         double sparsity = std::stod(sparsityStr);
         BenchmarkSuite suite("Dijkstra: Sparsity = " + sparsityStr);
         for (size_t n : std::vector<size_t>{1000, 5000, 10000, 30000}){
@@ -170,7 +167,7 @@ int main(){
             suite.addConfiguredTest("Dijkstra DAry Heap D = 5", dijkstra<DAryHeap<uint32_t, uint32_t>>, std::ref(g));
             suite.addConfiguredTest("Dijkstra DAry Heap D = 10", dijkstra<DAryHeap<uint32_t, uint32_t>>, std::ref(g));
             suite.addConfiguredTest("Dijkstra Binomial Heap", dijkstra<BinomialHeap<uint32_t, uint32_t>>, std::ref(g));
-            // suite.addConfiguredTest("Dijkstra Fibonacci Heap", dijkstra<FibonacciHeap<uint32_t, uint32_t>>, g);
+            suite.addConfiguredTest("Dijkstra Fibonacci Heap", dijkstra<FibonacciHeap<uint32_t, uint32_t>>, std::ref(g));
             suite.run();
             suite.resultsToCSV("dijkstra" + sparsityStr + ".csv");
             delete g;
