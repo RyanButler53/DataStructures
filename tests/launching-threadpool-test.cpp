@@ -44,10 +44,4 @@ int main(int argc, char** argv) {
     std::chrono::duration<double> elapsed = end - start;
 
     std::cout << "Elapsed time: " << elapsed.count() << " seconds" << std::endl;
-    
-
-    for (int i = 0; i < n; ++i){
-        t.submit([i]()-> long long{ return fib((i%45)); });
-    }
-    std::vector<long long> results2 = t.run();
 }

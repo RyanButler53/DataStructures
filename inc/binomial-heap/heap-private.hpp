@@ -109,6 +109,7 @@ void BinomialHeap<T,P>::cleanup() {
         
     }
 
+    // Re add to node list
     for (Node *n : nodeArray) {
         if (n){
             // If this is the new minimum, then keep track of it. 
@@ -140,6 +141,7 @@ void BinomialHeap<T,P>::decreaseKey(T item, P newPriority){
         std::swap(nodeMap_[parent->item_.item_], nodeMap_[n->item_.item_]);
         n = parent;
     }
+    // Update minimum if necessary
     if (n->item_.priority_ < min_->item_.priority_){
         min_ = n;
     }

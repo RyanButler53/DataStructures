@@ -180,6 +180,6 @@ int main(int argc, char** argv) {
     suite.addConfiguredTest("Delete from Splay Tree", insertAndDelete<SplayTree<int, int>>, std::ref(shuffled), std::ref(shuffled));
     suite.addConfiguredTest("Find Duplicates Splay Tree", findDuplicates<SplayTree<int, int>>, std::ref(shuffled), std::ref(duplicates));
     suite.addConfiguredTest("Splay Tree Sort", treeSort<SplayTree<int, int>>, std::ref(shuffled));
-    std::cout << "Running" << std::endl;
-    suite.run("balancedTrees.csv");
+    suite.run();
+    suite.resultsToCSV("balancedTrees.csv");
 }

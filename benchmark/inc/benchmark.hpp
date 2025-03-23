@@ -15,7 +15,6 @@
 #include <iostream>
 #include <fstream>
 #include <map>
-#include "launching-threadpool/launching-threadpool.hpp"
 
 namespace BenchmarkLib {
     // Utiility Functions 
@@ -94,9 +93,8 @@ struct GroupedResults {
 class BenchmarkSuite {
 
     // Simply defines the interface
-    class BenchmarkConcept
-    {
-    public:
+    class BenchmarkConcept {
+      public:
         virtual BenchmarkResults runTest() = 0;
         virtual ~BenchmarkConcept() = default;
     };
@@ -178,10 +176,14 @@ class BenchmarkSuite {
     size_t testInputSizes_;
     size_t testTrials_;
 
+    // Private Functions
+
     // Clears out already run tests. Cleans up their memory;
     void clearTests();
 
-public:
+    void runTests(size_t start, size_t end, std::vector<BenchmarkResults>& results);
+
+  public:
 
     BenchmarkSuite(std::string suiteName);
     ~BenchmarkSuite();
@@ -203,16 +205,22 @@ public:
 
     void setConfig(size_t inputSize, size_t numTrials);
 
-    // Runs and sends output to CSV
-    void run(std::string filename = "");
+    // Runs all tests
+    void run();
 
+    // Sends the results of all tests run so far to a CSV
     void resultsToCSV(std::string filename);
 
+    // Gets the name of the Benchmark Suite
     std::string getName() const { return suiteName_; }
 
+    // Gets a vector of benchmark results
     std::vector<BenchmarkResults> getResults() const { return results_;} 
 
+    // Groups the results by the test name
     std::map<std::string, GroupedResults> getGroupedResults();
 
+    // #ifdef FOUND_MATPLOT_PLUS_PLUS
     // void plot(std::string filename);
+    // #endif
 };

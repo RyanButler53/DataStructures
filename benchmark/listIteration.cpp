@@ -159,5 +159,6 @@ int main(int argc, char** argv) {
     suite.addConfiguredTest("Unrolled linked list: K = 256 iterate 5x", iterate<UnrolledLinkedList<int, 256>>, std::ref(numOps));
     suite.addConfiguredTest("Unrolled linked list: K = 256 random Insertions", randomInsertion<UnrolledLinkedList<int, 256>>, std::ref(actions));
 
-    suite.run("iteration.csv");
+    suite.run();
+    suite.resultsToCSV("iteration.csv");
 }

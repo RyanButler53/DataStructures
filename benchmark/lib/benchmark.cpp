@@ -80,36 +80,54 @@ void BenchmarkSuite::setConfig(size_t inputSize, size_t numTrials){
     testTrials_ = numTrials;
 }
 
-void BenchmarkSuite::run(std::string filename){
-    if (filename == ""){
-        // filename = suiteName_+ ".csv";
+void BenchmarkSuite::runTests(size_t start, size_t end, std::vector<BenchmarkResults>& results){
+    for (size_t i = start; i < end; ++i){
+        results[i]= tests_[i]->runTest();
+    }
+}
+
+void BenchmarkSuite::run(){
+    
+    // LaunchingThreadQueue<BenchmarkResults> pool;
+    // for (BenchmarkConcept *test : tests_)
+    // {
+    //     pool.submit([test]()
+    //                 { return test->runTest(); });
+    // }
+    // std::vector<BenchmarkResults> results = pool.run();
+    unsigned int numThreads = std::thread::hardware_concurrency();
+    if (numThreads < 2) { // if less than 2 or error
+        numThreads = 1;
+    } else {
+        numThreads -= 1;
+    }
+    if (numThreads > tests_.size()){ // If too many threads available
+        numThreads = tests_.size(); // do one test per thread
     }
 
-    LaunchingThreadQueue<BenchmarkResults> pool;
-    for (BenchmarkConcept *test : tests_)
-    {
-        pool.submit([test]()
-                    { return test->runTest(); });
+    std::vector<BenchmarkResults> results(tests_.size());
+    std::vector<std::thread> threads;
+    size_t perThread = tests_.size() / numThreads;
+    auto func = [this](size_t start, size_t end, std::vector<BenchmarkResults>& ret){
+        runTests(start, end, ret);};
+    for (size_t i = 0; i < numThreads; ++i){
+        std::cout << i * perThread << " " << (i+1)*perThread << std::endl;
+        threads.emplace_back(func, i * perThread, (i+1)*perThread, std::ref(results)); 
     }
-    std::vector<BenchmarkResults> results = pool.run();
+    // Main thread does the remainder (if there is one);
+    std::cout << "Main Thread: " << perThread*numThreads << " " << tests_.size() << std::endl;
+    runTests(perThread*numThreads, tests_.size(), results);
+    for (std::thread& t : threads){
+        t.join();
+    }
+
     clearTests();
     
-    if (filename != "") {
-        std::ofstream out(filename);
-        out << "testName, n, numSamples, avgTime, stdev\n";
-        for (BenchmarkResults &s : results)
-        {
-            out << s.to_string() << "\n";
-        }
-        out.close();
+    // Store results in memory
+    for (BenchmarkResults &r : results) {
+        results_.push_back(r);
     }
-    else
-    {
-        // Store results in memory (cheaper than inputs).
-        for (BenchmarkResults &r : results) {
-            results_.push_back(r);
-        }
-    }
+    
 }
 
 void BenchmarkSuite::resultsToCSV(std::string filename){

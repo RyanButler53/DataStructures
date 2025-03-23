@@ -32,7 +32,7 @@ private:
     std::mutex launchMutex_; // protects the queue
 
     // thread that does the actual work
-    void workerThread(size_t thread_i);
+    void workerThread();
 
     unsigned int calcNumThreads(unsigned int numThreads);
 
@@ -44,7 +44,7 @@ private:
 
 public:
     LaunchingThreadQueue(size_t numThreads = 0);
-    ~LaunchingThreadQueue();
+    ~LaunchingThreadQueue() = default;
 
     /**
      * @brief Submits function F to the queue. 

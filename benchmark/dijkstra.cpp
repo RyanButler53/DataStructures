@@ -123,9 +123,7 @@ int main(){
             suite.addVaryingInputs("Dijkstra Binomial Heap Matrix", dijkstra<BinomialHeap<size_t, size_t>>, mat);
             // suite.addVaryingInputs("Dijkstra Fibonacci Heap List", dijkstra<FibonacciHeap<size_t, size_t>>, list);
             // suite.addVaryingInputs("Dijkstra Fibonacci Heap Matrix", dijkstra<FibonacciHeap<size_t, size_t>>, mat);
-            // std::this_thread::sleep_for(std::chrono::nanoseconds(1000000));
-            // std::cout << "running" << std::endl;
-            // suite.run();
+            suite.run();
 
             // Clean up memory NOW
             for (auto &g : list) {
@@ -142,9 +140,12 @@ int main(){
 
     RandomGraphGenerator testGen(0.4, 10000);
     BenchmarkSuite s("Graph Generation");
-    s.setConfig(30000, 5);
-    s.addConfiguredTest("test", [&testGen]()
-                            { testGen.makeGraph(); });
+    s.setConfig(30000, 1);
+    for (size_t i = 0; i < 5; ++i){
+        s.addConfiguredTest("test", [&testGen]()
+        { testGen.makeGraph(); });
+    }
+
     s.run();
     s.resultsToCSV("gen.csv");
     // A dijkstra benchmark looks like this:
@@ -155,7 +156,6 @@ int main(){
     // binomial heap
     // fibonacci heap
     // 5 * 4 * 5 = 100 trials. BRUH
-    exit(0);
     for (std::string sparsityStr : std::vector<std::string>{"0.1", "0.4", "0.7"})
     {
         double sparsity = std::stod(sparsityStr);

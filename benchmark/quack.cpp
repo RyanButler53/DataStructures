@@ -93,6 +93,7 @@ int main(int argc, char **argv) {
     suite.addConfiguredTest("Quack: Pushes then pop fronts", exp3<QuackAdapter<int>>, std::ref(n));
     suite.addConfiguredTest("Quack: Alternating pops", exp4<QuackAdapter<int>>, std::ref(n));
 
-    suite.run("quack.csv");
+    suite.run();
+    suite.resultsToCSV("quack.csv");
     return 0;
 }

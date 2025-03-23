@@ -5,6 +5,7 @@
 #include <list>
 #include <map>
 #include <cmath>
+
 template <typename T, typename P>
 class BinomialHeap
 {
@@ -29,8 +30,6 @@ private:
     // Data
     std::list<Node *> nodes_;
     std::map<T, Node *> nodeMap_;
-    // (*min_)->item_.item_ is min value. 
-    // std::list<Node *>::iterator min_;
     Node *min_;
     size_t size_;
 
@@ -52,7 +51,6 @@ private:
     void pop();
     T top() const;
     void push(T item, P priority);
-    // TODO
     void decreaseKey(T item, P priority);
 };
 

@@ -4,18 +4,13 @@ add_subdirectory(googletest)
 
 set (CMAKE_CURRENT_BINARY_DIR bin)
 
-# if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-#     message("DEBUG")
-#     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0 -fsanitize=undefined -fsanitize=address")
-#     set(CMAKE_LINKER_FLAGS "${CMAKE_LINKER_FLAGS} -fsanitize=undefined  -fsanitize=address")
-# endif()
+if (CMAKE_BUILD_TYPE STREQUAL "DEBUG")
+    add_compile_options(-fsanitize=address)
+    add_link_options(-fsanitize=address)
 
-# add_compile_options(-fsanitize=address)
-# add_link_options(-fsanitize=address)
-
-add_compile_options(-fsanitize=undefined)
-add_link_options(-fsanitize=undefined)
-
+    add_compile_options(-fsanitize=undefined)
+    add_link_options(-fsanitize=undefined)
+endif()
 
 
 add_executable(cuckoo-hash cuckoo-test.cpp)
@@ -26,7 +21,7 @@ add_executable(unrolled-ll ULL-test.cpp)
 add_executable(heap heap-test.cpp)
 
 # Link to google test if necessary
-target_link_libraries(unrolled-ll gtest) #gtest_main
+target_link_libraries(unrolled-ll gtest) 
 target_link_libraries(splay-tree gtest)
 target_link_libraries(heap gtest)
 
