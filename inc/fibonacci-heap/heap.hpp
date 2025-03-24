@@ -14,9 +14,9 @@ class FibonacciHeap {
         P priority_;
     };
 
-    struct Node {
-        Item item_;
+    struct Node {        
         std::vector<Node*> children_;
+        Item item_;
         Node *parent_;
         uint8_t index_;
         bool mark_;

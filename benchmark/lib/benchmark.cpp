@@ -131,7 +131,7 @@ void BenchmarkSuite::run(){
 void BenchmarkSuite::resultsToCSV(std::string filename){
     try {
         std::ofstream out(filename);
-        out << "testName, n, numSamples, avgTime, stdev\n";
+        out << "testName,n,numSamples,avgTime,stdev\n";
         for (BenchmarkResults &s : results_)
         {
             out << s.to_string() << "\n";
@@ -168,5 +168,3 @@ std::map<std::string, GroupedResults> BenchmarkSuite::getGroupedResults(){
     }
     return groupedResults;
 }
-
-// Is there a way to make matplot++ an optional dependency? 

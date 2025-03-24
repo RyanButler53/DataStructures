@@ -56,33 +56,28 @@ void RandomGraphGenerator::getRandom(std::vector<size_t>& values, size_t prime){
 }
 
 void RandomGraphGenerator::populateGraph(Graph *g, std::vector<size_t>& weights, std::vector<size_t>& edges){
-    for (size_t i = 0; i < edges.size();  ++i) {
-        size_t matrixInd = edges[i] / n_ + 1 + edges[i];
+    while (!edges.empty()) {
+        size_t matrixInd = edges.back() / n_ + 1 + edges.back();
         size_t start = matrixInd/n_;
         size_t end = matrixInd%n_;
-        g->addEdge(start, end, weights[i]);
+        g->addEdge(start, end, weights.back());
+        edges.pop_back();
+        weights.pop_back();
     }
 }
 
 GraphAdjList* RandomGraphGenerator::makeGraph() {
     std::vector<size_t> edges;
     std::vector<size_t> weights;
-    auto start = std::chrono::high_resolution_clock::now();
-    auto f = [&start](std::chrono::steady_clock::time_point end) -> double
-    { return std::chrono::duration_cast<std::chrono::milliseconds>((end - start)).count(); };
+
     size_t p1 = primes_[rand() % primes_.size()];
     size_t p2 = primes_[rand() % primes_.size()];
-
 
     std::thread helper([this, &weights, p2]()
                        { getRandom(weights, p2); });
     getRandom(edges, p1);
-    auto made = std::chrono::high_resolution_clock::now();
     helper.join();
-    auto joined = std::chrono::high_resolution_clock::now();
-
     GraphAdjList *g = new GraphAdjList(n_);
     populateGraph(g, weights, edges);
-    auto finish = std::chrono::high_resolution_clock::now();
     return g;
 }

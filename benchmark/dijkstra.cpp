@@ -32,15 +32,15 @@ concept Heap = requires(T &heap,
  * @return std::vector<size_t> Vector of the distances. 
  */
 template <Heap heap_t>
-std::vector<uint32_t> dijkstra(Graph *g){
+std::vector<uint16_t> dijkstra(Graph *g){
 
-    uint32_t n = g->getNumVertices();
-    std::vector<uint32_t> paths(n);
-    std::ranges::fill(paths, std::numeric_limits<uint32_t>::max());
+    uint16_t n = g->getNumVertices();
+    std::vector<uint16_t> paths(n);
+    std::ranges::fill(paths, std::numeric_limits<uint16_t>::max());
     paths[0] = 0;
 
     heap_t h;
-    for (uint32_t vertex_i = 0; vertex_i < n; ++vertex_i){
+    for (uint16_t vertex_i = 0; vertex_i < n; ++vertex_i){
         h.push(vertex_i, paths[vertex_i]);
     }
 
@@ -90,28 +90,14 @@ void plot(BenchmarkSuite& suite, std::string filename){
     if (filename == ""){
         show();
     } else {
-        save(filename, "svg");
+        save(filename, "jpeg");
     }
 }
 
 int main(){
 
-    // RandomGraphGenerator gen(0.55, 12);
-    // GraphAdjList* g = gen.makeGraph();
-    // auto path = dijkstra<BinomialHeap<uint32_t, uint32_t>>(g);
-
-
-    // A dijkstra benchmark looks like this:
-    // to trials 
-    // n values from n = 10, 100, 1000, 10000, 100000
-    // sparsity from 0.1, 0.4, 0.7, 1
-    // D values 2, 5, 10 
-    // binomial heap
-    // fibonacci heap
-    // 5 * 4 * 5 = 100 trials. BRUH 
-    // Plots: Set sparsity constant. Graph time vs n
-
     BenchmarkSuite suite("Dijkstra");
+    
     // Exploratory test to show the difference between adjacency list and adjacency matrix
     for (size_t n : std::vector<size_t>{50,100,200, 500, 1000}) {
         for (double sparsity : std::vector<double>{0.4}){ // 0.1, 0.4, 0.7, 1
@@ -140,39 +126,27 @@ int main(){
 
         }
     }
-    // suite.resultsToCSV("DijkstraResults");
-    // plot(suite, "plot1.svg");
+    suite.resultsToCSV("DijkstraResults.csv");
 
-    // A dijkstra benchmark looks like this:
-    // to trials
-    // n values from n = 10, 100, 1000, 10000, 100000
-    // sparsity from 0.1, 0.4, 0.7, 1
-    // D values 2, 5, 10
-    // binomial heap
-    // fibonacci heap
-    // 5 * 4 * 5 = 100 trials. BRUH
-    
-    // Alternative idea: Build the graphs for the larger N values while the smaller n values are testing.
-    // Space isn't as much as an issue here:  
+    // Since Adjacency lists are faster, Try larger tests with adjacency list graphs
     for (std::string sparsityStr : std::vector<std::string>{"0.1", "0.4", "0.7"}) {
         double sparsity = std::stod(sparsityStr);
         BenchmarkSuite suite("Dijkstra: Sparsity = " + sparsityStr);
-        for (size_t n : std::vector<size_t>{1000, 5000, 10000, 30000}){
+        for (size_t n : std::vector<size_t>{5000, 10000, 30000, 50000, 65000}){
+            std::cout << "Starting Sparsity " <<sparsityStr << " with n = " << n << std::endl;
             suite.setConfig(n, 10);
             RandomGraphGenerator gen(sparsity, n);
-            std::cout << "making graph " << n << std::endl;
             Graph *g = gen.makeGraph();
-            std::cout << "Made Graph" << n << std::endl;
-            suite.addConfiguredTest("Dijkstra DAry Heap D = 2", dijkstra<BinaryHeap<uint32_t>>, std::ref(g));
-            suite.addConfiguredTest("Dijkstra DAry Heap D = 5", dijkstra<DAryHeap<uint32_t, uint32_t>>, std::ref(g));
-            suite.addConfiguredTest("Dijkstra DAry Heap D = 10", dijkstra<DAryHeap<uint32_t, uint32_t>>, std::ref(g));
-            suite.addConfiguredTest("Dijkstra Binomial Heap", dijkstra<BinomialHeap<uint32_t, uint32_t>>, std::ref(g));
-            suite.addConfiguredTest("Dijkstra Fibonacci Heap", dijkstra<FibonacciHeap<uint32_t, uint32_t>>, std::ref(g));
+            suite.addConfiguredTest("Dijkstra DAry Heap D = 2", dijkstra<BinaryHeap<uint16_t>>, std::ref(g));
+            suite.addConfiguredTest("Dijkstra DAry Heap D = 5", dijkstra<DAryHeap<uint16_t, uint16_t>>, std::ref(g));
+            suite.addConfiguredTest("Dijkstra DAry Heap D = 10", dijkstra<DAryHeap<uint16_t, uint16_t>>, std::ref(g));
+            suite.addConfiguredTest("Dijkstra Binomial Heap", dijkstra<BinomialHeap<uint16_t, uint16_t>>, std::ref(g));
+            suite.addConfiguredTest("Dijkstra Fibonacci Heap", dijkstra<FibonacciHeap<uint16_t, uint16_t>>, std::ref(g));
             suite.run();
             suite.resultsToCSV("dijkstra" + sparsityStr + ".csv");
             delete g;
         }
-        // plot(suite, "dijkstra" + sparsityStr + ".svg");
+        suite.resultsToCSV("dijkstra" + sparsityStr + ".csv");
     }
 
     return 0;

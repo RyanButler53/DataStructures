@@ -19,8 +19,8 @@ private:
     // Private Node struct to hold node data and pointers
     struct Node
     {
-        Item item_;
         std::vector<Node *> children_;
+        Item item_;
         Node *parent_;
 
         Node(Item item_);
