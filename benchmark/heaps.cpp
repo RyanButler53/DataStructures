@@ -8,6 +8,10 @@
 
 #include "benchmark.hpp"
 
+#include "heap/d-ary.hpp"
+#include "heap/binomial.hpp"
+#include "heap/fibonacci.hpp"
+
 
 template <typename T>
 concept BasicHeap = requires(T &heap,

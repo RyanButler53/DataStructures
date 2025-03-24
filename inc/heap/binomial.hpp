@@ -53,6 +53,6 @@ private:
     void decreaseKey(T item, P priority);
 };
 
-#include "heap-private.hpp"
+#include "binomial-private.hpp"
 
 #endif //BINOMIAL_HEAP_HPP_INCLUDED

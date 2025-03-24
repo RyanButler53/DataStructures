@@ -1,4 +1,4 @@
-#include "heap.hpp"
+#include "d-ary.hpp"
 #include <algorithm>
 
 template <typename T, typename priority_t, size_t D>

@@ -67,6 +67,6 @@ private:
 template <typename T>
 using BinaryHeap = DAryHeap<T, T, 2>;
 
-#include "heap-private.hpp"
+#include "d-ary-private.hpp"
 
 #endif // DARY_HEAP_HPP_INCLUDED

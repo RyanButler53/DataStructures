@@ -53,6 +53,6 @@ class FibonacciHeap {
     void decreaseKey(T item, P newPriority);
 };
 
-#include "heap-private.hpp"
+#include "fibonacci-private.hpp"
 
 #endif // FIBONACCI_HEAP_HPP_INCLUDED

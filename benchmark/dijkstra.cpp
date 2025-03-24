@@ -3,12 +3,16 @@
 #include <iostream>
 #include <chrono>
 
-#include "d-ary-heap/heap.hpp"
-#include "binomial-heap/heap.hpp"
-#include "fibonacci-heap/heap.hpp"
+
 #include "graph.hpp"
 #include "randomGraphs.hpp"
 #include "benchmark.hpp"
+
+// Heaps
+#include "heap/d-ary.hpp"
+#include "heap/binomial.hpp"
+#include "heap/fibonacci.hpp"
+
 #include <matplot/matplot.h>
 
 template <typename T>
@@ -97,7 +101,7 @@ void plot(BenchmarkSuite& suite, std::string filename){
 int main(){
 
     BenchmarkSuite suite("Dijkstra");
-    
+
     // Exploratory test to show the difference between adjacency list and adjacency matrix
     for (size_t n : std::vector<size_t>{50,100,200, 500, 1000}) {
         for (double sparsity : std::vector<double>{0.4}){ // 0.1, 0.4, 0.7, 1

@@ -5,9 +5,12 @@
 #include <iostream>
 #include <algorithm>
 #include <random>
-#include "d-ary-heap/heap.hpp"
-#include "binomial-heap/heap.hpp"
-#include "fibonacci-heap/heap.hpp"
+// Heaps
+#include "heap/d-ary.hpp"
+#include "heap/binomial.hpp"
+#include "heap/fibonacci.hpp"
+#include "heap/pairing.hpp"
+#include "heap/skew.hpp"
 
 template <typename T>
 concept Heap = requires(T& heap,
