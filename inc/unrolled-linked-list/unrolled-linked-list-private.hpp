@@ -316,10 +316,6 @@ bool UnrolledLinkedList<T,K>::Iterator::operator!=(const Iterator& other)const {
 // END ITERATOR METHODS
 
 // to do 
-// iteration, pop_front and pop_back (using the iterator)
-// Iterater tier insertion
-// Erase
-
 // insert_range
 
 //overloaded constuctor

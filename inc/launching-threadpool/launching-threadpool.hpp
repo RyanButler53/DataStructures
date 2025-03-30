@@ -5,7 +5,6 @@
 #include <vector>
 #include <queue>
 #include <mutex>
-#include <concepts>
 #include <atomic>
 #include <future>
 #include <condition_variable>
@@ -27,14 +26,13 @@ private:
     size_t numJobs_;
 
     std::queue<std::packaged_task<R()>> queue_; 
-    // std::vector<std::queue<std::packaged_task<R()>>> queueVec_;
     std::vector<std::thread> threads_;
     std::vector<std::future<R>> futures_;
 
     std::mutex launchMutex_; // protects the queue
 
     // thread that does the actual work
-    void workerThread(size_t thread_i);
+    void workerThread();
 
     unsigned int calcNumThreads(unsigned int numThreads);
 
@@ -45,8 +43,8 @@ private:
     bool emptyQueue();
 
 public:
-    LaunchingThreadQueue(size_t numThreads);
-    ~LaunchingThreadQueue();
+    LaunchingThreadQueue(size_t numThreads = 0);
+    ~LaunchingThreadQueue() = default;
 
     /**
      * @brief Submits function F to the queue. 

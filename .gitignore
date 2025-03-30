@@ -1,4 +1,7 @@
 build/
 .vscode/
+.DS_store
 # Cannot publicly distribute copies of papers for specific data structures
 papers/
+# Graph files
+graphing/

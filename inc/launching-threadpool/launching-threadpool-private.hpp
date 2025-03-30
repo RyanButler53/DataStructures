@@ -7,11 +7,10 @@ LaunchingThreadQueue<R>::LaunchingThreadQueue(size_t numThreads):
 
 template <typename R>
 void LaunchingThreadQueue<R>::setupThreads(){
-    try
-    {
+    threads_.reserve(numThreads_);
+    try {
         for(unsigned i = 0;i<numThreads_;++i) {
-            threads_.push_back(
-                std::thread(&LaunchingThreadQueue<R>::workerThread,this, i));
+            threads_.push_back(std::thread(&LaunchingThreadQueue<R>::workerThread,this));
         }
     } catch (std::exception &e) {
         throw;
@@ -21,7 +20,10 @@ void LaunchingThreadQueue<R>::setupThreads(){
 template <typename R>
 unsigned int LaunchingThreadQueue<R>::calcNumThreads(unsigned int numThreads){
     unsigned int hardwareMax = std::thread::hardware_concurrency();
-    if (hardwareMax == 0){ // if less than 2 or error
+    if (numThreads == 0){
+        numThreads = hardwareMax;
+    } 
+    if (hardwareMax == 0) { // if less than 2 or error
         return 2;
     } else {
         return std::min(numThreads, hardwareMax);
@@ -40,10 +42,10 @@ void LaunchingThreadQueue<R>::clear(){
     numJobs_ = 0;
 }
 
-template <typename R>
-LaunchingThreadQueue<R>::~LaunchingThreadQueue(){
-    clear();
-}
+// template <typename R>
+// LaunchingThreadQueue<R>::~LaunchingThreadQueue(){
+//     clear();
+// }
 
 template <typename R>
 bool LaunchingThreadQueue<R>::emptyQueue(){
@@ -69,20 +71,18 @@ std::vector<R> LaunchingThreadQueue<R>::run(){
     for (std::future<R> &f : futures_)
     {
         ret.push_back(f.get());
-
     }
     clear();
     return ret;
 }
 
 template <typename R>
-void LaunchingThreadQueue<R>::workerThread(size_t thread_i){
+void LaunchingThreadQueue<R>::workerThread(){
     while (!emptyQueue()){
         std::unique_lock lk(launchMutex_);
         std::packaged_task<R()> task = std::move(queue_.front());
         queue_.pop();
         lk.unlock();
         task();
-
     }
 }

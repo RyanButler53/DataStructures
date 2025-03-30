@@ -7,8 +7,6 @@
 #include "unrolled-linked-list/unrolled-linked-list.hpp"
 
 
-// Test random insertion. Iterate over a linked list and a unrolled one and see what happens.
-
 // Should be able to have any integral type instead of just an int
 template <typename IntContainer>
 concept LinkedList = requires(IntContainer &container, 
@@ -26,89 +24,141 @@ concept LinkedList = requires(IntContainer &container,
 };
 
 template <LinkedList List>
-class Benchmark_Iteration: public Benchmark{
-    std::vector<int> randomActions_;
+void setup(List& l, size_t numOps) {
+    for (size_t i = 0; i < numOps / 2; ++i){
+        l.push_back(i);
+    }
+}
 
-public:
-    Benchmark_Iteration(std::string name, std::vector<int> &actions) : Benchmark(actions.size(), name), randomActions_{actions} {}
+template <LinkedList List>
+void pushing(size_t numOps){
+    List l;
+    setup(l, numOps);
+}
 
-    void SetUp(List& l) const {
-        for (size_t i = 0; i < numOps_ / 2; ++i){
-            l.push_back(i);
+// full iteration
+template <LinkedList List>
+void iterate(size_t numOps){
+    List l;
+    setup(l, numOps);
+    int set;
+    for (size_t i = 0; i < 5; ++i){
+        for (auto x : l) {
+            set = x;
         }
     }
 
-    // full iteration
-    void iterate(List& l) const{
-        for (auto x : l){}
-    }
+}
 
-    void randomInsertion(List& l) const {
-        typename List::iterator it = l.begin();
-        for (int action : randomActions_)
-        {
-            switch (action) {
-            // Iterate forwards
-            case 0:
-                if (it != l.end()){
-                    ++it;
-                } else {
-                    it = l.begin();
-                }
-                break;
-            // iterate backwards
-            case 1:
-                if (it != l.begin()){
-                    --it;
-                } else {
-                    it = l.end();
-                }
-                break;
-
-            // Insert at iterator position
-            case 2:
-                l.insert(it, action);
-                break;
-
-            // Erase at iterator position
-            case 3:
-                if (it != l.end()){
-                    it = l.erase(it);
-                }
-                break;
-            default : break;
+template <LinkedList List>
+void randomInsertion(std::vector<int> actions)
+{
+    List l;
+    setup(l, actions.size() / 4);
+    typename List::iterator it = l.begin();
+    for (int action : actions) {
+        switch (action) {
+        // Iterate forwards
+        case 0:
+            if (it != l.end()){
+                ++it;
+            } else {
+                it = l.begin();
             }
+            break;
+        // iterate backwards
+        case 1:
+            if (it != l.begin()){
+                --it;
+            } else {
+                it = l.end();
+            }
+            break;
+
+        // Insert at iterator position
+        case 2:
+            l.insert(it, action);
+            break;
+
+        // Erase at iterator position
+        case 3:
+            if (it != l.end()){
+                it = l.erase(it);
+            }
+            break;
+        default : break;
         }
     }
+}
+
+// Move to some input generator class
+void getActions(size_t numActions,
+    std::vector<int>::iterator begin, std::vector<int>::iterator end){
+
+    long seed = time(0);
+    std::mt19937 rng(seed);
+    std::vector<int> weights(numActions);
+    std::ranges::fill(weights, 1);
+    std::discrete_distribution<int> dist(weights.begin(), weights.end());
+    std::vector<int> actions;
+
+    while (begin != end){
+    *begin = dist(rng);
+    ++begin;
+    }
+}
+
+std::vector<int> getRandomActions(size_t numOps, size_t numActions){
+    std::vector<int> actions(numOps);
+    unsigned numThreads = std::thread::hardware_concurrency();
+
+    if (numOps < 100000 or numThreads == 0){
+        getActions(numActions, actions.begin(), actions.end());
+        return actions;
+    } else {
+        // Use up to 8 threads to load it in faster.
+        numThreads = std::min(8u, numThreads);
+        std::vector<std::thread> threads;
+        // Even splits case
+        size_t perThread = numOps / numThreads;
+        for (size_t i = 0; i < numThreads; ++i){
+            threads.emplace_back(getActions, numActions, 
+                        actions.begin() + i * perThread, 
+                        actions.begin()+ (i + 1) * perThread);
+        }
+        // Main thread does the remainder (if there is one);
+        getActions(numActions, actions.begin() + perThread * numThreads, actions.end());
+        for (std::thread& t : threads){
+            t.join();
+        }
+    }
+    return actions;
+}
 
 
-    std::string operator()() const {
-
-        // Set up 2 lists
-        List l;
-        SetUp(l);
-        double setup = measure([*this, &l]()
-                               { SetUp(l); });
-        double iteration = measure([*this, &l]
-                                   { iterate(l); });
-        double insertion = measure([*this, &l]
-                                   { randomInsertion(l); });
-
-        std::stringstream ss;
-        ss << "Results for " << name_ << ": " << setup << " " << iteration << " " << insertion;
-        std::cout << ss.str() << std::endl;
-        return ss.str();
-    };
-};
 
 int main(int argc, char** argv) {
     size_t numOps = 10000;
     if (argc == 2){
         numOps = atoi(argv[1]);
     }
-    std::vector<int> actions = Benchmark::getRandomActions(numOps, 4);
-    Benchmark_Iteration<std::list<int>>("std::list", actions)();
-    Benchmark_Iteration<UnrolledLinkedList<int, 8>>("Unrolled Linked List with K = 8", actions)();
-    Benchmark_Iteration<UnrolledLinkedList<int, 64>>("Unrolled Linked List with K = 64", actions)();
-    Benchmark_Iteration<UnrolledLinkedList<int, 256>>("Unrolled Linked List with K = 256", actions)();
+    std::vector<int> actions = getRandomActions(numOps, 4);
+
+    BenchmarkSuite suite("List Iteration");
+    suite.setConfig(numOps, 10);
+    suite.addConfiguredTest("std::list push back", pushing<std::list<int>>, std::ref(numOps));
+    suite.addConfiguredTest("std::list iterate 5x", iterate<std::list<int>>, std::ref(numOps));
+    suite.addConfiguredTest("std::list random Insertions", randomInsertion<std::list<int>>, std::ref(actions));
+    suite.addConfiguredTest("Unrolled linked list: K = 8 push back", pushing<UnrolledLinkedList<int, 8>>, std::ref(numOps));
+    suite.addConfiguredTest("Unrolled linked list: K = 8 5x", iterate<UnrolledLinkedList<int, 8>>, std::ref(numOps));
+    suite.addConfiguredTest("Unrolled linked list: K = 8 random Insertions", randomInsertion<UnrolledLinkedList<int, 8>>, std::ref(actions));
+    suite.addConfiguredTest("Unrolled linked list: K = 64 push back", pushing<UnrolledLinkedList<int, 64>>, std::ref(numOps));
+    suite.addConfiguredTest("Unrolled linked list: K = 64 iterate 5x", iterate<UnrolledLinkedList<int, 64>>, std::ref(numOps));
+    suite.addConfiguredTest("Unrolled linked list: K = 64 random Insertions", randomInsertion<UnrolledLinkedList<int, 64>>, std::ref(actions));
+    suite.addConfiguredTest("Unrolled linked list: K = 256 push back", pushing<UnrolledLinkedList<int, 256>>, std::ref(numOps));
+    suite.addConfiguredTest("Unrolled linked list: K = 256 iterate 5x", iterate<UnrolledLinkedList<int, 256>>, std::ref(numOps));
+    suite.addConfiguredTest("Unrolled linked list: K = 256 random Insertions", randomInsertion<UnrolledLinkedList<int, 256>>, std::ref(actions));
+
+    suite.run();
+    suite.resultsToCSV("iteration.csv");
 }

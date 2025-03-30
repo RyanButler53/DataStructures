@@ -4,142 +4,75 @@
 #include <iostream>
 #include <numeric>
 #include <chrono>
+#include <concepts>
+#include "benchmark.hpp"
 
-using namespace std;
-
-
-// Results: Time for all 4 experiments
-
+/// @brief Quack needs an adapter to have the correct name for Queue concept
 template <typename T>
-double average(const std::vector<T> &a)
-{
-    double sum = std::accumulate(begin(a), end(a), 0.0);
-    return sum / a.size();
+class QuackAdapter {
+    Quack<T> q_;
+
+public:
+    using value_type = T;
+    QuackAdapter() = default;
+    ~QuackAdapter() = default;
+    void push_back(const T &value) { q_.push(value); }
+    void push_front(const T &value) { q_.push_front(value); }
+    void pop_front() { q_.dequeue(); }
+    void pop_back() { q_.pop(); }
+    size_t size() { return q_.size(); }
+};
+
+template <typename Container>
+concept Queue = requires(Container &container, const typename Container::value_type &value) {
+    container.push_back(value);
+    container.push_front(value);
+    container.pop_front();
+    container.pop_back();
+    container.size();
+};
+
+template <Queue Container>
+void exp1(size_t n){
+    Container q;
+    for (size_t i = 0; i < n; ++i){
+        q.push_back(i);
+    }
 }
 
-template <typename T>
-double stdDev(const std::vector<T> &a, double avg)
-{
-    double sumSquares = 0;
-
-    for (T m : a) {
-        double d = m - avg;
-        sumSquares += d * d;
+template <Queue Container>
+void experiment2(size_t n){
+    Container q;
+    for (int i = 0; i < n; ++i){
+        q.push_back(i);
     }
-    double s = sqrt(sumSquares / (a.size() - 1));
-    return s;
+    for (int i = 0; i < n; ++i){
+        q.pop_back();
+    }
 }
 
-void printExperiment(size_t expNumber,vector<double>& qvec, vector<double>& lvec){
-    double qavg = average(qvec);
-    double lavg = average(lvec);
-    cout << "Experiment " << expNumber << ": \t Avg \t Stdev" << endl;
-    cout << "Quack \t " << qavg << "\t" << stdDev(qvec, qavg) << endl;
-    cout << "List \t " << lavg << "\t" << stdDev(lvec, lavg) << "\n " << endl;
-    qvec.clear();
-    lvec.clear();
+template <Queue Container>
+void exp3(size_t n){
+    Container q;
+    for (size_t i = 0; i < n; ++i){
+        q.push_back(i);
+    }
+    for (size_t i = 0; i < n; ++i){
+        q.pop_front();
+    }
 }
 
-void exp1(vector<double>& quackVec, vector<double>& listVec, size_t n){
-    Quack<int> q;
-    list<int> l;
-    auto quackStart = chrono::high_resolution_clock::now();
+template <Queue Container>
+void exp4(size_t n){
+    Container q;
     for (size_t i = 0; i < n; ++i){
-        q.push(i);
-    }
-    auto quackEnd = chrono::high_resolution_clock::now();
-    chrono::duration<double> quackTime = quackEnd - quackStart;
-    quackVec.push_back(quackTime.count());
-
-    auto listStart = chrono::high_resolution_clock::now();
-    for (size_t i = 0; i < n; ++i){
-        l.push_back(i);
-    }
-    auto listEnd = chrono::high_resolution_clock::now();
-    chrono::duration<double> listTime = listEnd - listStart;
-    listVec.push_back(listTime.count());
-}
-
-void exp2(vector<double>& quackVec, vector<double>& listVec, size_t n){
-    Quack<int> q;
-    list<int> l;
-    auto quackStart = chrono::high_resolution_clock::now();
-    for (size_t i = 0; i < n; ++i){
-        q.push(i);
-    }
-    for (size_t i = 0; i < n; ++i){
-        q.pop();
-    }
-    auto quackEnd = chrono::high_resolution_clock::now();
-    chrono::duration<double> quackTime = quackEnd - quackStart;
-    quackVec.push_back(quackTime.count());
-
-    auto listStart = chrono::high_resolution_clock::now();
-    for (size_t i = 0; i < n; ++i){
-        l.push_back(i);
-    }
-    for (size_t i = 0; i < n; ++i){
-        l.pop_back();
-    }
-    auto listEnd = chrono::high_resolution_clock::now();
-    chrono::duration<double> listTime = listEnd - listStart;
-    listVec.push_back(listTime.count());
-}
-
-void exp3(vector<double>& quackVec, vector<double>& listVec, size_t n){
-    Quack<int> q;
-    list<int> l;
-    auto quackStart = chrono::high_resolution_clock::now();
-    for (size_t i = 0; i < n; ++i){
-        q.push(i);
-    }
-    for (size_t i = 0; i < n; ++i){
-        q.dequeue();
-    }
-    auto quackEnd = chrono::high_resolution_clock::now();
-    chrono::duration<double> quackTime = quackEnd - quackStart;
-    quackVec.push_back(quackTime.count());
-
-    auto listStart = chrono::high_resolution_clock::now();
-    for (size_t i = 0; i < n; ++i){
-        l.push_back(i);
-    }
-    for (size_t i = 0; i < n; ++i){
-        l.pop_front();
-    }
-    auto listEnd = chrono::high_resolution_clock::now();
-    chrono::duration<double> listTime = listEnd - listStart;
-    listVec.push_back(listTime.count());
-}
-
-void exp4(vector<double>& quackVec, vector<double>& listVec, size_t n){
-    Quack<int> q;
-    list<int> l;
-    auto quackStart = chrono::high_resolution_clock::now();
-    for (size_t i = 0; i < n; ++i){
-        q.push(i);
+        q.push_back(i);
     }
     for (size_t i = 0; i < n / 2; ++i)
     {
-        q.pop();
-        q.dequeue();
+        q.pop_back();
+        q.pop_front();
     }
-    auto quackEnd = chrono::high_resolution_clock::now();
-    chrono::duration<double> quackTime = quackEnd - quackStart;
-    quackVec.push_back(quackTime.count());
-
-    auto listStart = chrono::high_resolution_clock::now();
-    for (size_t i = 0; i < n; ++i){
-        l.push_back(i);
-    }
-    for (size_t i = 0; i < n / 2; ++i)
-    {
-        l.pop_back();
-        l.pop_front();
-    }
-    auto listEnd = chrono::high_resolution_clock::now();
-    chrono::duration<double> listTime = listEnd - listStart;
-    listVec.push_back(listTime.count());
 }
 
 int main(int argc, char **argv) {
@@ -148,37 +81,19 @@ int main(int argc, char **argv) {
     size_t n = (argc > 1) ? strtoul(argv[1], nullptr, 10) : 100000UL;
     size_t numExperiments = (argc > 2) ? strtoul(argv[2], nullptr, 10) : 10UL;
 
-    // Set up time tracking vectors
-    vector<double> listVec;
-    vector<double> quackVec;
+    BenchmarkSuite suite("Quack vs List");
+    suite.setConfig(n, numExperiments);
+    suite.addConfiguredTest("List: Push Backs", exp1<std::list<int>>, std::ref(n));
+    suite.addConfiguredTest("List: Pushes then pop backs", exp2<std::list<int>>, std::ref(n));
+    suite.addConfiguredTest("List: Pushes then pop fronts", exp3<std::list<int>>, std::ref(n));
+    suite.addConfiguredTest("List: Alternating pops", exp4<std::list<int>>, std::ref(n));
 
-    // Experiment 1: n pushes
-    for (size_t exp = 0; exp < numExperiments; ++exp)
-    {
-        exp1(quackVec, listVec, n);
-    }
-    printExperiment(1, quackVec, listVec);
+    suite.addConfiguredTest("Quack: Push Backs", exp1<QuackAdapter<int>>, std::ref(n));
+    suite.addConfiguredTest("Quack: Pushes then pop backs", exp2<QuackAdapter<int>>, std::ref(n));
+    suite.addConfiguredTest("Quack: Pushes then pop fronts", exp3<QuackAdapter<int>>, std::ref(n));
+    suite.addConfiguredTest("Quack: Alternating pops", exp4<QuackAdapter<int>>, std::ref(n));
 
-    // Experiment 2: n pushes, n pops
-    for (size_t exp = 0; exp < numExperiments; ++exp){
-        exp2(quackVec, listVec, n);
-    }
-    printExperiment(2, quackVec, listVec);
-
-
-
-    // Experiment 3: n pushes n dequeues
-    for (size_t exp = 0; exp < numExperiments; ++exp){
-        exp3(quackVec, listVec, n);
-    }
-    printExperiment(3, quackVec, listVec);
-
-
-    // Experiment 4: n pushes, n/2 alternating pops and dequeues.
-    for (size_t exp = 0; exp < numExperiments; ++exp){
-        exp4(quackVec, listVec, n);
-    }
-    printExperiment(4, quackVec, listVec);
+    suite.run();
+    suite.resultsToCSV("quack.csv");
     return 0;
 }
-
