@@ -24,7 +24,7 @@ concept Heap = requires(T &heap,
     heap.pop();
     heap.push(item, priority);
     heap.top();
-    heap.decreaseKey(item, priority);
+    heap.changeKey(item, priority);
 };
 
 /**
@@ -60,7 +60,7 @@ std::vector<uint16_t> dijkstra(Graph *g){
                 size_t offer = value + e.weight;
                 if (paths[e.outgoing] > offer){
                     // Update weight:
-                    h.decreaseKey(e.outgoing, offer);
+                    h.changeKey(e.outgoing, offer);
                     paths[e.outgoing] = offer;
                 }
             }
@@ -108,8 +108,8 @@ int main(){
             RandomGraphGenerator gen(sparsity, n);
             auto [list, mat] = gen.makeGraphs(10);
             suite.setConfig(n, 10);
-            suite.addVaryingInputs("Dijkstra Binary Heap List", dijkstra<BinaryHeap<size_t>>, list);
-            suite.addVaryingInputs("Dijkstra Binary Heap Matrix", dijkstra<BinaryHeap<size_t>>, mat);
+            suite.addVaryingInputs("Dijkstra Binary Heap List", dijkstra<BinaryMinHeap<size_t>>, list);
+            suite.addVaryingInputs("Dijkstra Binary Heap Matrix", dijkstra<BinaryMinHeap<size_t>>, mat);
             suite.addVaryingInputs("Dijkstra DAry Heap 5 List", dijkstra<DAryHeap<size_t, size_t, 5>>, list);
             suite.addVaryingInputs("Dijkstra DAry Heap 5 Matrix", dijkstra<DAryHeap<size_t, size_t, 5>>, mat);
             suite.addVaryingInputs("Dijkstra DAry Heap 10 List", dijkstra<DAryHeap<size_t, size_t, 10>>, list);

@@ -26,7 +26,7 @@ concept BasicHeap = requires(T &heap,
 
 template <typename T, typename P>
 class PQAdaptor {
-    std::priority_queue<T> pq;
+    std::priority_queue<T, std::vector<T>, std::less<T>> pq;
 
 public:
     using value_type = T;

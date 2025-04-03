@@ -1,10 +1,10 @@
 #include "binomial.hpp"
 
-template <typename T, typename P>
-BinomialHeap<T, P>::BinomialHeap():size_{0}, min_{nullptr}{}
+template <typename T, typename P, typename Compare>
+BinomialHeap<T, P, Compare>::BinomialHeap():size_{0}, comp_{}, min_{nullptr}{}
 
-template <typename T, typename P>
-BinomialHeap<T, P>::~BinomialHeap()
+template <typename T, typename P, typename Compare>
+BinomialHeap<T, P, Compare>::~BinomialHeap()
 {
     while (!nodes_.empty()) {
         Node *n = nodes_.front();
@@ -13,36 +13,36 @@ BinomialHeap<T, P>::~BinomialHeap()
     }
 }
 
-template <typename T, typename P>
-bool BinomialHeap<T,P>::empty() const{
+template <typename T, typename P, typename Compare>
+bool BinomialHeap<T, P, Compare>::empty() const{
     return size_ == 0;
 }
 
-template <typename T, typename P>
-size_t BinomialHeap<T,P>::size() const {
+template <typename T, typename P, typename Compare>
+size_t BinomialHeap<T, P, Compare>::size() const {
     return size_;
 }
 
-template <typename T, typename P>
-T BinomialHeap<T,P>::top() const{
+template <typename T, typename P, typename Compare>
+T BinomialHeap<T, P, Compare>::top() const{
     if (!size_){
         throw std::logic_error("Cannot get top of an empty heap");
     }
     return min_->item_.item_;
 }
 
-template <typename T, typename P>
-void BinomialHeap<T,P>::push(T item, P priority){
+template <typename T, typename P, typename Compare>
+void BinomialHeap<T, P, Compare>::push(T item, P priority){
     nodes_.push_front(new Node({item, priority}));
     nodeMap_.insert({item, nodes_.front()});
-    if (min_ == nullptr or priority < min_->item_.priority_) {
+    if (min_ == nullptr or comp_(priority,min_->item_.priority_)) {
         min_ = nodes_.front();
     }
     ++size_;
 }
 
-template <typename T, typename P>
-void BinomialHeap<T,P>::pop(){
+template <typename T, typename P, typename Compare>
+void BinomialHeap<T, P, Compare>::pop(){
     if (!size_){
         throw std::logic_error("Cannot pop from an empty heap");
     }
@@ -62,21 +62,21 @@ void BinomialHeap<T,P>::pop(){
 
 }
 
-template <typename T, typename P>
-BinomialHeap<T,P>::Node* BinomialHeap<T,P>::mergeNodes(Node* n1, Node* n2){
-    if (n1->item_.priority_ > n2->item_.priority_){
-        n1->parent_ = n2;
-        n2->children_.push_back(n1);
-        return n2;
-    } else {
+template <typename T, typename P, typename Compare>
+BinomialHeap<T, P, Compare>::Node* BinomialHeap<T, P, Compare>::mergeNodes(Node* n1, Node* n2){
+    if (comp_(n1->item_.priority_, n2->item_.priority_)){
         n2->parent_ = n1;
         n1->children_.push_back(n2);
         return n1;
+    } else {
+        n1->parent_ = n2;
+        n2->children_.push_back(n1);
+        return n2;
     }
 }
 
-template <typename T, typename P>
-void BinomialHeap<T,P>::cleanup() {
+template <typename T, typename P, typename Compare>
+void BinomialHeap<T, P, Compare>::cleanup() {
     short possibleRanks = std::ceil(std::log2(size_ + 1));
     std::vector<Node *> nodeArray(possibleRanks);
     std::ranges::fill(nodeArray, nullptr);
@@ -112,26 +112,26 @@ void BinomialHeap<T,P>::cleanup() {
         if (n){
             // If this is the new minimum, then keep track of it. 
             nodes_.push_front(n);
-            if ((min_ == nullptr) or (n->item_.priority_ < min_->item_.priority_)){
+            if ((min_ == nullptr) or comp_(n->item_.priority_, min_->item_.priority_)){
                 min_ = n;
             }
         }
     }
 }
 
-template <typename T, typename P>
-void BinomialHeap<T,P>::decreaseKey(T item, P newPriority){
+template <typename T, typename P, typename Compare>
+void BinomialHeap<T, P, Compare>::changeKey(T item, P newPriority){
     if (!nodeMap_.contains(item)){
-        throw std::invalid_argument("Cannot decrease a key value for a key not in the heap");
+        throw std::invalid_argument("Cannot change a key value for a key not in the heap");
     }
     Node* n = nodeMap_.at(item);
     P curPriority = n->item_.priority_;
-    if (newPriority >= curPriority) {
-        throw std::invalid_argument("Cannot decrease a key value to a greater value");
+    if (comp_(curPriority, newPriority)) {
+        throw std::invalid_argument("Cannot change key priority to this value");
     }
 
     n->item_.priority_ = newPriority;
-    while (n->parent_ && n->parent_->item_.priority_ > n->item_.priority_)
+    while (n->parent_ &&  comp_(n->item_.priority_, n->parent_->item_.priority_))
     {
         // just swap the values not the actual nodes.
         Node *parent = n->parent_;
@@ -140,16 +140,16 @@ void BinomialHeap<T,P>::decreaseKey(T item, P newPriority){
         n = parent;
     }
     // Update minimum if necessary
-    if (n->item_.priority_ < min_->item_.priority_){
+    if (comp_(n->item_.priority_, min_->item_.priority_)){
         min_ = n;
     }
 }
 
-template <typename T, typename P>
-BinomialHeap<T, P>::Node::Node(BinomialHeap<T,P>::Item item) : item_{item},parent_{nullptr}{}
+template <typename T, typename P, typename Compare>
+BinomialHeap<T, P, Compare>::Node::Node(BinomialHeap<T, P, Compare>::Item item) : item_{item},parent_{nullptr}{}
 
-template <typename T, typename P>
-BinomialHeap<T, P>::Node::~Node(){
+template <typename T, typename P, typename Compare>
+BinomialHeap<T, P, Compare>::Node::~Node(){
     for (Node*& child : children_){
         delete child;
     }
