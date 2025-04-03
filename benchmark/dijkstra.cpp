@@ -3,7 +3,7 @@
 #include <iostream>
 #include <chrono>
 
-
+// Benchmark library and graph library
 #include "graph.hpp"
 #include "randomGraphs.hpp"
 #include "benchmark.hpp"
@@ -12,20 +12,12 @@
 #include "heap/d-ary.hpp"
 #include "heap/binomial.hpp"
 #include "heap/fibonacci.hpp"
+#include "interfaces.hpp"
 
+// Matplot++
 #include <matplot/matplot.h>
 
-template <typename T>
-concept Heap = requires(T &heap,
-                        T::value_type item,
-                        T::priority_type priority) {
-    heap.empty();
-    heap.size();
-    heap.pop();
-    heap.push(item, priority);
-    heap.top();
-    heap.changeKey(item, priority);
-};
+
 
 /**
  * @brief Implementation of Dijkstra's algorithm that takes in a graph 

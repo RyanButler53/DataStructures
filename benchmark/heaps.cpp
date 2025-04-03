@@ -1,5 +1,4 @@
 
-#include <concepts>
 #include <vector>
 #include <tuple>
 #include <functional>
@@ -11,18 +10,7 @@
 #include "heap/d-ary.hpp"
 #include "heap/binomial.hpp"
 #include "heap/fibonacci.hpp"
-
-
-template <typename T>
-concept BasicHeap = requires(T &heap,
-                             T::value_type value,
-                             T::priority_type priority) {
-    heap.empty();
-    heap.size();
-    heap.pop();
-    heap.push(value,priority);
-    heap.top();
-};
+#include "interfaces.hpp"
 
 template <typename T, typename P>
 class PQAdaptor {

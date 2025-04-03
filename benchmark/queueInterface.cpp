@@ -3,16 +3,17 @@
 #include <vector>
 #include "unrolled-linked-list/unrolled-linked-list.hpp"
 #include "quack/quack.hpp"
-#include <chrono>
 #include <random>
 #include <string>
 #include <iostream>
-#include <concepts>
 #include <thread>
 #include <mutex>
 #include <chrono>
 #include <future>
 #include "benchmark.hpp"
+
+#include "interfaces.hpp"
+// This file still needs to be rewritten
 
 /// @brief Quack needs an adapter to have the correct name for Queue concept
 template <typename T>
@@ -29,16 +30,6 @@ public:
     void pop_back() { q_.pop(); }
     size_t size() { return q_.size(); }
 };
-
-template <typename Container>
-concept Queue = requires(Container &container, const typename Container::value_type &value) {
-    container.push_back(value);
-    container.push_front(value);
-    container.pop_front();
-    container.pop_back();
-    container.size();
-};
-
 
 template <Queue Container>
 class Benchmark_Queue : Benchmark {

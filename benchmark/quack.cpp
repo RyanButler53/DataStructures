@@ -4,7 +4,7 @@
 #include <iostream>
 #include <numeric>
 #include <chrono>
-#include <concepts>
+#include "interfaces.hpp"
 #include "benchmark.hpp"
 
 /// @brief Quack needs an adapter to have the correct name for Queue concept
@@ -23,14 +23,7 @@ public:
     size_t size() { return q_.size(); }
 };
 
-template <typename Container>
-concept Queue = requires(Container &container, const typename Container::value_type &value) {
-    container.push_back(value);
-    container.push_front(value);
-    container.pop_front();
-    container.pop_back();
-    container.size();
-};
+
 
 template <Queue Container>
 void exp1(size_t n){

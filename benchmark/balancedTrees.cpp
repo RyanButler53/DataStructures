@@ -5,24 +5,9 @@
 #include <random>
 #include <string>
 #include <iostream>
-#include <concepts>
 #include "benchmark.hpp"
+#include "interfaces.hpp"
 
-template <typename TreeType>
-concept Tree = requires(TreeType &tree,
-                        TreeType::value_type &pair,
-                        TreeType::const_iterator iter,
-                        const TreeType::key_type &key,
-                        TreeType::mapped_type value) {
-    tree.insert(pair);
-    iter = tree.find(key);
-    iter = tree.begin();
-    iter = tree.end();
-    tree.operator[](key);
-    tree.find(key);
-    tree.clear();
-    tree.erase(key);
-};
 
 class Setup {
     
@@ -147,6 +132,8 @@ int main(int argc, char** argv) {
         numOps = atoi(argv[1]);
     }
     std::vector<int> balanced, shuffled, duplicates;
+    
+    // Setup phase: 
     Setup s(numOps);
     std::thread balancedThread([&s, &balanced]()
                                { s.getBalanced(balanced); });
@@ -158,7 +145,6 @@ int main(int argc, char** argv) {
     balancedThread.join();
     shuffledThread.join();
     duplicatesThread.join();
-    // Setup phase: 
 
     // Make a benchmark suite:
     BenchmarkSuite suite("Balanced Trees Suite");

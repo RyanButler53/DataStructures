@@ -5,23 +5,7 @@
 
 #include "benchmark.hpp"
 #include "unrolled-linked-list/unrolled-linked-list.hpp"
-
-
-// Should be able to have any integral type instead of just an int
-template <typename IntContainer>
-concept LinkedList = requires(IntContainer &container, 
-                            int value, 
-                            typename IntContainer::iterator it) {
-    container.push_back(value);
-    container.push_front(value);
-    container.pop_front();
-    container.pop_back();
-    container.size();
-    container.clear();
-    it = container.begin();
-    it = container.end();
-    
-};
+#include "interfaces.hpp"
 
 template <LinkedList List>
 void setup(List& l, size_t numOps) {
