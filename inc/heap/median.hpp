@@ -14,13 +14,13 @@ class MedianHeap
 
   public:
 
-    using T = MaxHeap::value_type;
+    using value_type = MaxHeap::value_type;
 
     MedianHeap() = default;
     ~MedianHeap() = default;
 
-    void insert(T value);
-    T findMedian()const ;
+    void insert(value_type value);
+    value_type findMedian()const ;
     void deleteMedian();
 };
 

@@ -1,7 +1,7 @@
 #include "median.hpp"
 
 template <BasicHeap MinHeap, BasicHeap MaxHeap>
-void MedianHeap<MinHeap, MaxHeap>::insert(MedianHeap::T value){
+void MedianHeap<MinHeap, MaxHeap>::insert(MedianHeap::value_type value){
 
     // Empty case
     if (bottomHeap_.empty() && topHeap_.empty()){
@@ -9,7 +9,7 @@ void MedianHeap<MinHeap, MaxHeap>::insert(MedianHeap::T value){
         return;
     }
 
-    T median = findMedian();
+    value_type median = findMedian();
 
     // If same size, insert the value into the correct heap. 
     if (bottomHeap_.size() == topHeap_.size()){

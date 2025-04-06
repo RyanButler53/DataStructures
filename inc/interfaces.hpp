@@ -1,3 +1,5 @@
+#pragma once
+
 #include <concepts>
 
 // Interface for a Tree Map structure
@@ -71,7 +73,7 @@ concept LinkedList = requires(Container &container,
 template <typename Heap>
 concept RunningMedian = requires(Heap &heap,
                               Heap::value_type value){
-    heap.insert();
+    heap.insert(value);
     heap.findMedian();
     heap.deleteMedian();
 };

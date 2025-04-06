@@ -11,23 +11,7 @@
 #include "heap/binomial.hpp"
 #include "heap/fibonacci.hpp"
 #include "interfaces.hpp"
-
-template <typename T, typename P>
-class PQAdaptor {
-    std::priority_queue<T, std::vector<T>, std::less<T>> pq;
-
-public:
-    using value_type = T;
-    using priority_type = P;
-
-    PQAdaptor() = default;
-    ~PQAdaptor() = default;
-    bool empty() { return pq.empty();}
-    T top() { return pq.top(); }
-    void pop() { pq.pop(); }
-    void push(T item, P priority) {pq.push(item); }
-    size_t size() { return pq.size(); }
-};
+#include "adaptors.hpp" // for std::priority_queue
 
 
 // Kofn: Get the minimum K of a set of n numbers.
