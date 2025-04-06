@@ -1,6 +1,6 @@
 #include <concepts>
 
-// Interface for a Tree data structure
+// Interface for a Tree Map structure
 template <typename TreeType>
 concept Tree = requires(TreeType &tree,
                         TreeType::value_type &pair,
@@ -66,4 +66,12 @@ concept LinkedList = requires(Container &container,
     it = container.begin();
     it = container.end();
     container.insert(it, value); // Gives linked list fast insertion
+};
+
+template <typename Heap>
+concept RunningMedian = requires(Heap &heap,
+                              Heap::value_type value){
+    heap.insert();
+    heap.findMedian();
+    heap.deleteMedian();
 };

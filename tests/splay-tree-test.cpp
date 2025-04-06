@@ -90,7 +90,6 @@ TEST(SplayTreeTest, general){
     }
     ASSERT_EQ(st.size(), 0);
 
-    
 }
 
 TEST(SplayTreeTest, destructor){
