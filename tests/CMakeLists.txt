@@ -19,9 +19,11 @@ add_executable(scapegoat-tree scapegoat-test.cpp)
 add_executable(splay-tree splay-tree-test.cpp)
 add_executable(unrolled-ll ULL-test.cpp)
 add_executable(heap heap-test.cpp)
+add_executable(median median-test.cpp)
 
 # Link to google test if necessary
 target_link_libraries(unrolled-ll gtest) 
 target_link_libraries(splay-tree gtest)
 target_link_libraries(heap gtest)
+target_link_libraries(median gtest)
 

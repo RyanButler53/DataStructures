@@ -4,33 +4,10 @@
 #include <iostream>
 #include <numeric>
 #include <chrono>
-#include <concepts>
+
+#include "adaptors.hpp"
+#include "interfaces.hpp"
 #include "benchmark.hpp"
-
-/// @brief Quack needs an adapter to have the correct name for Queue concept
-template <typename T>
-class QuackAdapter {
-    Quack<T> q_;
-
-public:
-    using value_type = T;
-    QuackAdapter() = default;
-    ~QuackAdapter() = default;
-    void push_back(const T &value) { q_.push(value); }
-    void push_front(const T &value) { q_.push_front(value); }
-    void pop_front() { q_.dequeue(); }
-    void pop_back() { q_.pop(); }
-    size_t size() { return q_.size(); }
-};
-
-template <typename Container>
-concept Queue = requires(Container &container, const typename Container::value_type &value) {
-    container.push_back(value);
-    container.push_front(value);
-    container.pop_front();
-    container.pop_back();
-    container.size();
-};
 
 template <Queue Container>
 void exp1(size_t n){

@@ -3,5 +3,5 @@ build/
 .DS_store
 # Cannot publicly distribute copies of papers for specific data structures
 papers/
-# Graph files
-graphing/
+# Graphing scripts and results
+results/

@@ -30,6 +30,7 @@ add_executable(iteration listIteration.cpp)
 add_executable(tree balancedTrees.cpp)
 add_executable(dijkstra dijkstra.cpp)
 add_executable(heaps heaps.cpp)
+add_executable(medians medians.cpp)
 
 # Link with appropriate libraries
 target_link_libraries(queue benchmark)
@@ -38,3 +39,4 @@ target_link_libraries(iteration benchmark)
 target_link_libraries(tree benchmark)
 target_link_libraries(dijkstra graph benchmark matplot)
 target_link_libraries(heaps benchmark)
+target_link_libraries(medians benchmark)

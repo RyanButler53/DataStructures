@@ -5,8 +5,9 @@
 #include <list>
 #include <map>
 #include <cmath>
+#include <functional>
 
-template <typename T, typename P>
+template <typename T, typename P, typename Compare = std::less<P>>
 class BinomialHeap
 {
 private:
@@ -32,7 +33,9 @@ private:
     std::map<T, Node *> nodeMap_;
     Node *min_;
     size_t size_;
+    Compare comp_;
 
+    // Private Methods
     void cleanup();
     Node* mergeNodes(Node*n1, Node* n2);
 
@@ -50,7 +53,7 @@ private:
     void pop();
     T top() const;
     void push(T item, P priority);
-    void decreaseKey(T item, P priority);
+    void changeKey(T item, P priority);
 };
 
 #include "binomial-private.hpp"

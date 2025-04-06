@@ -1,10 +1,10 @@
 #include "fibonacci.hpp"
 #include <iostream>
-template <typename T, typename P>
-FibonacciHeap<T,P>::FibonacciHeap():size_{0},min_{nullptr}{}
+template <typename T, typename P, typename Compare>
+FibonacciHeap<T, P, Compare>::FibonacciHeap():size_{0},min_{nullptr},comp_{}{}
 
-template <typename T, typename P>
-FibonacciHeap<T,P>::~FibonacciHeap() {
+template <typename T, typename P, typename Compare>
+FibonacciHeap<T, P, Compare>::~FibonacciHeap() {
     while (!nodes_.empty()) {
         Node *n = nodes_.front();
         delete n;
@@ -12,16 +12,48 @@ FibonacciHeap<T,P>::~FibonacciHeap() {
     }
 }
 
-template <typename T, typename P>
-T FibonacciHeap<T,P>::top() const{
+template <typename T, typename P, typename Compare>
+T FibonacciHeap<T, P, Compare>::top() const{
     if (!size_){
         throw std::logic_error("Cannot get top of an empty heap");
     }
     return min_->item_.item_;
 }
 
-template <typename T, typename P>
-void FibonacciHeap<T,P>::pop(){
+template <typename T, typename P, typename Compare>
+void FibonacciHeap<T, P, Compare>::push(T item, P priority){
+    nodes_.push_front(new Node({item, priority}));
+    nodeMap_.insert({item, nodes_.front()});
+    if (min_ == nullptr or comp_(priority, min_->item_.priority_)) {
+        min_ = nodes_.front();
+    }
+    ++size_;
+}
+
+
+// Helper functions: 
+template <typename T, typename P, typename Compare>
+FibonacciHeap<T, P, Compare>::Node* FibonacciHeap<T, P, Compare>::mergeNodes(Node* n1, Node* n2){
+    // Clear the mark on the CHILD NODE
+    // May be possible to simplify this code. 
+    /*n1->item_.priority_ > n2->item_.priority_*/
+    if (comp_(n2->item_.priority_, n1->item_.priority_)){
+        n1->parent_ = n2;
+        n2->children_.push_back(n1);
+        n1->index_ = n2->children_.size() -1;
+        n1->mark_ = false;
+        return n2;
+    } else {
+        n2->parent_ = n1;
+        n1->children_.push_back(n2);
+        n2->index_ = n1->children_.size() -1;
+        n2->mark_ = false;
+        return n1;
+    }
+}
+
+template <typename T, typename P, typename Compare>
+void FibonacciHeap<T, P, Compare>::pop(){
     if (!size_){
         throw std::logic_error("Cannot pop from an empty heap");
     }
@@ -39,38 +71,8 @@ void FibonacciHeap<T,P>::pop(){
     cleanup();
 }
 
-template <typename T, typename P>
-void FibonacciHeap<T,P>::push(T item, P priority){
-    nodes_.push_front(new Node({item, priority}));
-    nodeMap_.insert({item, nodes_.front()});
-    if (min_ == nullptr or priority < min_->item_.priority_) {
-        min_ = nodes_.front();
-    }
-    ++size_;
-}
-
-// Helper functions: 
-template <typename T, typename P>
-FibonacciHeap<T,P>::Node* FibonacciHeap<T,P>::mergeNodes(Node* n1, Node* n2){
-    // Clear the mark on the CHILD NODE
-    // May be possible to simplify this code. 
-    if (n1->item_.priority_ > n2->item_.priority_){
-        n1->parent_ = n2;
-        n2->children_.push_back(n1);
-        n1->index_ = n2->children_.size() -1;
-        n1->mark_ = false;
-        return n2;
-    } else {
-        n2->parent_ = n1;
-        n1->children_.push_back(n2);
-        n2->index_ = n1->children_.size() -1;
-        n2->mark_ = false;
-        return n1;
-    }
-}
-
-template <typename T, typename P>
-void FibonacciHeap<T,P>::cleanup() {
+template <typename T, typename P, typename Compare>
+void FibonacciHeap<T, P, Compare>::cleanup() {
     short possibleRanks = std::ceil(std::log2(size_ + 1));
     std::vector<Node *> nodeArray(possibleRanks + 1);
     std::ranges::fill(nodeArray, nullptr);
@@ -106,40 +108,40 @@ void FibonacciHeap<T,P>::cleanup() {
         if (n){
             // If this is the new minimum, then keep track of it. 
             nodes_.push_front(n);
-            if ((min_ == nullptr) or (n->item_.priority_ < min_->item_.priority_)){
+            if ((min_ == nullptr) or comp_(n->item_.priority_, min_->item_.priority_)){
                 min_ = n;
             }
         }
     }
 }
 
-template <typename T, typename P>
-void FibonacciHeap<T,P>::decreaseKey(T item, P newPriority){
+template <typename T, typename P, typename Compare>
+void FibonacciHeap<T, P, Compare>::changeKey(T item, P newPriority){
     if (!nodeMap_.contains(item)){
-        throw std::invalid_argument("Cannot decrease a key value for a key not in the heap");
+        throw std::invalid_argument("Cannot change a key value for a key not in the heap");
     }
     Node* n = nodeMap_.at(item);
     P curPriority = n->item_.priority_;
-    if (newPriority >= curPriority) {
-        throw std::invalid_argument("Cannot decrease a key value to a greater value");
+    if (comp_(curPriority, newPriority)) {
+        throw std::invalid_argument("Cannot change key priority to this value");
     }
 
     n->item_.priority_ = newPriority;
     Node* p = n->parent_;
     // Check if tree structure needs changing
-    if (p != nullptr and n->item_.priority_ < p->item_.priority_){
+    if (p != nullptr and comp_(n->item_.priority_, p->item_.priority_)){
         cut(n);
         cascadingCut(p);
     }
 
     // Update minimum if necessary
-    if (n->item_.priority_ < min_->item_.priority_){
+    if (comp_(n->item_.priority_, min_->item_.priority_)){
         min_ = n;
     }
 }
 
-template <typename T, typename P>
-void FibonacciHeap<T, P>::cut(Node* c){
+template <typename T, typename P, typename Compare>
+void FibonacciHeap<T, P, Compare>::cut(Node* c){
     // Bookkeeping values
     Node* n = c->parent_;
     uint8_t oldIndex = c->index_;
@@ -160,8 +162,8 @@ void FibonacciHeap<T, P>::cut(Node* c){
     }
 }
 
-template <typename T, typename P>
-void FibonacciHeap<T, P>::cascadingCut(Node* c){
+template <typename T, typename P, typename Compare>
+void FibonacciHeap<T, P, Compare>::cascadingCut(Node* c){
     Node* p = c->parent_;
     if (p){
         if (!c->mark_){
@@ -174,12 +176,12 @@ void FibonacciHeap<T, P>::cascadingCut(Node* c){
 }
 
 // Node Functions: 
-template <typename T, typename P>
-FibonacciHeap<T, P>::Node::Node(FibonacciHeap<T,P>::Item item): 
+template <typename T, typename P, typename Compare>
+FibonacciHeap<T, P, Compare>::Node::Node(FibonacciHeap<T, P, Compare>::Item item): 
     item_{item}, parent_{nullptr}, index_{0}, mark_{false}{}
 
-template <typename T, typename P>
-FibonacciHeap<T, P>::Node::~Node(){
+template <typename T, typename P, typename Compare>
+FibonacciHeap<T, P, Compare>::Node::~Node(){
     for (Node*& child : children_){
         delete child;
     }

@@ -1,5 +1,4 @@
 
-#include <concepts>
 #include <vector>
 #include <tuple>
 #include <functional>
@@ -11,35 +10,8 @@
 #include "heap/d-ary.hpp"
 #include "heap/binomial.hpp"
 #include "heap/fibonacci.hpp"
-
-
-template <typename T>
-concept BasicHeap = requires(T &heap,
-                             T::value_type value,
-                             T::priority_type priority) {
-    heap.empty();
-    heap.size();
-    heap.pop();
-    heap.push(value,priority);
-    heap.top();
-};
-
-template <typename T, typename P>
-class PQAdaptor {
-    std::priority_queue<T> pq;
-
-public:
-    using value_type = T;
-    using priority_type = P;
-
-    PQAdaptor() = default;
-    ~PQAdaptor() = default;
-    bool empty() { return pq.empty();}
-    T top() { return pq.top(); }
-    void pop() { pq.pop(); }
-    void push(T item, P priority) {pq.push(item); }
-    size_t size() { return pq.size(); }
-};
+#include "interfaces.hpp"
+#include "adaptors.hpp" // for std::priority_queue
 
 
 // Kofn: Get the minimum K of a set of n numbers.

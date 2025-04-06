@@ -1,3 +1,4 @@
+
 #include <gtest/gtest.h>
 #include <vector>
 #include <concepts>
@@ -5,6 +6,7 @@
 #include <iostream>
 #include <algorithm>
 #include <random>
+
 // Heaps
 #include "heap/d-ary.hpp"
 #include "heap/binomial.hpp"
@@ -21,14 +23,14 @@ concept Heap = requires(T& heap,
     heap.pop();
     heap.push(item, priority);
     heap.top();
-    heap.decreaseKey(item, priority);
+    heap.changeKey(item, priority);
 };
 
 class NameGenerator {
   public:
     template <typename T>
     static std::string GetName(int) {
-       if constexpr (std::is_same_v<T, BinaryHeap<int>>) return "Binary Heap";
+       if constexpr (std::is_same_v<T, BinaryMinHeap<int>>) return "Binary Heap";
        if constexpr (std::is_same_v<T, DAryHeap<int,int,4>>) return "D-Ary Heap (d=4)";
        if constexpr (std::is_same_v<T, BinomialHeap<int, int>>) return "Binomial Heap";
        if constexpr (std::is_same_v<T, FibonacciHeap<int, int>>) return "Fibonacci Heap";
@@ -57,7 +59,7 @@ class HeapTest : public testing::Test {
 
 using testing::Types;
 
-typedef Types<BinaryHeap<int>, 
+typedef Types<BinaryMinHeap<int>,
               DAryHeap<int, int, 4>, 
               BinomialHeap<int, int>,
               FibonacciHeap<int, int>> Implementations;
@@ -126,7 +128,7 @@ TYPED_TEST(HeapTest, FuzzPush){
     }
     // Trigger a re-shuffle
     this->heap_.pop();
-    // Tests destructor
+    // Tests destructor memory cleanup
 }
 
 TYPED_TEST(HeapTest, FuzzPop){
@@ -148,22 +150,22 @@ TYPED_TEST(HeapTest, FuzzPop){
     ASSERT_TRUE(this->heap_.empty());
 }
 
-TYPED_TEST(HeapTest, DecreaseKey){
+TYPED_TEST(HeapTest, changeKey){
     this->heap_.push(1,1);
     this->heap_.push(2,2);
     this->heap_.push(5,5);
     this->heap_.push(-1,-1);
     this->heap_.push(7,7);
 
-    this->heap_.decreaseKey(5, -2);
+    this->heap_.changeKey(5, -2);
     ASSERT_EQ(this->heap_.top(), 5);
     try {
-        this->heap_.decreaseKey(-1, 2);
+        this->heap_.changeKey(-1, 2);
         FAIL() << "Expected invalid argument";
     }
     catch (std::invalid_argument &e)
     {
-        ASSERT_EQ(e.what(), std::string("Cannot decrease a key value to a greater value"));
+        ASSERT_EQ(e.what(), std::string("Cannot change key priority to this value"));
     }
     catch (...)
     {
@@ -173,14 +175,14 @@ TYPED_TEST(HeapTest, DecreaseKey){
     this->heap_.push(15, -15);
     this->heap_.pop();
 
-    this->heap_.decreaseKey(7, 5);
-    this->heap_.decreaseKey(5, -3);
-    this->heap_.decreaseKey(7, -2);
+    this->heap_.changeKey(7, 5);
+    this->heap_.changeKey(5, -3);
+    this->heap_.changeKey(7, -2);
     ASSERT_EQ(this->heap_.top(), 5);
-    this->heap_.decreaseKey(2, -5);
+    this->heap_.changeKey(2, -5);
     ASSERT_EQ(this->heap_.top(), 2);
     this->heap_.pop();
-    this->heap_.decreaseKey(5, -5);
+    this->heap_.changeKey(5, -5);
     ASSERT_EQ(this->heap_.top(), 5);
     this->heap_.pop();
     ASSERT_EQ(this->heap_.top(), 7);

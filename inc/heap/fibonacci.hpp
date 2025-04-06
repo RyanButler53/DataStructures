@@ -4,8 +4,9 @@
 #include <vector>
 #include <list>
 #include <map>
+#include <functional>
 
-template <typename T, typename P>
+template <typename T, typename P, typename Compare = std::less<P>>
 class FibonacciHeap {
   
     // Private struct to hold heap items
@@ -28,6 +29,7 @@ class FibonacciHeap {
     // Data
     std::list<Node *> nodes_;
     std::map<T, Node *> nodeMap_;
+    Compare comp_;
     Node *min_;
     size_t size_;
 
@@ -50,7 +52,7 @@ class FibonacciHeap {
     void pop();
     T top() const;
     void push(T item, P priority);
-    void decreaseKey(T item, P newPriority);
+    void changeKey(T item, P newPriority);
 };
 
 #include "fibonacci-private.hpp"

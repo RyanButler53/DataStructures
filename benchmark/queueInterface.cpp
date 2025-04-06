@@ -3,42 +3,18 @@
 #include <vector>
 #include "unrolled-linked-list/unrolled-linked-list.hpp"
 #include "quack/quack.hpp"
-#include <chrono>
 #include <random>
 #include <string>
 #include <iostream>
-#include <concepts>
 #include <thread>
 #include <mutex>
 #include <chrono>
 #include <future>
 #include "benchmark.hpp"
 
-/// @brief Quack needs an adapter to have the correct name for Queue concept
-template <typename T>
-class QuackAdapter {
-    Quack<T> q_;
-
-public:
-    using value_type = T;
-    QuackAdapter() = default;
-    ~QuackAdapter() = default;
-    void push_back(const T &value) { q_.push(value); }
-    void push_front(const T &value) { q_.push_front(value); }
-    void pop_front() { q_.dequeue(); }
-    void pop_back() { q_.pop(); }
-    size_t size() { return q_.size(); }
-};
-
-template <typename Container>
-concept Queue = requires(Container &container, const typename Container::value_type &value) {
-    container.push_back(value);
-    container.push_front(value);
-    container.pop_front();
-    container.pop_back();
-    container.size();
-};
-
+#include "adaptors.hpp"
+#include "interfaces.hpp"
+// This file still needs to be rewritten
 
 template <Queue Container>
 class Benchmark_Queue : Benchmark {
