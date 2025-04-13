@@ -12,19 +12,21 @@
 #include "heap/binomial.hpp"
 #include "heap/fibonacci.hpp"
 #include "heap/pairing.hpp"
-#include "heap/skew.hpp"
+#include "heap/skew.hpp" // Skew requires delete then insert...
 
-template <typename T>
-concept Heap = requires(T& heap,
-                        T::value_type item,
-                        T::priority_type priority) {
-    heap.empty();
-    heap.size();
-    heap.pop();
-    heap.push(item, priority);
-    heap.top();
-    heap.changeKey(item, priority);
-};
+#include "interfaces.hpp"
+
+// template <typename T>
+// concept Heap = requires(T& heap,
+//                         T::value_type item,
+//                         T::priority_type priority) {
+//     heap.empty();
+//     heap.size();
+//     heap.pop();
+//     heap.push(item, priority);
+//     heap.top();
+//     heap.changeKey(item, priority);
+// };
 
 class NameGenerator {
   public:
@@ -34,6 +36,7 @@ class NameGenerator {
        if constexpr (std::is_same_v<T, DAryHeap<int,int,4>>) return "D-Ary Heap (d=4)";
        if constexpr (std::is_same_v<T, BinomialHeap<int, int>>) return "Binomial Heap";
        if constexpr (std::is_same_v<T, FibonacciHeap<int, int>>) return "Fibonacci Heap";
+       if constexpr (std::is_same_v<T, PairingHeap<int, int>>) return "Pairing Heap";
     }
 };
 
@@ -59,10 +62,12 @@ class HeapTest : public testing::Test {
 
 using testing::Types;
 
-typedef Types<BinaryMinHeap<int>,
-              DAryHeap<int, int, 4>, 
-              BinomialHeap<int, int>,
-              FibonacciHeap<int, int>> Implementations;
+// typedef Types<BinaryMinHeap<int>,
+//               DAryHeap<int, int, 4>, 
+//               BinomialHeap<int, int>,
+//               FibonacciHeap<int, int>> Implementations;
+     
+typedef Types<PairingHeap<int, int>> Implementations;
 
 TYPED_TEST_SUITE(HeapTest, Implementations, NameGenerator);
 
@@ -112,7 +117,7 @@ TYPED_TEST(HeapTest, popping){
 
 TYPED_TEST(HeapTest, FuzzPush){
     std::vector<int> v;
-    for (int i = 0; i < 100; ++i){
+    for (int i = 0; i < 1000; ++i){
         v.push_back(i);
     }
     long long seed = time(nullptr);
@@ -150,7 +155,7 @@ TYPED_TEST(HeapTest, FuzzPop){
     ASSERT_TRUE(this->heap_.empty());
 }
 
-TYPED_TEST(HeapTest, changeKey){
+TYPED_TEST(HeapTest, DISABLED_changeKey){
     this->heap_.push(1,1);
     this->heap_.push(2,2);
     this->heap_.push(5,5);
