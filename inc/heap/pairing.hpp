@@ -3,7 +3,7 @@
 
 #include <functional>
 #include <list>
-#include <map>
+#include <unordered_map>
 #include <vector>
 
 template <typename T, typename P, typename Compare = std::less<T>>
@@ -18,7 +18,7 @@ class PairingHeap {
     struct Node
     {
         Item item_;
-        Node* lchild_; // Points to its first child
+        Node* lchild_; // Points to its first "youngest" child
         Node* sibling_; // Points to next "older" sibling
         Node* parent_; 
 
@@ -27,7 +27,7 @@ class PairingHeap {
     };
     
     // Data
-    std::map<T, Node *> nodeMap_;
+    std::unordered_map<T, Node *> nodeMap_;
     Compare comp_;
     Node *root_; // also the min!
     size_t size_;

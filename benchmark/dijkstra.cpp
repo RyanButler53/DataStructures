@@ -12,6 +12,7 @@
 #include "heap/d-ary.hpp"
 #include "heap/binomial.hpp"
 #include "heap/fibonacci.hpp"
+#include "heap/pairing.hpp"
 #include "interfaces.hpp"
 
 // Matplot++
@@ -133,16 +134,17 @@ int main(){
             suite.setConfig(n, 10);
             RandomGraphGenerator gen(sparsity, n);
             Graph *g = gen.makeGraph();
-            suite.addConfiguredTest("Dijkstra DAry Heap D = 2", dijkstra<BinaryHeap<uint16_t>>, std::ref(g));
+            suite.addConfiguredTest("Dijkstra DAry Heap D = 2", dijkstra<BinaryMinHeap<uint16_t>>, std::ref(g));
             suite.addConfiguredTest("Dijkstra DAry Heap D = 5", dijkstra<DAryHeap<uint16_t, uint16_t>>, std::ref(g));
             suite.addConfiguredTest("Dijkstra DAry Heap D = 10", dijkstra<DAryHeap<uint16_t, uint16_t>>, std::ref(g));
             suite.addConfiguredTest("Dijkstra Binomial Heap", dijkstra<BinomialHeap<uint16_t, uint16_t>>, std::ref(g));
             suite.addConfiguredTest("Dijkstra Fibonacci Heap", dijkstra<FibonacciHeap<uint16_t, uint16_t>>, std::ref(g));
+            suite.addConfiguredTest("Dijkstra Pairing Heap", dijkstra<PairingHeap<uint16_t, uint16_t>>, std::ref(g));
             suite.run();
-            suite.resultsToCSV("dijkstra" + sparsityStr + ".csv");
+            suite.resultsToCSV("dijkstra_" + sparsityStr + ".csv");
             delete g;
         }
-        suite.resultsToCSV("dijkstra" + sparsityStr + ".csv");
+        suite.resultsToCSV("dijkstra_" + sparsityStr + ".csv");
     }
 
     return 0;

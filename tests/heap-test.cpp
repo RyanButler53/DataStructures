@@ -16,18 +16,6 @@
 
 #include "interfaces.hpp"
 
-// template <typename T>
-// concept Heap = requires(T& heap,
-//                         T::value_type item,
-//                         T::priority_type priority) {
-//     heap.empty();
-//     heap.size();
-//     heap.pop();
-//     heap.push(item, priority);
-//     heap.top();
-//     heap.changeKey(item, priority);
-// };
-
 class NameGenerator {
   public:
     template <typename T>
@@ -46,8 +34,11 @@ class HeapTest : public testing::Test {
     void SetUp() override {}
     void TearDown() override {}
 
+    /**
+     * @warning Check Heap is not valid id changeKey has been performed. 
+     */
     bool checkHeap(){
-
+        
         std::vector<typename heap_t::value_type> items;
         while (!this->heap_.empty()){
             items.push_back(this->heap_.top());
@@ -62,15 +53,13 @@ class HeapTest : public testing::Test {
 
 using testing::Types;
 
-// typedef Types<BinaryMinHeap<int>,
-//               DAryHeap<int, int, 4>, 
-//               BinomialHeap<int, int>,
-//               FibonacciHeap<int, int>> Implementations;
+typedef Types<BinaryMinHeap<int>,
+              DAryHeap<int, int, 4>, 
+              BinomialHeap<int, int>,
+              FibonacciHeap<int, int>,
+              PairingHeap<int, int>> Implementations;
      
-typedef Types<PairingHeap<int, int>> Implementations;
-
 TYPED_TEST_SUITE(HeapTest, Implementations, NameGenerator);
-
 
 TYPED_TEST(HeapTest, pushing){
     this->heap_.push(1,1);
@@ -155,7 +144,7 @@ TYPED_TEST(HeapTest, FuzzPop){
     ASSERT_TRUE(this->heap_.empty());
 }
 
-TYPED_TEST(HeapTest, DISABLED_changeKey){
+TYPED_TEST(HeapTest, changeKey){
     this->heap_.push(1,1);
     this->heap_.push(2,2);
     this->heap_.push(5,5);
@@ -191,6 +180,20 @@ TYPED_TEST(HeapTest, DISABLED_changeKey){
     ASSERT_EQ(this->heap_.top(), 5);
     this->heap_.pop();
     ASSERT_EQ(this->heap_.top(), 7);
+}
+TYPED_TEST(HeapTest, changeKey2){
+    this->heap_.push(5,5);
+    for (int x : {6,7,12,8,9,10}){
+        this->heap_.push(x,x);
+    }
+    ASSERT_EQ(this->heap_.top(), 5);
+    this->heap_.changeKey(12, 4);
+    ASSERT_EQ(this->heap_.top(), 12);
+    this->heap_.pop();
+    ASSERT_EQ(this->heap_.top(), 5);
+    this->heap_.pop();
+    this->heap_.changeKey(10, 4);
+    
 }
 
 int main(int argc, char** argv){
