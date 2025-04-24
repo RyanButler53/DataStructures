@@ -12,6 +12,7 @@
 #include "heap/d-ary.hpp"
 #include "heap/binomial.hpp"
 #include "heap/fibonacci.hpp"
+#include "heap/pairing.hpp"
 #include "interfaces.hpp"
 
 // Matplot++
@@ -128,21 +129,49 @@ int main(){
     for (std::string sparsityStr : std::vector<std::string>{"0.1", "0.4", "0.7"}) {
         double sparsity = std::stod(sparsityStr);
         BenchmarkSuite suite("Dijkstra: Sparsity = " + sparsityStr);
-        for (size_t n : std::vector<size_t>{5000, 10000, 30000, 50000, 65000}){
-            std::cout << "Starting Sparsity " <<sparsityStr << " with n = " << n << std::endl;
+        for (size_t n : std::vector<size_t>{5000}){//, 10000, 30000, 50000, 65000}){
+            std::cout << "Starting Sparsity " << sparsityStr << " with n = " << n << std::endl;
             suite.setConfig(n, 10);
             RandomGraphGenerator gen(sparsity, n);
-            Graph *g = gen.makeGraph();
-            suite.addConfiguredTest("Dijkstra DAry Heap D = 2", dijkstra<BinaryHeap<uint16_t>>, std::ref(g));
+            GraphAdjList *g = gen.makeGraph();
+            suite.addConfiguredTest("Dijkstra DAry Heap D = 2", dijkstra<BinaryMinHeap<uint16_t>>, std::ref(g));
             suite.addConfiguredTest("Dijkstra DAry Heap D = 5", dijkstra<DAryHeap<uint16_t, uint16_t>>, std::ref(g));
             suite.addConfiguredTest("Dijkstra DAry Heap D = 10", dijkstra<DAryHeap<uint16_t, uint16_t>>, std::ref(g));
             suite.addConfiguredTest("Dijkstra Binomial Heap", dijkstra<BinomialHeap<uint16_t, uint16_t>>, std::ref(g));
             suite.addConfiguredTest("Dijkstra Fibonacci Heap", dijkstra<FibonacciHeap<uint16_t, uint16_t>>, std::ref(g));
+            suite.addConfiguredTest("Dijkstra Pairing Heap", dijkstra<PairingHeap<uint16_t, uint16_t>>, std::ref(g));
             suite.run();
-            suite.resultsToCSV("dijkstra" + sparsityStr + ".csv");
+            suite.resultsToCSV("dijkstra_" + sparsityStr + ".csv");
             delete g;
         }
-        suite.resultsToCSV("dijkstra" + sparsityStr + ".csv");
+        suite.resultsToCSV("dijkstra_" + sparsityStr + ".csv");
+    }
+
+    // Extrememly Dense Graphs test:
+    // No Parallelism
+    std::map<std::string, std::vector<double>> results;
+    std::cout << "Generating Large Dense Graph" << std::endl;
+    RandomGraphGenerator gen(0.9, 65000);
+    GraphAdjList* g = gen.makeGraph();
+    std::cout << "Graph (n = 65000) generated" << std::endl;
+
+    for (size_t i = 0; i < 20; ++i){
+        double result;
+        result = BenchmarkLib::measure(dijkstra<BinaryMinHeap<uint16_t>>, std::ref(g));
+        results["Binary Heap"].push_back(result);
+        result = BenchmarkLib::measure(dijkstra<DAryHeap<uint16_t, uint16_t, 10>>, std::ref(g));
+        results["DAry Heap D = 10"].push_back(result);
+        result = BenchmarkLib::measure(dijkstra<FibonacciHeap<uint16_t, uint16_t>>, std::ref(g));
+        results["Fibonacci Heap"].push_back(result);
+        result = BenchmarkLib::measure(dijkstra<PairingHeap<uint16_t, uint16_t>>, std::ref(g));
+        results["Pairing Heap"].push_back(result);
+    }
+    delete g;
+
+    for (auto& [heapType, res] : results){
+        double avg = BenchmarkLib::average(res);
+        double stdev = BenchmarkLib::stdev(res);
+        std::cout << "Dijkstra " << heapType << ", " << 65000 << ", " << 20 << ", " << avg << ", " << stdev << std::endl;
     }
 
     return 0;

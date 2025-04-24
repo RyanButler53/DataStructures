@@ -12,19 +12,9 @@
 #include "heap/binomial.hpp"
 #include "heap/fibonacci.hpp"
 #include "heap/pairing.hpp"
-#include "heap/skew.hpp"
+#include "heap/skew.hpp" // Skew requires delete then insert...
 
-template <typename T>
-concept Heap = requires(T& heap,
-                        T::value_type item,
-                        T::priority_type priority) {
-    heap.empty();
-    heap.size();
-    heap.pop();
-    heap.push(item, priority);
-    heap.top();
-    heap.changeKey(item, priority);
-};
+#include "interfaces.hpp"
 
 class NameGenerator {
   public:
@@ -34,6 +24,7 @@ class NameGenerator {
        if constexpr (std::is_same_v<T, DAryHeap<int,int,4>>) return "D-Ary Heap (d=4)";
        if constexpr (std::is_same_v<T, BinomialHeap<int, int>>) return "Binomial Heap";
        if constexpr (std::is_same_v<T, FibonacciHeap<int, int>>) return "Fibonacci Heap";
+       if constexpr (std::is_same_v<T, PairingHeap<int, int>>) return "Pairing Heap";
     }
 };
 
@@ -43,8 +34,11 @@ class HeapTest : public testing::Test {
     void SetUp() override {}
     void TearDown() override {}
 
+    /**
+     * @warning Check Heap is not valid id changeKey has been performed. 
+     */
     bool checkHeap(){
-
+        
         std::vector<typename heap_t::value_type> items;
         while (!this->heap_.empty()){
             items.push_back(this->heap_.top());
@@ -62,10 +56,10 @@ using testing::Types;
 typedef Types<BinaryMinHeap<int>,
               DAryHeap<int, int, 4>, 
               BinomialHeap<int, int>,
-              FibonacciHeap<int, int>> Implementations;
-
+              FibonacciHeap<int, int>,
+              PairingHeap<int, int>> Implementations;
+     
 TYPED_TEST_SUITE(HeapTest, Implementations, NameGenerator);
-
 
 TYPED_TEST(HeapTest, pushing){
     this->heap_.push(1,1);
@@ -112,7 +106,7 @@ TYPED_TEST(HeapTest, popping){
 
 TYPED_TEST(HeapTest, FuzzPush){
     std::vector<int> v;
-    for (int i = 0; i < 100; ++i){
+    for (int i = 0; i < 1000; ++i){
         v.push_back(i);
     }
     long long seed = time(nullptr);
@@ -186,6 +180,20 @@ TYPED_TEST(HeapTest, changeKey){
     ASSERT_EQ(this->heap_.top(), 5);
     this->heap_.pop();
     ASSERT_EQ(this->heap_.top(), 7);
+}
+TYPED_TEST(HeapTest, changeKey2){
+    this->heap_.push(5,5);
+    for (int x : {6,7,12,8,9,10}){
+        this->heap_.push(x,x);
+    }
+    ASSERT_EQ(this->heap_.top(), 5);
+    this->heap_.changeKey(12, 4);
+    ASSERT_EQ(this->heap_.top(), 12);
+    this->heap_.pop();
+    ASSERT_EQ(this->heap_.top(), 5);
+    this->heap_.pop();
+    this->heap_.changeKey(10, 4);
+    
 }
 
 int main(int argc, char** argv){

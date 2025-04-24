@@ -10,6 +10,7 @@
 #include "heap/d-ary.hpp"
 #include "heap/binomial.hpp"
 #include "heap/fibonacci.hpp"
+#include "heap/pairing.hpp"
 #include "interfaces.hpp"
 #include "adaptors.hpp" // for std::priority_queue
 
@@ -77,11 +78,13 @@ void kofn(size_t n){
     for (size_t k : std::vector<size_t>{8, 64, 512, 4096}){
         suite.setConfig(k, 10);
         suite.addConfiguredTest("std::priority_queue", findKofN<PQAdaptor<uint32_t, uint32_t>>, std::ref(numbers),  std::ref(k));
-        suite.addConfiguredTest("Binary Heap", findKofN<BinaryHeap<uint32_t>>, std::ref(numbers), std::ref(k));
+        suite.addConfiguredTest("Binary Heap", findKofN<BinaryMinHeap<uint32_t>>, std::ref(numbers), std::ref(k));
         suite.addConfiguredTest("DAry Heap D = 5", findKofN<DAryHeap<uint32_t, uint32_t, 5>>, std::ref(numbers),  std::ref(k));
         suite.addConfiguredTest("DAryHeap D = 10", findKofN<DAryHeap<uint32_t, uint32_t, 10>>, std::ref(numbers),  std::ref(k));
         suite.addConfiguredTest("Binomial Heap", findKofN<BinomialHeap<uint32_t, uint32_t>>, std::ref(numbers),  std::ref(k));
         suite.addConfiguredTest("Fibonacci Heap", findKofN<FibonacciHeap<uint32_t, uint32_t>>, std::ref(numbers),  std::ref(k));
+        suite.addConfiguredTest("Pairing Heap", findKofN<PairingHeap<int, int>>, std::move(numbers), std::ref(k));
+
         suite.run();
     }
     suite.resultsToCSV("kofn.csv");
@@ -89,8 +92,6 @@ void kofn(size_t n){
 
 
 void heapsort(size_t n) {
-    // Generate a HUGE LIST OF NUMBERS. 32 bit integer is enough
-    // const size_t n = 100000;// std::numeric_limits<uint32_t>::max(); // 2 billion. 
 
     std::random_device rd;
     std::mt19937 g(rd());
@@ -101,11 +102,12 @@ void heapsort(size_t n) {
     BenchmarkSuite suite("Heap Sort");
     suite.setConfig(n, 10);
     suite.addConfiguredTest("std::priority_queue", hsort<PQAdaptor<uint32_t, uint32_t>>, std::move(numbers));
-    suite.addConfiguredTest("Binary Heap", hsort<BinaryHeap<uint32_t>>, std::move(numbers));
+    suite.addConfiguredTest("Binary Heap", hsort<BinaryMinHeap<uint32_t>>, std::move(numbers));
     suite.addConfiguredTest("DAry Heap D = 5", hsort<DAryHeap<uint32_t, uint32_t, 5>>, std::move(numbers));
     suite.addConfiguredTest("DAryHeap D = 10", hsort<DAryHeap<uint32_t, uint32_t, 10>>, std::move(numbers));
     suite.addConfiguredTest("Binomial Heap", hsort<BinomialHeap<uint32_t, uint32_t>>, std::move(numbers));
     suite.addConfiguredTest("Fibonacci Heap", hsort<FibonacciHeap<uint32_t, uint32_t>>, std::move(numbers));
+    suite.addConfiguredTest("Pairing Heap", hsort<PairingHeap<int, int>>, std::move(numbers));
     suite.run();
     suite.resultsToCSV("heapsort.csv");
 }
