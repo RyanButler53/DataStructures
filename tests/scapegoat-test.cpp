@@ -11,8 +11,8 @@ TEST(Scapegoat, insertion){
     for (size_t i = 0; i < 20; ++i){
          sg.insert(keys[i], values[i]);
     }
-    cout << "inserted all" << endl;
-    cout << sg << endl;
+    // cout << "inserted all" << endl;
+    // cout << sg << endl;
     sg.remove("b");
     sg.remove("g");
     sg.remove("h");
@@ -23,7 +23,7 @@ TEST(Scapegoat, insertion){
     sg.remove("a");
     sg.remove("c");
     sg.remove("n");
-    cout << sg << endl;
+    // cout << sg << endl;
 }
 
 TEST(Scapegoat, reshuffle){
@@ -32,9 +32,9 @@ TEST(Scapegoat, reshuffle){
     for (int e : arr) {
         sg.insert(e, e/10.0);
     }
-    cout << sg << endl;
+    // cout << sg << endl;
     sg.insert(5, 9.0);
-    cout << sg << endl;
+    // cout << sg << endl;
 }
 
 TEST(Scapegoat, reshuffle2){
@@ -44,10 +44,11 @@ TEST(Scapegoat, reshuffle2){
     {
         sg.insert(x, x+66);
     }
-    cout << sg << endl;
+    // cout << sg << endl;
 }
 
 
 int main(){
+    testing::InitGoogleTest();
     return RUN_ALL_TESTS();
 }
