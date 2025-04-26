@@ -1,8 +1,10 @@
-#include "scapegoat-tree/scapegoat.hpp"
 #include <iostream>
 #include <string>
+#include <gtest/gtest.h>
 
-void test1(){
+#include "scapegoat-tree/scapegoat.hpp"
+
+TEST(Scapegoat, insertion){
     int values[20] = {1, 4, 6, 5, 9, 12, 22, 43, 47, 41, 50, 40, 20, 8, 7, 15, 13, 19, 21, 90};
     std::string keys[20] = {"a", "z", "c", "d", "e", "g", "s", "f", "h", "k", "j", "i", "b", "l", "k", "p", "n", "o", "r", "q"};
     ScapegoatTree<std::string, int> sg{0.75};
@@ -24,7 +26,7 @@ void test1(){
     cout << sg << endl;
 }
 
-void test2(){
+TEST(Scapegoat, reshuffle){
     int arr[10] = {13, 12, 15, 17, 9, 2, 1, 0, 7, 4};
     ScapegoatTree<int, float> sg{2.0 / 3};
     for (int e : arr) {
@@ -35,7 +37,7 @@ void test2(){
     cout << sg << endl;
 }
 
-void test3(){
+TEST(Scapegoat, reshuffle2){
     ScapegoatTree<unsigned int, unsigned char> sg{0.7};
 
     for (size_t x = 0; x < 26; ++x)
@@ -47,7 +49,5 @@ void test3(){
 
 
 int main(){
-    test1();
-    test2();
-    test3();
+    return RUN_ALL_TESTS();
 }

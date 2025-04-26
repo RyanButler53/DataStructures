@@ -10,6 +10,7 @@ if (CMAKE_BUILD_TYPE STREQUAL "DEBUG")
 
     add_compile_options(-fsanitize=undefined)
     add_link_options(-fsanitize=undefined)
+    message("-- Debug Mode: Enabling address and undefined behavior sanitizers")
 endif()
 
 
@@ -26,4 +27,5 @@ target_link_libraries(unrolled-ll gtest)
 target_link_libraries(splay-tree gtest)
 target_link_libraries(heap gtest)
 target_link_libraries(median gtest)
+target_link_libraries(scapegoat-tree gtest)
 

@@ -112,8 +112,9 @@ private:
      * @param key Key to be inserted
      * @param value value to be inserted
      * @param curDepth Current depth traveled. 
+     * @return Whether or not a node was actually added
      */
-    void insertHelper(const key_t& key, const value_t& value, Node*& tree, 
+    bool insertHelper(const key_t& key, const value_t& value, Node*& tree, 
      std::vector<Node*>& path);
 
     /**

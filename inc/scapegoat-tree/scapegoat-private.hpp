@@ -75,14 +75,18 @@ value_t& ScapegoatTree<key_t, value_t>::searchHelper(const key_t& key, Node* tre
 
 template<typename key_t, typename value_t>
 void ScapegoatTree<key_t, value_t>::insert(const key_t& key, const value_t& value){
-    ++size_;
+
+    // Max depth +1 since we include root
+    size_t maxDepth = size_t(floor(-log(size_+1) / log(alpha_) + 1));
+    vector<Node*> path;
+    bool inserted = insertHelper(key, value, root_, path);
+    if (inserted){
+        ++size_;
+    }
+    // Update Max Size if needed
     if (maxSize_ < size_){
         ++maxSize_;
     }
-    // Max depth +1 since we include root
-    size_t maxDepth = size_t(floor(-log(size_) / log(alpha_) + 1));
-    vector<Node*> path;
-    insertHelper(key, value, root_, path);
     // Check if there was a deep node
     if (path.size() > maxDepth) {
         size_t *nodeSizes = new size_t[path.size()];
@@ -90,14 +94,11 @@ void ScapegoatTree<key_t, value_t>::insert(const key_t& key, const value_t& valu
         for (size_t i = 1; i < path.size(); ++i) {
             // i+1 is parent of i. If nodes[i]->key > nodes[i-1]->key, check right
             size_t otherSize;
-            // Checks if node i is a right child. 
-            bool rightChild;
+            // Checks if node i is a right child of its parent
             if (path[i]->key_ > path[i - 1]->key_) {
                 otherSize = size(path[i]->right_);
-                rightChild = false;
             }
-            else { // look in left child.'
-                rightChild = true;
+            else { // look in left child.
                 otherSize = size(path[i]->left_);
             }
             size_t nodeSize = 1 + nodeSizes[i - 1] + otherSize;
@@ -108,7 +109,9 @@ void ScapegoatTree<key_t, value_t>::insert(const key_t& key, const value_t& valu
                 Node* scapegoat = path[i];
                 // Have a scapegoat node. Rebuild entire tree.
                 rebuild(scapegoat);
-                if (rightChild){
+                
+                // Set the correct child of the scapegoat node to the scapegoat node
+                if (scapegoat->key_ > path[i+1]->key_){
                     path[i + 1]->right_ = scapegoat;
                 } else {
                     path[i + 1]->left_ = scapegoat;
@@ -121,18 +124,23 @@ void ScapegoatTree<key_t, value_t>::insert(const key_t& key, const value_t& valu
 }
 
 template<typename key_t, typename value_t>
-void  ScapegoatTree<key_t, value_t>::insertHelper(const key_t& key, const value_t& value, Node*& tree, 
+bool  ScapegoatTree<key_t, value_t>::insertHelper(const key_t& key, const value_t& value, Node*& tree, 
             vector<Node*>& path){
+    bool result;
     if (tree == nullptr){
         tree = new Node{key, value};
         path.push_back(tree);
+        result = true;
     } else if (key > tree->key_) {
-        insertHelper(key, value, tree->right_, path);
+        result = insertHelper(key, value, tree->right_, path);
+        path.push_back(tree);
+    } else if (key < tree->key_){
+        result = insertHelper(key, value, tree->left_, path);
         path.push_back(tree);
     } else {
-        insertHelper(key, value, tree->left_, path);
-        path.push_back(tree);
+        return false;
     }
+    return result;
 }
 
 template<typename key_t, typename value_t>
@@ -150,8 +158,7 @@ void ScapegoatTree<key_t, value_t>::remove(const key_t& key){
     removeHelper(key, root_);
     --size_;
     // Restructure if necessary
-    if (size_ < alpha_ * maxSize_)
-    {
+    if (size_ < alpha_ * maxSize_) {
         maxSize_ = size_;
         rebuild(root_);
     }
