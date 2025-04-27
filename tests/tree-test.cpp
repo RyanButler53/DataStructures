@@ -30,7 +30,6 @@ class TreeTest : public testing::Test {
     void SetUp() override {
         std::array<int, 11> keys = {50, 40, 30, 20, 10, 60, 55, 35, 38, 65, 5};
     
-        // Test insertion and fill tree
         for (auto k : keys){
             this->tree_.insert({k, k+100});
         }
@@ -64,11 +63,9 @@ class TreeTest : public testing::Test {
 
 using testing::Types;
 
-// typedef Types<std::map<int, int>,
-//               SplayTree<int, int>, 
-//               ScapegoatTree<int, int>> Implementations;
-
-typedef Types<SplayTree<int, int>> Implementations;
+typedef Types<std::map<int, int>,
+              SplayTree<int, int>, 
+              ScapegoatTree<int, int>> Implementations;
 
 TYPED_TEST_SUITE(TreeTest, Implementations, NameGenerator);
 
@@ -132,9 +129,9 @@ TYPED_TEST(TreeTest, insertionAndDeletion){
     ASSERT_EQ(this->tree_.size(), 19); // key 11 is a duplicate
 
     // Remove some keys
-    for (int k : std::vector<int>{2,7,8,19,6,11,10,1,3,14})
-    {
-        ASSERT_EQ(this->tree_.erase(k), 1);
+    for (int k : std::vector<int>{2,7,8,19,6,11,10,1,3,14}) {
+        ASSERT_EQ(this->tree_.erase(k), 1) << "Couldn't erase " << k;
+        ASSERT_EQ(this->getKeys().size(), this->tree_.size()) << "Size mismatch after erasing " << k;
     }
 
     std::vector<int> finalKeys = this->getKeys();
@@ -144,8 +141,7 @@ TYPED_TEST(TreeTest, insertionAndDeletion){
     ASSERT_EQ(this->tree_.size(), finalKeys.size());
 
     for (int s : std::vector<int>{26, 4, 5, 9, 12, 16, 15, 18, 17}){
-        // std::cout << s << " " << this->tree_[s] << " " << correct[s] << std::endl;
-        ASSERT_EQ(this->tree_[s], s);
+        ASSERT_EQ(this->tree_[s], s) << " Expected value: " << s <<  " actual value " << this->tree_[s];
     }
 
 }

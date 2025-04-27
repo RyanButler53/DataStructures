@@ -167,8 +167,9 @@ private:
      * 
      * @param key key to delete. Must be in the tree
      * @param tree Current node
+     * @return returns 1 if removal was a success, 0 otherwise
      */
-    void removeHelper(const key_t& key, Node*& tree);
+    size_t removeHelper(const key_t& key, Node*& tree);
 
     /**
      * @brief Inserts something into the tree. For restructuring purposes

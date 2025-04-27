@@ -66,7 +66,7 @@ const typename ScapegoatTree<key_t, value_t>::const_iterator  ScapegoatTree<key_
     if (!tree){
         return end();
     } else if (tree->value_.first == key){
-        return const_iterator(tree);
+        return const_iterator(tree, false);
     } else if (key > tree->value_.first ) {
         return searchHelper(key, tree->right_);
     } else {
@@ -97,8 +97,7 @@ std::pair<typename ScapegoatTree<key_t, value_t>::Iterator, bool> ScapegoatTree<
             // Checks if node i is a right child of its parent
             if (path[i]->value_.first > path[i-1]->value_.first) {
                 otherSize = size(path[i]->right_);
-            }
-            else { // look in left child.
+            } else { // look in left child.
                 otherSize = size(path[i]->left_);
             }
             size_t nodeSize = 1 + nodeSizes[i-1] + otherSize;
@@ -173,14 +172,14 @@ size_t ScapegoatTree<key_t, value_t>::erase(const key_t& key){
     if (!root_){
         return 0;
     }
-    removeHelper(key, root_);
-    --size_;
+    size_t result = removeHelper(key, root_);
+    size_ -= result;
     // Restructure if necessary
     if (size_ < alpha_ * maxSize_) {
         maxSize_ = size_;
         rebuild(root_);
     }
-    return 1;
+    return result;
 }
 
 template<typename key_t, typename value_t>
@@ -204,8 +203,10 @@ void ScapegoatTree<key_t, value_t>::getElements(vector<tuple<key_t,value_t>>& el
 }
 
 template<typename key_t, typename value_t>
-void ScapegoatTree<key_t, value_t>::removeHelper(const key_t& key, Node*& tree){
-    if (key == tree->value_.first) {
+size_t ScapegoatTree<key_t, value_t>::removeHelper(const key_t& key, Node*& tree){
+    if (!tree){
+        return 0;
+    } else if (key == tree->value_.first) {
         if (tree->right_ == nullptr and tree->left_ == nullptr) { // Leaf Case
             delete tree;
             tree = nullptr;
@@ -224,32 +225,33 @@ void ScapegoatTree<key_t, value_t>::removeHelper(const key_t& key, Node*& tree){
             delete oldTop;
         } else {
             // Find min
-            Node *minParent = tree;
+            Node *minParent = nullptr;
             Node *min = tree->right_;
             while (min->left_ != nullptr) {
                 minParent = min;
                 min = min->left_;
             }
 
-            // Set the parent's left child to the other nodes greater than min
-            minParent->left_ = min->right_;
+            // Parent's left child takes right nodes (if there is a parent)
+            if (minParent){
+                minParent->left_ = min->right_;
+                // Right is only set if the right nodes of the min are given to the parent
+                min->right_ = tree->right_;
+            } 
 
-            // Set the pointers for the new top
-            min->right_ = tree->right_;
+            // Set the pointers for the new top 
             min->left_ = tree->left_;
 
             // Clean up memory and assign to tree variable
             delete tree;
             tree = min;
-
         }
+        return 1;
+    } else if (key > tree->value_.first) {
+        return removeHelper(key, tree->right_);
+    }  else { // key < tree->value_.first) {
+        return removeHelper(key, tree->left_);
     }
-    else if (key > tree->value_.first) {
-        removeHelper(key, tree->right_);
-    }  else if (key < tree->value_.first) {
-        removeHelper(key, tree->left_);
-    }
-    return;
 }
 template<typename key_t, typename value_t>
 void ScapegoatTree<key_t, value_t>::insertBalanced(std::vector<std::tuple<key_t, value_t>>& elements,
