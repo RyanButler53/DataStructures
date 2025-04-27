@@ -7,10 +7,11 @@
 
 #include "tree/splay-tree.hpp"
 
-TEST(SplayTreeTest, general){
+TEST(SplayTreeTest, structure){
     SplayTree<int, int> st;
     int keys[11] = {50, 40, 30, 20, 10, 60, 55, 35, 38, 65, 5};
-// Test insertion and fill tree
+
+    // Test insertion and fill tree
     for (int x : keys)
     {
         st.insert({x, x + 100});
@@ -109,8 +110,6 @@ TEST(SplayTreeTest, destructor){
         int key = keys[i];
         ASSERT_EQ(st[key],correct[key]);
     }
-
-
 }
 
 int main(int argc, char** argv){

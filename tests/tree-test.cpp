@@ -63,8 +63,7 @@ class TreeTest : public testing::Test {
 
 using testing::Types;
 
-typedef Types<std::map<int, int>,
-              SplayTree<int, int>, 
+typedef Types<SplayTree<int, int>, 
               ScapegoatTree<int, int>> Implementations;
 
 TYPED_TEST_SUITE(TreeTest, Implementations, NameGenerator);
@@ -79,8 +78,6 @@ TYPED_TEST(TreeTest, insertion1){
         ASSERT_EQ(v, key + 100);
     }
 }
-
-
 
 TYPED_TEST(TreeTest, finding){
     this->tree_.clear();
@@ -146,8 +143,11 @@ TYPED_TEST(TreeTest, insertionAndDeletion){
 
 }
 
-TYPED_TEST(TreeTest, destructor){
+TYPED_TEST(TreeTest, largeSortedInput){
     ASSERT_EQ(this->tree_.size(), 11);
+    for (size_t i = 80; i < 25000; ++i){
+        this->tree_.insert({i, i+100});
+    }
 }
 
 int main(){

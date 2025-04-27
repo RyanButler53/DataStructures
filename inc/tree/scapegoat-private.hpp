@@ -17,7 +17,9 @@ template<typename key_t, typename value_t>
 ScapegoatTree<key_t, value_t>::ScapegoatTree(float alpha):
 alpha_{alpha}, size_{0}, maxSize_{0}, root_{nullptr}
 {
-    // Nothing to do here
+    if (alpha <= 0.5 or alpha >= 1){
+        throw std::invalid_argument("Alpha must be in range (0.5, 1)");
+    }
 }
 
 template<typename key_t, typename value_t>
@@ -106,21 +108,27 @@ std::pair<typename ScapegoatTree<key_t, value_t>::Iterator, bool> ScapegoatTree<
             // Check if alpha balanced: Child/Parent > alpha
             if (float(nodeSizes[i-1])/nodeSizes[i] > alpha_){
                 Node* scapegoat = path[i];
-                // Have a scapegoat node. Rebuild entire tree.
-                rebuild(scapegoat);
-                
-                // Set the correct child of the scapegoat node to the scapegoat node
-                if (scapegoat->value_.first > path[i+1]->value_.first){
-                    path[i+1]->right_ = scapegoat;
+                // Handle edge case where rebuilding entire tree
+                if (scapegoat == root_) {
+                    rebuild(root_);
                 } else {
-                    path[i+1]->left_ = scapegoat;
+                    // Have a scapegoat node. Rebuild entire tree.
+                    rebuild(scapegoat);
+                                    
+                    // Set the correct child of the scapegoat node to the scapegoat node)
+                    if (scapegoat->value_.first > path[i+1]->value_.first){
+                        path[i+1]->right_ = scapegoat;
+                    } else {
+                        path[i+1]->left_ = scapegoat;
+                    }
                 }
                 delete[] nodeSizes;
-                // searching from scapegoat is always faster than from root. 
+                // Searching from scapegoat is always faster than from root. 
                 return std::make_pair(searchHelper(value.first, scapegoat), inserted);
             }
         }
         // Shouldn't actually reach here
+        throw std::runtime_error("Bad Programming: No scapegoat found");
         delete[] nodeSizes;
     }
     return std::make_pair(Iterator(path[0]), inserted);
