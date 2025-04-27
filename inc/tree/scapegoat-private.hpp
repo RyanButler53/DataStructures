@@ -40,7 +40,7 @@ void ScapegoatTree<key_t, value_t>::destructorHelper(Node* tree){
 }
 
 template<typename key_t, typename value_t>
-bool ScapegoatTree<key_t, value_t>::exists(const key_t& key) const {
+bool ScapegoatTree<key_t, value_t>::contains(const key_t& key) const {
     return existsHelper(key, root_);
 }
 
@@ -48,25 +48,26 @@ template<typename key_t, typename value_t>
 bool ScapegoatTree<key_t, value_t>::existsHelper(const key_t& key, Node *tree) const {
     if (tree == nullptr){
         return false;
-    } else if (tree->key_ == key)
+    } else if (tree->value_.first == key)
         return true;
-    else if (tree->key_ > key){
+    else if (tree->value_.first > key){
         return existsHelper(key, tree->right_);
     } else {
         return existsHelper(key, tree->left_);
     }
 }
 template<typename key_t, typename value_t>
-value_t& ScapegoatTree<key_t, value_t>::search(const key_t& key) const{
-    // Assume user has already run exists.
+typename ScapegoatTree<key_t, value_t>::const_iterator ScapegoatTree<key_t, value_t>::find(const key_t& key){
     return searchHelper(key, root_);
 }
 
 template<typename key_t, typename value_t>
-value_t& ScapegoatTree<key_t, value_t>::searchHelper(const key_t& key, Node* tree) const{
-    if (tree->key_ == key){
-        return tree->value_;
-    } else if (key > tree->key_ ) {
+const typename ScapegoatTree<key_t, value_t>::const_iterator  ScapegoatTree<key_t, value_t>::searchHelper(const key_t& key, Node* tree) const {
+    if (!tree){
+        return end();
+    } else if (tree->value_.first == key){
+        return const_iterator(tree);
+    } else if (key > tree->value_.first ) {
         return searchHelper(key, tree->right_);
     } else {
         return searchHelper(key, tree->left_);
@@ -74,15 +75,14 @@ value_t& ScapegoatTree<key_t, value_t>::searchHelper(const key_t& key, Node* tre
 }
 
 template<typename key_t, typename value_t>
-void ScapegoatTree<key_t, value_t>::insert(const key_t& key, const value_t& value){
+std::pair<typename ScapegoatTree<key_t, value_t>::Iterator, bool> ScapegoatTree<key_t, value_t>::insert(const value_type& value){
 
     // Max depth +1 since we include root
     size_t maxDepth = size_t(floor(-log(size_+1) / log(alpha_) + 1));
     vector<Node*> path;
-    bool inserted = insertHelper(key, value, root_, path);
-    if (inserted){
-        ++size_;
-    }
+
+    bool inserted = insertHelper(value.first, value.second, root_, path);
+
     // Update Max Size if needed
     if (maxSize_ < size_){
         ++maxSize_;
@@ -95,13 +95,13 @@ void ScapegoatTree<key_t, value_t>::insert(const key_t& key, const value_t& valu
             // i+1 is parent of i. If nodes[i]->key > nodes[i-1]->key, check right
             size_t otherSize;
             // Checks if node i is a right child of its parent
-            if (path[i]->key_ > path[i - 1]->key_) {
+            if (path[i]->value_.first > path[i-1]->value_.first) {
                 otherSize = size(path[i]->right_);
             }
             else { // look in left child.
                 otherSize = size(path[i]->left_);
             }
-            size_t nodeSize = 1 + nodeSizes[i - 1] + otherSize;
+            size_t nodeSize = 1 + nodeSizes[i-1] + otherSize;
             nodeSizes[i] = nodeSize;
 
             // Check if alpha balanced: Child/Parent > alpha
@@ -111,16 +111,20 @@ void ScapegoatTree<key_t, value_t>::insert(const key_t& key, const value_t& valu
                 rebuild(scapegoat);
                 
                 // Set the correct child of the scapegoat node to the scapegoat node
-                if (scapegoat->key_ > path[i+1]->key_){
-                    path[i + 1]->right_ = scapegoat;
+                if (scapegoat->value_.first > path[i+1]->value_.first){
+                    path[i+1]->right_ = scapegoat;
                 } else {
-                    path[i + 1]->left_ = scapegoat;
+                    path[i+1]->left_ = scapegoat;
                 }
-                break;
+                delete[] nodeSizes;
+                // searching from scapegoat is always faster than from root. 
+                return std::make_pair(searchHelper(value.first, scapegoat), inserted);
             }
         }
+        // Shouldn't actually reach here
         delete[] nodeSizes;
     }
+    return std::make_pair(Iterator(path[0]), inserted);
 }
 
 template<typename key_t, typename value_t>
@@ -130,18 +134,29 @@ bool  ScapegoatTree<key_t, value_t>::insertHelper(const key_t& key, const value_
     if (tree == nullptr){
         tree = new Node{key, value};
         path.push_back(tree);
+        ++size_;
         result = true;
-    } else if (key > tree->key_) {
+    } else if (key > tree->value_.first) {
         result = insertHelper(key, value, tree->right_, path);
         path.push_back(tree);
-    } else if (key < tree->key_){
+    } else if (key < tree->value_.first){
         result = insertHelper(key, value, tree->left_, path);
         path.push_back(tree);
-    } else {
+    } else { // equal case, blocked insertion
+        path.push_back(tree);
         return false;
     }
     return result;
 }
+
+template <typename key_t, typename value_t>
+template<class InputIt> 
+void ScapegoatTree<key_t, value_t>::insert(InputIt first, InputIt last){
+    for (InputIt it = first; it != last; ++it){
+        insert(*it);
+    }
+}
+
 
 template<typename key_t, typename value_t>
 size_t ScapegoatTree<key_t, value_t>::size(Node* tree) const{
@@ -153,8 +168,11 @@ size_t ScapegoatTree<key_t, value_t>::size(Node* tree) const{
 }
 
 template<typename key_t, typename value_t>
-void ScapegoatTree<key_t, value_t>::remove(const key_t& key){
+size_t ScapegoatTree<key_t, value_t>::erase(const key_t& key){
     // Assumes that the key is in the tree
+    if (!root_){
+        return 0;
+    }
     removeHelper(key, root_);
     --size_;
     // Restructure if necessary
@@ -162,7 +180,7 @@ void ScapegoatTree<key_t, value_t>::remove(const key_t& key){
         maxSize_ = size_;
         rebuild(root_);
     }
-    return;
+    return 1;
 }
 
 template<typename key_t, typename value_t>
@@ -180,14 +198,14 @@ template<typename key_t, typename value_t>
 void ScapegoatTree<key_t, value_t>::getElements(vector<tuple<key_t,value_t>>& elements, Node* tree){
     if (tree != nullptr){
         getElements(elements, tree->left_);
-        elements.push_back(tuple(tree->key_, tree->value_));
+        elements.push_back(tuple(tree->value_.first, tree->value_.second));
         getElements(elements, tree->right_);
     }
 }
 
 template<typename key_t, typename value_t>
 void ScapegoatTree<key_t, value_t>::removeHelper(const key_t& key, Node*& tree){
-    if (key == tree->key_) {
+    if (key == tree->value_.first) {
         if (tree->right_ == nullptr and tree->left_ == nullptr) { // Leaf Case
             delete tree;
             tree = nullptr;
@@ -226,9 +244,9 @@ void ScapegoatTree<key_t, value_t>::removeHelper(const key_t& key, Node*& tree){
 
         }
     }
-    else if (key > tree->key_) {
+    else if (key > tree->value_.first) {
         removeHelper(key, tree->right_);
-    }  else if (key < tree->key_) {
+    }  else if (key < tree->value_.first) {
         removeHelper(key, tree->left_);
     }
     return;
@@ -250,7 +268,7 @@ void ScapegoatTree<key_t, value_t>::insertBasic(const key_t& key, const value_t&
     if (topNode == nullptr) {
         topNode = new Node{key, value};
     }
-    else if (key > topNode->key_) {
+    else if (key > topNode->value_.first) {
         insertBasic(key, value, topNode->right_);
     } else {
         insertBasic(key, value, topNode->left_);
@@ -270,22 +288,88 @@ void ScapegoatTree<key_t, value_t>::printHelper(Node* tree, ostream& out) const{
     } else {
         out << "(";
         printHelper(tree->left_, out);  
-        out << ", " << tree->key_ << ":" << tree->value_ << ", ";
+        out << ", " << tree->value_.first << ":" << tree->value_.second << ", ";
         printHelper(tree->right_, out);
         out << ")";
     }
 }
 
 template<typename key_t, typename value_t>
-value_t& ScapegoatTree<key_t, value_t>::operator[](const key_t& key) const{
-    return searchHelper(key, root_);
-}
+value_t& ScapegoatTree<key_t, value_t>::operator[](const key_t& key){
+    Iterator it = find(key);
+    if (it != end()){
+        return it->second;
+    }
+    return insert({key, value_t()}).first->second;}
 
 template<typename key_t, typename value_t>
 ScapegoatTree<key_t, value_t>::Node::Node(key_t key, value_t value):
-key_{key}, value_{value}, left_{nullptr}, right_{nullptr}{
+    value_{std::make_pair(key, value)}, left_{nullptr}, right_{nullptr}{
 }
 
+// Iterator Functions (same as splay tree)
+
+template <typename key_t, typename value_t>
+typename ScapegoatTree<key_t, value_t>::Iterator ScapegoatTree<key_t, value_t>::begin() const {
+    return Iterator(root_);
+}
+
+template <typename key_t, typename value_t>
+typename ScapegoatTree<key_t, value_t>::Iterator ScapegoatTree<key_t, value_t>::end() const {
+    return Iterator(nullptr);
+}
+
+template <typename key_t, typename value_t>
+ScapegoatTree<key_t, value_t>::Iterator::Iterator(Node* n, bool push){
+    if (push){
+        pushToMin(n);
+    } else {
+        stack_.push_back(n); // Just this node
+    }
+}
+
+template <typename key_t, typename value_t>
+typename ScapegoatTree<key_t, value_t>::Iterator& ScapegoatTree<key_t, value_t>::Iterator::operator++() {
+    Node *current = stack_.back();
+    stack_.pop_back();
+    pushToMin(current->right_);
+    return *this;
+}
+
+template <typename key_t, typename value_t>
+typename ScapegoatTree<key_t, value_t>::Iterator::value_type ScapegoatTree<key_t, value_t>::Iterator::operator*() const{
+    return stack_.back()->value_;
+}
+
+template <typename key_t, typename value_t>
+bool ScapegoatTree<key_t, value_t>::Iterator::operator==(const Iterator& other) const{
+    return (this->stack_ == other.stack_);
+}
+
+template <typename key_t, typename value_t>
+bool ScapegoatTree<key_t, value_t>::Iterator::operator!=(const Iterator& other) const{
+    return !(*this == other);
+}
+
+template <typename key_t, typename value_t>
+typename ScapegoatTree<key_t, value_t>::Iterator::pointer ScapegoatTree<key_t, value_t>::Iterator::operator->() const{
+    return &(stack_.back()->value_);
+}
+
+template<typename key_t, typename value_t>
+void ScapegoatTree<key_t, value_t>::Iterator::pushToMin(Node* tree){
+    while (tree){
+        stack_.push_back(tree);
+        tree = tree->left_;
+    }
+}
+
+template<typename key_t, typename value_t>
+void ScapegoatTree<key_t, value_t>::clear(){
+    destructorHelper(root_);
+    root_ = nullptr;
+    size_ = 0;
+}
 
 template<typename key_t, typename value_t>
 ostream& operator<<(ostream& out, const ScapegoatTree<key_t, value_t>& sg){

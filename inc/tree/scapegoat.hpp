@@ -16,10 +16,11 @@
 template <typename key_t, typename value_t>
 class ScapegoatTree {
   private:
-  
+    class Iterator;
+
     struct Node {
-        key_t key_;
-        value_t value_;
+
+        std::pair<key_t, value_t> value_;
         Node* left_;
         Node* right_;
 
@@ -27,17 +28,25 @@ class ScapegoatTree {
     };
 
     // Data:
-    float alpha_;
     size_t size_;
     size_t maxSize_;
     Node *root_;
+    float alpha_;
 
   public:
     // Constructors
     ScapegoatTree();
     ScapegoatTree(float alpha);
     ~ScapegoatTree();
-    ScapegoatTree(ScapegoatTree &other) = delete;
+    ScapegoatTree(ScapegoatTree &other) = default;
+    ScapegoatTree &operator=(const ScapegoatTree &other) = default;
+    
+
+    // Type Names: 
+    using value_type = std::pair<key_t, value_t>;
+    using key_type = key_t;
+    using mapped_type = value_t;
+    using const_iterator = Iterator;
     
     /**
      * @brief Inserts a key, value pair into the tree
@@ -46,7 +55,21 @@ class ScapegoatTree {
      * @param value Corresponding value to insert
      * @warning Inserting a value already in the tree causes undefined behavior
      */
-    void insert(const key_t& key, const value_t& value);
+    std::pair<Iterator, bool> insert(const value_type& value);
+
+    /**
+     * @brief Inserts keys from a range [first, last)
+     */
+    template<class InputIt>
+    void insert(InputIt first, InputIt last);
+
+    /**
+     * @brief deletes a key-value pair from the tree
+     * 
+     * @param key key to delete
+     * @return Returns 1 if the erase is successful and 0 otherwise
+     */
+    size_t erase(const key_t& key);
 
     /**
      * @brief Checks if something is in the tree
@@ -55,7 +78,7 @@ class ScapegoatTree {
      * @return true Key is in tree
      * @return false Key is not in tree
      */
-    bool exists(const key_t& key) const;
+    bool contains(const key_t& key) const;
 
     /**
      * @brief Looks up a key. Returns the value
@@ -63,14 +86,19 @@ class ScapegoatTree {
      * @param key Key to lookup
      * @return int Corresponding value
      */
-    value_t& search(const key_t& key) const;
+    const_iterator find(const key_t& key);
+
+    size_t size() const {return size_;}
+
+    // Iterator functions
+    
+    const_iterator begin() const;
+    const_iterator end() const;
 
     /**
-     * @brief deletes a key-value pair from the tree
-     * 
-     * @param key key to delete
+     * @brief clears the tree
      */
-    void remove(const key_t& key);
+    void clear();
 
     /**
      * @brief Prints the tree
@@ -79,12 +107,12 @@ class ScapegoatTree {
     void print(std::ostream& out) const;
 
     /**
-     * @brief Looks up the key, uses the search function
+     * @brief Looks up or inserts the value corresponding to the given key
      * 
      * @param key Key to lookup
      * @return int corresponding value
      */
-    value_t& operator[](const key_t& key) const;
+    value_t& operator[](const key_t& key);
 
 private: 
     // Helper methods
@@ -130,9 +158,9 @@ private:
      *
      * @param key Key being searched for
      * @param tree Current node searching
-     * @return int value associated with the key
+     * @return iterator at the node of the tree
      */
-    value_t& searchHelper(const key_t& key, Node *tree) const;
+    const Iterator searchHelper(const key_t& key, Node *tree) const;
 
     /**
      * @brief Recursive helper for delete function
@@ -183,7 +211,37 @@ private:
      * 
      * @param n Root node of the balanced tree. O(size(n))
      */
-    void rebuild(Node *& n);    
+    void rebuild(Node *& n);   
+    
+    class Iterator {
+      friend class ScapegoatTree;
+
+  private:
+      std::vector<Node *> stack_;
+      void pushToMin(Node *tree);
+
+  public:
+
+      // Required for std::iterator
+      using value_type = std::pair<key_t, value_t>;
+      using reference = const value_type&;
+      using pointer =  value_type*;
+      using difference_type = std::ptrdiff_t;
+      using iterator_category = std::forward_iterator_tag;
+
+      Iterator() = default;
+      Iterator(Node *node, bool push = true);
+      Iterator(const Iterator &other) = default;
+      Iterator &operator=(const Iterator &other) = default;
+      ~Iterator() = default;
+
+      value_type operator*() const;
+      Iterator &operator++();
+      pointer operator->() const;
+      bool operator==(const Iterator &other) const;
+      bool operator!=(const Iterator &other) const;
+      
+  };
 };
 
 template<typename key_t, typename value_t>

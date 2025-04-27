@@ -17,6 +17,7 @@ concept Tree = requires(TreeType &tree,
     tree.find(key);
     tree.clear();
     tree.erase(key);
+    // tree.insert(in, in);
 };
 
 // Interface for a Heap (Supporting Dijkstra)

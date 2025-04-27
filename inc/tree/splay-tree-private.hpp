@@ -84,11 +84,13 @@ std::pair<typename SplayTree<key_t, value_t>::Iterator, bool>  SplayTree<key_t, 
     vector<Node *> path;
 
     Node** node = &root_;
+    bool success;
     while (true)
     {
         if (*node == nullptr){
              *node = new Node(key, value);
             path.push_back(*node);
+            success = true;
             break;
         }
         path.push_back(*node);
@@ -98,13 +100,13 @@ std::pair<typename SplayTree<key_t, value_t>::Iterator, bool>  SplayTree<key_t, 
             node = &((*node)->left_);
         } else
         { // equal
+            success = false;
             break;
         }
     }
 
     splay(path);
     // success
-    bool success = (root_->value_.second == value);
     size_ = size_ + int(success);
 
     // Leverage Splay operation: new node or blocking node is always at the root!
@@ -112,7 +114,16 @@ std::pair<typename SplayTree<key_t, value_t>::Iterator, bool>  SplayTree<key_t, 
 }
 
 template <typename key_t, typename value_t>
-bool SplayTree<key_t, value_t>::exists(const key_t& key){
+template<class InputIt> 
+void SplayTree<key_t, value_t>::insert(InputIt first, InputIt last){
+    for (InputIt it = first; it != last; ++it){
+        insert(*it);
+    }
+}
+
+
+template <typename key_t, typename value_t>
+bool SplayTree<key_t, value_t>::contains(const key_t& key){
     vector<Node *> path;
     search(key, path);
     bool notExists = !path.back();

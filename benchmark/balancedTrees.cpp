@@ -1,5 +1,5 @@
 #include <vector>
-#include "splay-tree/splay-tree.hpp"
+#include "tree/splay-tree.hpp"
 #include <map>
 #include <chrono>
 #include <random>

@@ -125,8 +125,14 @@ public:
      * 
      * @param key Key to inset
      * @param value Value to insert
-     */     //
-    std::pair<Iterator, bool>  insert(const value_type& value); //const key_t& key, value_t& value
+     */
+    std::pair<Iterator, bool>  insert(const value_type& value);
+
+    /**
+     * @brief Inserts keys from a range [first, last)
+     */
+    template<class InputIt>
+    void insert(InputIt first, InputIt last);
 
     /**
      * @brief Deletes the given key from splay tree.
@@ -143,7 +149,7 @@ public:
      * @return true Key is in tree
      * @return false Key is not in tree
      */
-    bool exists(const key_t &key);
+    bool contains(const key_t &key);
 
     /**
      * @brief Finds the given key and returns a const iterator to it. 
@@ -165,6 +171,9 @@ public:
     const_iterator begin() const;
     const_iterator end() const;
 
+    /**
+     * @brief clears the tree
+     */
     void clear();
 
     // Other functions
@@ -181,7 +190,6 @@ public:
      * 
      * @param key key to look up
      * @return value_t& Value associated with the key
-     * @note This function does not support insertion
      */
     value_t& operator[](const key_t &key);
 
@@ -216,7 +224,6 @@ public:
         
     };
 
-
 };
 
 template <typename key_t,typename value_t>
@@ -237,7 +244,6 @@ crend()?
 empty
 max_size
 
-clear
 insert_range
 insert_or_assign
 emplace

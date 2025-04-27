@@ -5,7 +5,7 @@
 #include <cassert>
 #include <gtest/gtest.h>
 
-#include "splay-tree/splay-tree.hpp"
+#include "tree/splay-tree.hpp"
 
 TEST(SplayTreeTest, general){
     SplayTree<int, int> st;
@@ -79,7 +79,7 @@ TEST(SplayTreeTest, general){
     int keysToCheck[4] = {5, 35, 60, 70};
     bool valid[4] = {true, true, false, false};
     for (size_t i = 0; i < 4; ++i){
-        bool exists = st.exists(keysToCheck[i]);
+        bool exists = st.contains(keysToCheck[i]);
         ASSERT_EQ(valid[i],  exists);
     }
 
@@ -94,10 +94,23 @@ TEST(SplayTreeTest, general){
 
 TEST(SplayTreeTest, destructor){
     SplayTree<int, int> st;
-    int keys[11] = {50, 40, 30, 20, 10, 60, 55, 35, 38, 65, 5};
+    std::array<int, 11> keys = {50, 40, 30, 20, 10, 60, 55, 35, 38, 65, 5};
+    std::map <int, int> correct;
     for (int x : keys){
         st.insert({x, x + 4});
+        correct.insert({x, x+4});
     }
+    st.erase(5);
+    st.erase(65);
+    st.erase(48);
+    st.erase(35);
+
+    for (size_t i = 0; i < 7;++i){
+        int key = keys[i];
+        ASSERT_EQ(st[key],correct[key]);
+    }
+
+
 }
 
 int main(int argc, char** argv){
