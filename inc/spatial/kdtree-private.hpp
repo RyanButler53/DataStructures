@@ -68,12 +68,11 @@ KDTree<T,K>::NodePair KDTree<T, K>::findMinHelper(size_t dim, Node* node, size_t
         NodePair right = findMinHelper(dim, node->right_, (cur_dim+1)%K);
         auto cmp = [dim](NodePair n1, NodePair n2){return n1.first->data_[dim] < n2.first->data_[dim];};
         
-        // find the minimum 
-        std::vector<NodePair> nodes = {left, right, {node, cur_dim}};
+        // Assemble list of nodes that are nullptr free
+        std::vector<NodePair> nodes = {{node, cur_dim}};
+        if (left.first) nodes.push_back(std::move(left));
+        if (right.first) nodes.push_back(std::move(right));
         
-        // Clear out nullptrs
-        auto rm = std::ranges::remove_if(nodes, [](NodePair n){return !(n.first);});
-        nodes.resize(std::distance(nodes.begin(), rm.begin()));
         // find minimum 
         return std::ranges::min(nodes, cmp); 
         

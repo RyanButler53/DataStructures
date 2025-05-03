@@ -76,7 +76,8 @@ TEST_F(Test2D, delete2){
     t3.remove({10,20});
     ASSERT_EQ(t3.findMin(0), 5);
     ASSERT_EQ(t3.findMin(1), 1);
-    // Problem: 
+    // Problem: the parent node to the last leaf doesn't get deleted. 
+    // Solution: Add some tree traversal into the remove code
 }
 
 TEST_F(Test2D, delete1){
