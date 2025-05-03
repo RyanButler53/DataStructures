@@ -48,8 +48,10 @@ public:
         Node* right_;
         Node* left_;
 
-        // key_t operator*(){return data_};
     };
+
+    // A node and its dimension
+    using NodePair = std::pair<Node* , size_t>;
     
     size_t size_;
     Node* root_;
@@ -60,12 +62,12 @@ public:
 
     void insertHelper(const key_t& key, Node*& node, size_t dim);
     
-    // Finds and returns
-    Node* searchHelper(const key_t& key, Node* node, size_t dim);
+    // Finds and returns the NODE and the dimension it is on
+    NodePair find(const key_t& key, Node* node, size_t dim);
 
-    Node* findMinHelper(size_t dim, Node* node, size_t cur_dim);
+    NodePair findMinHelper(size_t dim, Node* node, size_t cur_dim);
 
-    void removeHelper(const key_t& key, Node* node);
+    void removeHelper(Node*& node, size_t dim);
 
 };
 
