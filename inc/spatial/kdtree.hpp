@@ -1,6 +1,9 @@
 #ifndef KD_TREE_HPP_INCLUDED
 #define KD_TREE_HPP_INCLUDED
 #include <array>
+#include <vector>
+#include <exception>
+#include <algorithm>
 
 /**
  * @class KD Tree: A K dimensional tree. 
@@ -11,26 +14,8 @@
 template <typename T, size_t K>
 class KDTree
 {
-private:
 
-    struct Node {
-        std::array<T,K> data_;
-        Node* right_;
-        Node* left_;
-    };
-    
-    size_t size_;
-    Node* root_;
-
-    // Helper methods
-
-    void destructorHelper(Node*& node);
-
-    void insertHelper(const key_t& key, Node*& node, size_t dim);
-
-    void removeHelper(const key_t& key, Node* node);
-
-
+struct Node;
 
 public:
     using key_t = std::array<T, K>;
@@ -44,11 +29,44 @@ public:
     // Deletes a "random node"
     void remove(const key_t& key);
 
+    bool contains(const key_t& key);
+
+    T findMin(size_t dim);
+
+
     // Partial Match query
     // Returns a vector of all keys that match the first T dimensions
     std::vector<key_t> search(const std::vector<T> query, size_t t);
 
     key_t nearestNeighbor(const key_t& query);
+
+    
+    private:
+
+    struct Node {
+        key_t data_;
+        Node* right_;
+        Node* left_;
+
+        // key_t operator*(){return data_};
+    };
+    
+    size_t size_;
+    Node* root_;
+
+    // Helper methods
+
+    void destructorHelper(Node*& node);
+
+    void insertHelper(const key_t& key, Node*& node, size_t dim);
+    
+    // Finds and returns
+    Node* searchHelper(const key_t& key, Node* node, size_t dim);
+
+    Node* findMinHelper(size_t dim, Node* node, size_t cur_dim);
+
+    void removeHelper(const key_t& key, Node* node);
+
 };
 
 template <typename T>
