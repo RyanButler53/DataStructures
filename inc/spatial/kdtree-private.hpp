@@ -72,7 +72,7 @@ KDTree<T,K>::NodePair KDTree<T, K>::findMinHelper(size_t dim, Node* node, size_t
         std::vector<NodePair> nodes = {{node, cur_dim}};
         if (left.first) nodes.push_back(std::move(left));
         if (right.first) nodes.push_back(std::move(right));
-        
+
         // find minimum 
         return std::ranges::min(nodes, cmp); 
         
@@ -100,37 +100,47 @@ KDTree<T,K>::NodePair KDTree<T, K>::find(const key_t& key, Node* node, size_t cu
 
 template <typename T, size_t K>
 void KDTree<T,K>::remove(const key_t& key){
-    auto [n, dim] = find(key, root_, 0);
+    auto [n, ndim] = find(key, root_, 0);
     if (!n) {
         throw std::runtime_error("Cannot delete a key that doesn't exist");
     }
-    removeHelper(n, dim);
+    removeHelper(key, n, ndim);
 }
 
 template <typename T, size_t K>
-void KDTree<T,K>::removeHelper(Node*& node, size_t dim){ // assuming that 
-    // Base case: Leaf Node
-    if (!node->left_ and !node->right_){
-        delete node;
-        node = nullptr;
-        --size_;
-    } else { // there will always be a right or left child
-        // Find the "in order successor in the right tree"
-        if (node->right_){
-            // Find the min child of the current dimension in the rightChild
-            auto [min, minDim] = findMinHelper(dim, node->right_, (dim+1)%K);
-            // copy the data
-            node->data_ = min->data_;
-            removeHelper(min, minDim);
-        } else { // there MUST be a left child
-            auto [min, minDim] = findMinHelper(dim, node->left_, (dim+1)%K);
-            node->data_ = min->data_;
-            node->right_ = node->left_;
-            node->left_ = nullptr;
-            removeHelper(min, minDim);
+void KDTree<T,K>::removeHelper(const key_t& key, Node*& node, size_t dim){ // assuming that 
+    // should never be a nullptr
+    if (key == node->data_){
+        if (!node->left_ and !node->right_){
+            delete node;
+            node = nullptr;
+            --size_;
+        } else { // there will always be a right or left child
+            // Find the "in order successor in the right tree"
+            if (node->right_){
+                // Find the min child of the current dimension in the rightChild
+                auto [min, minDim] = findMinHelper(dim, node->right_, (dim+1)%K);
+                // copy the data
+                node->data_ = min->data_;
+                // Traverse the tree for it: 
+            } else { // there MUST be a left child
+                auto [min, minDim] = findMinHelper(dim, node->left_, (dim+1)%K);
+                node->data_ = min->data_;
+                node->right_ = node->left_;
+                node->left_ = nullptr;
+                // removeHelper(min, minDim);
+            }
+            // Recursively remove the data from the right subtree
+            removeHelper(node->data_, node->right_, (dim+1)%K);
         }
-     }
+    } else if (key[dim] >=node->data_[dim]){
+        removeHelper(key, node->right_, (dim+1)%K);
+    } else{
+        removeHelper(key, node->left_, (dim+1)%K);
+    }
+    
 }
+
 
 
 // So are the queries!

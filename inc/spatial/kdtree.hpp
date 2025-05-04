@@ -67,7 +67,7 @@ public:
 
     NodePair findMinHelper(size_t dim, Node* node, size_t cur_dim);
 
-    void removeHelper(Node*& node, size_t dim);
+    void removeHelper(const key_t& key, Node*& node, size_t dim);
 
 };
 
