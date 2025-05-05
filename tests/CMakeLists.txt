@@ -56,6 +56,6 @@ add_executable(kd-tree kdtree-test.cpp)
 # target_link_libraries(tree gtest)
 # target_link_libraries(median gtest)
 # target_link_libraries(scapegoat-tree gtest)
-target_link_libraries(kd-tree gtest)
+target_link_libraries(kd-tree gtest gmock)
 
 

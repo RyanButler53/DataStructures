@@ -141,6 +141,55 @@ void KDTree<T,K>::removeHelper(const key_t& key, Node*& node, size_t dim){ // as
     
 }
 
+template <typename T, size_t K>
+std::vector<typename KDTree<T,K>::key_t> KDTree<T,K>::range(double r, const key_t& query, DistanceFunction fn) const {
+
+    std::vector<key_t> keys;
+    rangeHelper(r, query, root_, 0, keys, fn);
+    return keys;
+}
+
+template <typename T, size_t K>
+void KDTree<T,K>::rangeHelper(double r, const key_t& query, Node* curNode, size_t dim, 
+                              std::vector<key_t>& keys, DistanceFunction fn) const {
+
+    if (!curNode) {
+        return; 
+    }
+    // Case where the point is out of range
+    if (dist(fn, curNode->data_, query) > r){
+        if (curNode->data_[dim] < (query[dim] - r)){ // only search keys in the right half
+            rangeHelper(r, query, curNode->right_, (dim+1)%K, keys, fn);
+        } else if (curNode->data_[dim] > (query[dim] + r)){ // only search left half
+            rangeHelper(r, query, curNode->left_, (dim+1)%K, keys, fn);
+        } else { // could be points in both halves
+            rangeHelper(r, query, curNode->right_, (dim+1)%K, keys, fn);
+            rangeHelper(r, query, curNode->left_, (dim+1)%K, keys, fn);
+        }
+    } else {  // point is in range
+        keys.push_back(curNode->data_);
+        rangeHelper(r, query, curNode->right_, (dim+1)%K, keys, fn);
+        rangeHelper(r, query, curNode->left_, (dim+1)%K, keys, fn);
+    }
+    
+}
 
 
-// So are the queries!
+template <typename T, size_t K>
+double KDTree<T,K>::dist(DistanceFunction fn, const key_t& p1, const key_t& p2) const {
+    T sum = 0;
+    switch (fn)
+    {
+    case DistanceFunction::Euclidean:
+        for (size_t i = 0; i < K; ++i){
+            T diff = std::abs(p1[i]- p2[i]); 
+            sum += diff*diff;
+        }
+        return std::sqrt(sum);
+    case DistanceFunction::Manhattan:
+        return 1.0;
+    default:
+        break;
+    }
+}
+

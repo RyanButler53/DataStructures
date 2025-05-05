@@ -4,6 +4,15 @@
 #include <vector>
 #include <exception>
 #include <algorithm>
+#include <functional>
+
+
+enum class DistanceFunction {
+    Euclidean = 0,
+    Manhattan = 1
+    // Hamming, Minkowski?
+};    
+
 
 /**
  * @class KD Tree: A K dimensional tree. 
@@ -16,6 +25,7 @@ class KDTree
 {
 
 struct Node;
+
 
 public:
     using key_t = std::array<T, K>;
@@ -40,14 +50,19 @@ public:
 
     key_t nearestNeighbor(const key_t& query);
 
-    
+    /**
+     * @brief Finds a vector of points within r range of key
+     * // later add an argument to supply a custom distance function
+     */
+    std::vector<key_t> range(double r, const key_t& key, DistanceFunction fn = DistanceFunction::Euclidean) const;
+
+
     private:
 
     struct Node {
         key_t data_;
         Node* right_;
         Node* left_;
-
     };
 
     // A node and its dimension
@@ -69,6 +84,9 @@ public:
 
     void removeHelper(const key_t& key, Node*& node, size_t dim);
 
+    void rangeHelper(double r, const key_t& query, Node* curNode, size_t dim, std::vector<key_t>& keys, DistanceFunction fn) const;
+
+    double dist(DistanceFunction fn, const key_t& p1, const key_t& p2) const ;
 };
 
 template <typename T>
