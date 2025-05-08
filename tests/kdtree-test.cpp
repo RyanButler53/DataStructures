@@ -1,12 +1,13 @@
 #include "spatial/kdtree.hpp"
-#include <array>
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
+
+#include <array>
 #include <iostream>
 #include <algorithm>
+#include <map>
 #include <random>
 
-using ::testing::ElementsAreArray;
 using ::testing::UnorderedElementsAreArray;
 using Point2D = std::array<int, 2>;
 using Point2Dd = std::array<double, 2>;
@@ -37,15 +38,17 @@ class Test2D : public testing::Test {
 
     void TearDown() override{}
 
-    double dist(Point2D p1, Point2D p2){
-        int dx = p1[0]-p2[0];
-        int dy = p1[1] - p2[1];
+    template <typename T>
+    double dist(std::array<T,2> p1, std::array<T,2> p2){
+        T dx = p1[0]-p2[0];
+        T dy = p1[1] - p2[1];
         return std::sqrt((dx * dx) + (dy * dy));
     }
 
-    std::vector<Point2D> pointsInRadius(std::vector<Point2D> pts, const Point2D& q, double r){
-        std::vector<Point2D> inRadius;
-        for (Point2D& p : v2){
+    template <typename point_t>
+    std::vector<point_t> pointsInRadius(std::vector<point_t> pts, const point_t& q, double r){
+        std::vector<point_t> inRadius;
+        for (point_t& p : pts){
             if (dist(p, q) <= r){
                 inRadius.push_back(p);
             }
@@ -60,17 +63,25 @@ class Test2D : public testing::Test {
         ASSERT_THAT(pts, matcher);
     }
 
+    void nearestNeighborTest(const Tree2D<int>& t, std::vector<Point2D> points, const Point2D& q){
+        std::map<double, Point2D> distances;
+        for (Point2D pt : points){
+            distances.insert({dist(pt, q), pt});
+        }
+        Point2D tree_nn = t.nearestNeighbor(q, DistanceFunction::Euclidean);
+        Point2D actual_nn = distances.begin()->second;
+        ASSERT_EQ(tree_nn, actual_nn);
+    }
+
     std::vector<Point2D> v1{{35, 40}, {5, 45}, {25, 35}, {50,10}, {90,5}, {60,75}, {80,65}, {85,15}};
     std::vector<Point2D> v2{{35,60}, {20,45}, {60,80}, {80,40},{90,60}, {50,30}, {70,20}, {75,10}, {10,35}, {20,20}};
     std::vector<Point2D> v3{{10,20}, {11,5}, {5,10}, {5,8}, {15,2}, {20,1}};
     std::vector<Point2D> v4{{8,10}, {12,7}, {8,6}, {11,6}, {10,2}};
-    std::vector<Point2D> v5{{-2, 1}, {7,0}, {0,-2}, {4,-3}, {10,4}, {8, -3}, {9, -6}, {4,5}, {13,-4}, {12, 7}, {7, -2}, {11, -3}, {5,-5}, {7, -7}};
     
     Tree2D<int> t1;  // Simpler tree
     Tree2D<int> t2; // More complicated deletion from lecture
     Tree2D<int> t3; // First example from lecture
     Tree2D<int> t4; // Breaking the invariant from lecture
-    Tree2D<int> t5;
 };
 
 TEST_F(Test2D, findMin){
@@ -107,8 +118,6 @@ TEST_F(Test2D, delete2){
     t3.remove({10,20});
     ASSERT_EQ(t3.findMin(0), 5);
     ASSERT_EQ(t3.findMin(1), 1);
-    // Problem: the parent node to the last leaf doesn't get deleted. 
-    // Solution: Add some tree traversal into the remove code
 }
 
 TEST_F(Test2D, delete1){
@@ -120,6 +129,9 @@ TEST_F(Test2D, delete1){
     ASSERT_FALSE(t2.contains({10, 35}));
     ASSERT_EQ(t2.findMin(0),20);
 
+    t3.remove({10,20});
+    ASSERT_FALSE(t3.contains({10,20}));
+    
 }
 TEST_F(Test2D, rangeQuery){
 
@@ -144,19 +156,54 @@ TEST_F(Test2D, rangeQuery3) {
     rangeQueryTest(t2, v2, q, r);
 }
 
+TEST_F(Test2D, nearestNeighbor1){
+
+    Point2D nn = t2.nearestNeighbor({50,60});
+    Point2D expected{35,60};
+    ASSERT_EQ(nn, expected);
+
+    nn = t2.nearestNeighbor({35,30});
+    expected = {50,30};
+    std::cout << dist(expected, {35,30}) << " " << dist(nn, {35,30}) << std::endl;
+    ASSERT_EQ(nn, expected);
+
+    nn = t2.nearestNeighbor({100,100});
+    expected = {90,60};
+    ASSERT_EQ(nn, expected);
+}
+
+// This can be its own test fixture -- and test on multiple dimensions. 
+// Fuzz testing can be done with n dimensions with a parameterized typed test!
 TEST_F(Test2D, rangeQueryFuzz){
-    std::uniform_int_distribution<int> dist;
-    std::mt19937 rng;
-    size_t n = 1000;
-    // generate random points. 
-    // run the range query check 5 times on 5 random points with r = 20;
+    std::uniform_real_distribution<double> dist(-300, 300);
+    std::mt19937 rng(time(nullptr));
+    size_t n = 10000;
+    size_t queries = 20;
+    const double r = 35;
+    std::vector<Point2Dd> points;
+    Tree2D<double> t;
+    for (size_t i = 0; i < n; ++i){
+        double x = dist(rng);
+        double y = dist(rng);
+        points.push_back({x,y});
+        t.insert({x,y});
+    }
+
+    for (size_t query = 0; query < queries; ++query){
+        double qx = dist(rng);
+        double qy = dist(rng);
+        std::vector<Point2Dd> inRadius = pointsInRadius(points, {qx,qy}, r);
+        std::vector<Point2Dd> points = t.range(r, {qx,qy});
+        auto matcher = UnorderedElementsAreArray(inRadius.begin(), inRadius.end());
+        ASSERT_THAT(points, matcher);
+    }
+
 }
 
 
 
 TEST(Test3d, insertion3D){
     Tree3D<int> t3;
-
 }
 
 

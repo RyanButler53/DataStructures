@@ -4,6 +4,7 @@
 #include <vector>
 #include <exception>
 #include <algorithm>
+#include <numeric>
 #include <functional>
 
 
@@ -48,11 +49,15 @@ public:
     // Returns a vector of all keys that match the first T dimensions
     std::vector<key_t> search(const std::vector<T> query, size_t t);
 
-    key_t nearestNeighbor(const key_t& query);
+    /**
+     * @brief returns the single key that is the closest neighbor to 
+     */
+    key_t nearestNeighbor(const key_t& query, DistanceFunction fn = DistanceFunction::Euclidean) const ;
+
+    std::vector<key_t> nearestNeighbors(const key_t& query, size_t k, DistanceFunction fn = DistanceFunction::Euclidean) const;
 
     /**
      * @brief Finds a vector of points within r range of key
-     * // later add an argument to supply a custom distance function
      */
     std::vector<key_t> range(double r, const key_t& key, DistanceFunction fn = DistanceFunction::Euclidean) const;
 
@@ -86,7 +91,10 @@ public:
 
     void rangeHelper(double r, const key_t& query, Node* curNode, size_t dim, std::vector<key_t>& keys, DistanceFunction fn) const;
 
-    double dist(DistanceFunction fn, const key_t& p1, const key_t& p2) const ;
+    double dist(DistanceFunction fn, const key_t& p1, const key_t& p2) const;
+
+    void nearestNeighborHelper(const key_t& query, Node* n, size_t curDim, DistanceFunction fn, double& bestSoFar, Node*& bestNode) const;
+
 };
 
 template <typename T>
@@ -99,3 +107,9 @@ using Tree3D = KDTree<T, 3>;
 
 #endif
 
+/**
+ * Queries: 
+ * NearestNeighbor(q, k, distfunc);
+ * RangeRadius(q, r, distfunc)
+ * BoundingBox(q, upper/lower bound for ALL dimensions) (0, 70, 80) -> 70 < dim0 < 80
+ */

@@ -128,7 +128,6 @@ void KDTree<T,K>::removeHelper(const key_t& key, Node*& node, size_t dim){ // as
                 node->data_ = min->data_;
                 node->right_ = node->left_;
                 node->left_ = nullptr;
-                // removeHelper(min, minDim);
             }
             // Recursively remove the data from the right subtree
             removeHelper(node->data_, node->right_, (dim+1)%K);
@@ -158,22 +157,21 @@ void KDTree<T,K>::rangeHelper(double r, const key_t& query, Node* curNode, size_
     }
     // Case where the point is out of range
     if (dist(fn, curNode->data_, query) > r){
-        if (curNode->data_[dim] < (query[dim] - r)){ // only search keys in the right half
+        if (curNode->data_[dim] < (query[dim] - r)){ // only search keys in the right subtree
             rangeHelper(r, query, curNode->right_, (dim+1)%K, keys, fn);
-        } else if (curNode->data_[dim] > (query[dim] + r)){ // only search left half
+        } else if (curNode->data_[dim] > (query[dim] + r)){ // only search left subtree
             rangeHelper(r, query, curNode->left_, (dim+1)%K, keys, fn);
         } else { // could be points in both halves
             rangeHelper(r, query, curNode->right_, (dim+1)%K, keys, fn);
             rangeHelper(r, query, curNode->left_, (dim+1)%K, keys, fn);
         }
-    } else {  // point is in range
+    } else {  // point is in range. Search both sides
         keys.push_back(curNode->data_);
         rangeHelper(r, query, curNode->right_, (dim+1)%K, keys, fn);
         rangeHelper(r, query, curNode->left_, (dim+1)%K, keys, fn);
     }
     
 }
-
 
 template <typename T, size_t K>
 double KDTree<T,K>::dist(DistanceFunction fn, const key_t& p1, const key_t& p2) const {
@@ -187,9 +185,53 @@ double KDTree<T,K>::dist(DistanceFunction fn, const key_t& p1, const key_t& p2) 
         }
         return std::sqrt(sum);
     case DistanceFunction::Manhattan:
-        return 1.0;
+        for (size_t i = 0; i < K; ++i){
+            T diff = std::abs(p1[i]- p2[i]); 
+            sum += diff;
+        }
+        return sum;
     default:
         break;
     }
 }
 
+// NEAREST NEIGHBOR
+
+template <typename T, size_t K>
+typename KDTree<T,K>::key_t KDTree<T,K>::nearestNeighbor(const key_t& query, DistanceFunction fn) const {
+    double bestDist = std::numeric_limits<double>::max();
+    if (!root_) throw std::invalid_argument ("Cannot find a nearest neighbor in an empty tree!");
+    Node* bestNode = root_;
+    nearestNeighborHelper(query, root_, 0, fn, bestDist, bestNode);
+    return bestNode->data_;
+}
+
+
+template <typename T, size_t K>
+void KDTree<T,K>::nearestNeighborHelper(const key_t& query, Node* n, size_t dim, DistanceFunction fn, double& bestSoFar, Node*& bestNode) const {
+    if (!n){ return; }
+    // Check distance and update new bests
+    double newDist = dist(fn, n->data_, query);
+    if (bestSoFar > newDist){
+        bestSoFar = newDist;
+        bestNode = n;
+    }
+    // Search for the node
+    if (n->data_[dim] < query[dim]){ // search the right side first. 
+        nearestNeighborHelper(query, n->right_, (dim+1)%K, fn, bestSoFar, bestNode);
+        // Check if there is any possibility of there being a closer neighbor on the left subtree
+        T deltaDist = query[dim] - n->data_[dim];
+        if (deltaDist < bestSoFar){
+            nearestNeighborHelper(query, n->left_, (dim+1)%K, fn, bestSoFar, bestNode);
+        }
+    } else if (n->data_[dim] > query[dim]){
+        nearestNeighborHelper(query, n->left_, (dim+1)%K, fn, bestSoFar, bestNode);
+        T deltaDist = n->data_[dim] - query[dim];
+        if (deltaDist < bestSoFar){
+            nearestNeighborHelper(query, n->right_, (dim+1)%K, fn, bestSoFar, bestNode);
+        }
+    } else { // could be points in both halves
+        nearestNeighborHelper(query, n->right_, (dim+1)%K, fn, bestSoFar, bestNode);
+        nearestNeighborHelper(query, n->left_, (dim+1)%K, fn, bestSoFar, bestNode);
+    }
+}
