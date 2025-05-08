@@ -164,12 +164,23 @@ TEST_F(Test2D, nearestNeighbor1){
 
     nn = t2.nearestNeighbor({35,30});
     expected = {50,30};
-    std::cout << dist(expected, {35,30}) << " " << dist(nn, {35,30}) << std::endl;
     ASSERT_EQ(nn, expected);
 
     nn = t2.nearestNeighbor({100,100});
     expected = {90,60};
     ASSERT_EQ(nn, expected);
+}
+
+TEST_F(Test2D, nearestNeighbor2){
+    nearestNeighborTest(t3, v3, {12, 6});
+    nearestNeighborTest(t4, v4, {11,11});
+}
+
+TEST_F(Test2D, kNearestNeighbor1){
+    Point2D query = {35, 30};
+    std::vector<Point2D> exp{{50,30},{20,20}, {20,45}};
+    std::vector<Point2D> nn = t2.kNearestNeighbors(query, 3);
+    ASSERT_EQ(nn, exp);
 }
 
 // This can be its own test fixture -- and test on multiple dimensions. 

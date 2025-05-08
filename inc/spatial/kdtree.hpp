@@ -2,6 +2,7 @@
 #define KD_TREE_HPP_INCLUDED
 #include <array>
 #include <vector>
+#include <queue>
 #include <exception>
 #include <algorithm>
 #include <numeric>
@@ -13,6 +14,16 @@ enum class DistanceFunction {
     Manhattan = 1
     // Hamming, Minkowski?
 };    
+
+    /**
+     *     
+     * bool empty() { return pq.empty();}
+    T top() const { return pq.top(); }
+    void pop() { pq.pop(); }
+    void push(T item, P priority) {pq.push(item); }
+    size_t size() const { return pq.size(); }
+     */
+
 
 
 /**
@@ -54,7 +65,7 @@ public:
      */
     key_t nearestNeighbor(const key_t& query, DistanceFunction fn = DistanceFunction::Euclidean) const ;
 
-    std::vector<key_t> nearestNeighbors(const key_t& query, size_t k, DistanceFunction fn = DistanceFunction::Euclidean) const;
+    std::vector<key_t> kNearestNeighbors(const key_t& query, size_t k, DistanceFunction fn = DistanceFunction::Euclidean) const;
 
     /**
      * @brief Finds a vector of points within r range of key
@@ -68,6 +79,28 @@ public:
         key_t data_;
         Node* right_;
         Node* left_;
+    };
+
+    class BoundedPQ {
+        private:
+            std::priority_queue<std::pair<double, Node*>> pq_;
+            size_t maxSize_;
+
+        public:
+        BoundedPQ(size_t maxsize):maxSize_{maxsize}{}
+        ~BoundedPQ() = default;
+
+        bool empty() { return pq_.empty();}
+        void push(std::pair<double, Node*> item){
+            if (pq_.size() < maxSize_){
+                pq_.push(item);
+            } else if (item < pq_.top()) {
+                pop();
+                push(item);
+            }
+        }
+        void pop(){pq_.pop();}
+        const std::pair<double, Node*>& top(){return pq_.top();}
     };
 
     // A node and its dimension
@@ -95,6 +128,7 @@ public:
 
     void nearestNeighborHelper(const key_t& query, Node* n, size_t curDim, DistanceFunction fn, double& bestSoFar, Node*& bestNode) const;
 
+    void knearestNeighborHelper(const key_t& query, Node*n, size_t curDim, DistanceFunction fn, BoundedPQ& best) const;
 };
 
 template <typename T>

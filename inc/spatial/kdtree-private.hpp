@@ -199,39 +199,62 @@ double KDTree<T,K>::dist(DistanceFunction fn, const key_t& p1, const key_t& p2) 
 
 template <typename T, size_t K>
 typename KDTree<T,K>::key_t KDTree<T,K>::nearestNeighbor(const key_t& query, DistanceFunction fn) const {
-    double bestDist = std::numeric_limits<double>::max();
     if (!root_) throw std::invalid_argument ("Cannot find a nearest neighbor in an empty tree!");
-    Node* bestNode = root_;
-    nearestNeighborHelper(query, root_, 0, fn, bestDist, bestNode);
-    return bestNode->data_;
+    std::vector<key_t> nn = kNearestNeighbors(query, 1, fn);
+    return nn[0];
 }
 
+template <typename T, size_t K>
+std::vector<typename KDTree<T,K>::key_t> KDTree<T,K>::kNearestNeighbors(const key_t& query, size_t k, DistanceFunction fn) const {
+    // Handle edge cases
+    if (k > size_){
+        k = size_;
+    } else if (!root_){
+        return {};
+    }
+
+    // Setup Priority Queue
+    BoundedPQ pq(k);
+    pq.push({std::numeric_limits<double>::max(), nullptr});
+    // run recursive helper
+    knearestNeighborHelper(query, root_, 0,fn, pq);
+    
+    // Get the closest K points
+    std::vector<key_t> neighbors;
+    while (!pq.empty())
+    {
+        auto& [d, node] = pq.top();
+        neighbors.push_back(node->data_);
+        pq.pop();
+    }
+    std::ranges::reverse(neighbors);
+    return neighbors;
+    
+}
 
 template <typename T, size_t K>
-void KDTree<T,K>::nearestNeighborHelper(const key_t& query, Node* n, size_t dim, DistanceFunction fn, double& bestSoFar, Node*& bestNode) const {
-    if (!n){ return; }
-    // Check distance and update new bests
+void KDTree<T,K>::knearestNeighborHelper(const key_t& query, Node*n, size_t dim, DistanceFunction fn, BoundedPQ& best) const{
+    if (!n) return;
     double newDist = dist(fn, n->data_, query);
-    if (bestSoFar > newDist){
-        bestSoFar = newDist;
-        bestNode = n;
+    if (newDist < best.top().first){
+        best.push({newDist, n});
     }
-    // Search for the node
+    // double furthestNearestK = best.top().first;
     if (n->data_[dim] < query[dim]){ // search the right side first. 
-        nearestNeighborHelper(query, n->right_, (dim+1)%K, fn, bestSoFar, bestNode);
+        knearestNeighborHelper(query, n->right_, (dim+1)%K, fn, best);
         // Check if there is any possibility of there being a closer neighbor on the left subtree
         T deltaDist = query[dim] - n->data_[dim];
-        if (deltaDist < bestSoFar){
-            nearestNeighborHelper(query, n->left_, (dim+1)%K, fn, bestSoFar, bestNode);
+        if (deltaDist < best.top().first){
+            knearestNeighborHelper(query, n->left_, (dim+1)%K, fn,best);
         }
     } else if (n->data_[dim] > query[dim]){
-        nearestNeighborHelper(query, n->left_, (dim+1)%K, fn, bestSoFar, bestNode);
+        knearestNeighborHelper(query, n->left_, (dim+1)%K, fn, best);
         T deltaDist = n->data_[dim] - query[dim];
-        if (deltaDist < bestSoFar){
-            nearestNeighborHelper(query, n->right_, (dim+1)%K, fn, bestSoFar, bestNode);
+        if (deltaDist < best.top().first){
+            knearestNeighborHelper(query, n->right_, (dim+1)%K, fn, best);
         }
     } else { // could be points in both halves
-        nearestNeighborHelper(query, n->right_, (dim+1)%K, fn, bestSoFar, bestNode);
-        nearestNeighborHelper(query, n->left_, (dim+1)%K, fn, bestSoFar, bestNode);
+        knearestNeighborHelper(query, n->right_, (dim+1)%K, fn, best);
+        knearestNeighborHelper(query, n->left_, (dim+1)%K, fn, best);
     }
 }
