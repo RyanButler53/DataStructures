@@ -141,39 +141,6 @@ void KDTree<T,K>::removeHelper(const key_t& key, Node*& node, size_t dim){ // as
 }
 
 template <typename T, size_t K>
-std::vector<typename KDTree<T,K>::key_t> KDTree<T,K>::range(double r, const key_t& query, DistanceFunction fn) const {
-
-    std::vector<key_t> keys;
-    rangeHelper(r, query, root_, 0, keys, fn);
-    return keys;
-}
-
-template <typename T, size_t K>
-void KDTree<T,K>::rangeHelper(double r, const key_t& query, Node* curNode, size_t dim, 
-                              std::vector<key_t>& keys, DistanceFunction fn) const {
-
-    if (!curNode) {
-        return; 
-    }
-    // Case where the point is out of range
-    if (dist(fn, curNode->data_, query) > r){
-        if (curNode->data_[dim] < (query[dim] - r)){ // only search keys in the right subtree
-            rangeHelper(r, query, curNode->right_, (dim+1)%K, keys, fn);
-        } else if (curNode->data_[dim] > (query[dim] + r)){ // only search left subtree
-            rangeHelper(r, query, curNode->left_, (dim+1)%K, keys, fn);
-        } else { // could be points in both halves
-            rangeHelper(r, query, curNode->right_, (dim+1)%K, keys, fn);
-            rangeHelper(r, query, curNode->left_, (dim+1)%K, keys, fn);
-        }
-    } else {  // point is in range. Search both sides
-        keys.push_back(curNode->data_);
-        rangeHelper(r, query, curNode->right_, (dim+1)%K, keys, fn);
-        rangeHelper(r, query, curNode->left_, (dim+1)%K, keys, fn);
-    }
-    
-}
-
-template <typename T, size_t K>
 double KDTree<T,K>::dist(DistanceFunction fn, const key_t& p1, const key_t& p2) const {
     T sum = 0;
     switch (fn)
@@ -239,7 +206,7 @@ void KDTree<T,K>::knearestNeighborHelper(const key_t& query, Node*n, size_t dim,
     if (newDist < best.top().first){
         best.push({newDist, n});
     }
-    // double furthestNearestK = best.top().first;
+
     if (n->data_[dim] < query[dim]){ // search the right side first. 
         knearestNeighborHelper(query, n->right_, (dim+1)%K, fn, best);
         // Check if there is any possibility of there being a closer neighbor on the left subtree
@@ -256,5 +223,68 @@ void KDTree<T,K>::knearestNeighborHelper(const key_t& query, Node*n, size_t dim,
     } else { // could be points in both halves
         knearestNeighborHelper(query, n->right_, (dim+1)%K, fn, best);
         knearestNeighborHelper(query, n->left_, (dim+1)%K, fn, best);
+    }
+}
+
+// RANGE QUERIES
+
+template <typename T, size_t K>
+std::vector<typename KDTree<T,K>::key_t> KDTree<T,K>::radialRangeQuery(double r, const key_t& query, DistanceFunction fn) const {
+
+    std::vector<key_t> keys;
+    rangeHelper(r, query, root_, 0, keys, fn);
+    return keys;
+}
+
+template <typename T, size_t K>
+void KDTree<T,K>::rangeHelper(double r, const key_t& query, Node* curNode, size_t dim, 
+                              std::vector<key_t>& keys, DistanceFunction fn) const {
+
+    if (!curNode) {
+        return; 
+    }
+    // Case where the point is out of range
+    if (dist(fn, curNode->data_, query) > r){
+        if (curNode->data_[dim] < (query[dim] - r)){ // only search keys in the right subtree
+            rangeHelper(r, query, curNode->right_, (dim+1)%K, keys, fn);
+        } else if (curNode->data_[dim] > (query[dim] + r)){ // only search left subtree
+            rangeHelper(r, query, curNode->left_, (dim+1)%K, keys, fn);
+        } else { // could be points in both halves
+            rangeHelper(r, query, curNode->right_, (dim+1)%K, keys, fn);
+            rangeHelper(r, query, curNode->left_, (dim+1)%K, keys, fn);
+        }
+    } else {  // point is in range. Search both sides
+        keys.push_back(curNode->data_);
+        rangeHelper(r, query, curNode->right_, (dim+1)%K, keys, fn);
+        rangeHelper(r, query, curNode->left_, (dim+1)%K, keys, fn);
+    } 
+}
+
+template <typename T, size_t K>
+std::vector<typename KDTree<T,K>::key_t> KDTree<T,K>::rectangleRangeQuery(RectangleRQ bounds) const {
+    std::vector<key_t> keys;
+    rectangleRangeHelper(bounds, root_, 0, keys);
+    return keys;
+}
+
+template <typename T, size_t K>
+void KDTree<T,K>::rectangleRangeHelper(RectangleRQ bounds, Node* curNode, size_t dim, std::vector<key_t>& keys) const {
+    if (!curNode){ // no node, return nothing
+        return;
+    } else if (bounds.keyInside(curNode->data_)){ // in bounding box: add it to keys
+        keys.push_back(curNode->data_);
+    }
+    // If boundary for current dimension is not specified, recurse both sides
+    if (!bounds.contains(dim)){
+        rectangleRangeHelper(bounds, curNode->left_, (dim+1)%K, keys);
+        rectangleRangeHelper(bounds, curNode->right_, (dim+1)%K, keys);
+    }
+    if (curNode->data_[dim] < bounds[dim].first) { // current dimension is too low, try right 
+        rectangleRangeHelper(bounds, curNode->right_, (dim+1)%K, keys);
+    } else if (curNode->data_[dim] > bounds[dim].second){ // cur dimension is too high, try left
+        rectangleRangeHelper(bounds, curNode->left_, (dim+1)%K, keys);
+    } else { // Current dimension is in the range, may be in bounding box, check both children
+        rectangleRangeHelper(bounds, curNode->left_, (dim+1)%K, keys);
+        rectangleRangeHelper(bounds, curNode->right_, (dim+1)%K, keys);
     }
 }

@@ -1,8 +1,10 @@
 #ifndef KD_TREE_HPP_INCLUDED
 #define KD_TREE_HPP_INCLUDED
+
 #include <array>
 #include <vector>
 #include <queue>
+#include <map>
 #include <exception>
 #include <algorithm>
 #include <numeric>
@@ -14,15 +16,6 @@ enum class DistanceFunction {
     Manhattan = 1
     // Hamming, Minkowski?
 };    
-
-    /**
-     *     
-     * bool empty() { return pq.empty();}
-    T top() const { return pq.top(); }
-    void pop() { pq.pop(); }
-    void push(T item, P priority) {pq.push(item); }
-    size_t size() const { return pq.size(); }
-     */
 
 
 
@@ -42,6 +35,36 @@ struct Node;
 public:
     using key_t = std::array<T, K>;
 
+    // This wrapper around a map mapping dimension to lower and upper bounds
+    class RectangleRQ {
+
+        std::map<size_t, std::pair<T,T>> bounds_;
+
+        public:
+        void insert(size_t dim, T low, T high){
+            if (dim > K){throw std::invalid_argument("Invalid Dimension");}
+            bounds_[dim] = std::make_pair(low, high);
+        }
+
+        bool keyInside(const key_t& key) const {
+            for (auto [dim, bound] : bounds_){
+                // If any key is out of the bounds, return false
+                if (key[dim] < bound.first or key[dim] > bound.second){
+                    return false;
+                }
+            }
+            // All dimensions are valid!
+            return true;
+        }
+
+        std::pair<T,T> operator[](size_t dim){return bounds_[dim];}
+
+        bool contains (size_t dim){return bounds_.contains(dim);} 
+
+        void clear(){bounds_.clear();}
+    };
+
+    // Constructor and destructors
     KDTree();
     ~KDTree();
 
@@ -56,9 +79,7 @@ public:
     T findMin(size_t dim);
 
 
-    // Partial Match query
-    // Returns a vector of all keys that match the first T dimensions
-    std::vector<key_t> search(const std::vector<T> query, size_t t);
+    // QUERIES
 
     /**
      * @brief returns the single key that is the closest neighbor to 
@@ -68,10 +89,14 @@ public:
     std::vector<key_t> kNearestNeighbors(const key_t& query, size_t k, DistanceFunction fn = DistanceFunction::Euclidean) const;
 
     /**
-     * @brief Finds a vector of points within r range of key
+     * @brief Finds the vector of points within a k-dimensional sphere of radius r from point key
      */
-    std::vector<key_t> range(double r, const key_t& key, DistanceFunction fn = DistanceFunction::Euclidean) const;
+    std::vector<key_t> radialRangeQuery(double r, const key_t& key, DistanceFunction fn = DistanceFunction::Euclidean) const;
 
+    /**
+     * @brief Returns all points within the K dimensional bounding box. All dimensions need not be speified. 
+     */
+    std::vector<key_t> rectangleRangeQuery(RectangleRQ bounds) const;
 
     private:
 
@@ -81,6 +106,10 @@ public:
         Node* left_;
     };
 
+    /**
+     * @class BoundedPQ 
+     * @brief Thin wrapper around std::priority_queue to have a max size
+     */
     class BoundedPQ {
         private:
             std::priority_queue<std::pair<double, Node*>> pq_;
@@ -124,9 +153,9 @@ public:
 
     void rangeHelper(double r, const key_t& query, Node* curNode, size_t dim, std::vector<key_t>& keys, DistanceFunction fn) const;
 
-    double dist(DistanceFunction fn, const key_t& p1, const key_t& p2) const;
+    void rectangleRangeHelper(RectangleRQ bounds, Node* curNode, size_t dim, std::vector<key_t>& keys) const;
 
-    void nearestNeighborHelper(const key_t& query, Node* n, size_t curDim, DistanceFunction fn, double& bestSoFar, Node*& bestNode) const;
+    double dist(DistanceFunction fn, const key_t& p1, const key_t& p2) const;
 
     void knearestNeighborHelper(const key_t& query, Node*n, size_t curDim, DistanceFunction fn, BoundedPQ& best) const;
 };
@@ -139,11 +168,4 @@ using Tree3D = KDTree<T, 3>;
 
 #include "kdtree-private.hpp"
 
-#endif
-
-/**
- * Queries: 
- * NearestNeighbor(q, k, distfunc);
- * RangeRadius(q, r, distfunc)
- * BoundingBox(q, upper/lower bound for ALL dimensions) (0, 70, 80) -> 70 < dim0 < 80
- */
+#endif // KDTREE_HPP_INCLUDED

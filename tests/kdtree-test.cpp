@@ -58,7 +58,7 @@ class Test2D : public testing::Test {
 
     void rangeQueryTest(const Tree2D<int>& t, std::vector<Point2D> points, Point2D q, double r){
         std::vector<Point2D> inRadius = pointsInRadius(points,q,r);
-        std::vector<Point2D> pts = t.range(r, q, DistanceFunction::Euclidean);
+        std::vector<Point2D> pts = t.radialRangeQuery(r, q, DistanceFunction::Euclidean);
         auto matcher = UnorderedElementsAreArray(inRadius.begin(), inRadius.end());
         ASSERT_THAT(pts, matcher);
     }
@@ -135,7 +135,7 @@ TEST_F(Test2D, delete1){
 }
 TEST_F(Test2D, rangeQuery){
 
-    std::vector<Point2D> q = t4.range(4.0, {10,7});
+    std::vector<Point2D> q = t4.radialRangeQuery(4.0, {10,7});
     ASSERT_EQ(q.size(), 4);
     std::vector<Point2D> expected{{8,10}, {12,7}, {8,6}, {11,6}};
 
@@ -183,6 +183,43 @@ TEST_F(Test2D, kNearestNeighbor1){
     ASSERT_EQ(nn, exp);
 }
 
+TEST_F(Test2D, RectangleBoundingBox){
+    KDTree<int,2>::RectangleRQ bounds;
+    bounds.insert(0, 59, 95);
+    bounds.insert(1, 39, 81);
+    ASSERT_TRUE(bounds.keyInside({60,80}));
+    ASSERT_TRUE(bounds.keyInside({80,40}));
+ 
+    // Empty bounds means entire space
+    bounds.clear();
+    // Previously outside of the bounds should be in bounds
+    ASSERT_TRUE(bounds.keyInside({20,60}));
+
+    // bounds the x dimension, all y values are valid. 
+    bounds.insert(0, 59, 95);
+    //
+    ASSERT_TRUE(bounds.keyInside({60, 150}));
+    ASSERT_TRUE(bounds.keyInside({80, -150}));
+    ASSERT_FALSE(bounds.keyInside({30, 75}));
+}
+
+TEST_F(Test2D, RectangleRange){
+    KDTree<int, 2>::RectangleRQ bounds;
+    bounds.insert(0, 59, 95);
+    bounds.insert(1, 39, 81);
+    std::vector<Point2D> points = t2.rectangleRangeQuery(bounds);
+    std::vector<Point2D> exp{{60,80}, {80,40}, {90,60}};
+    auto matcher = UnorderedElementsAreArray(exp.begin(), exp.end());
+    ASSERT_THAT(points, matcher);
+
+    KDTree<int, 2>::RectangleRQ bounds2;
+    bounds2.insert(0, 33, 65);
+    points = t2.rectangleRangeQuery(bounds2);
+    exp = {{60,80}, {35, 60}, {50,30}};
+    matcher = UnorderedElementsAreArray(exp.begin(), exp.end());
+    ASSERT_THAT(points, matcher);
+}
+
 // This can be its own test fixture -- and test on multiple dimensions. 
 // Fuzz testing can be done with n dimensions with a parameterized typed test!
 TEST_F(Test2D, rangeQueryFuzz){
@@ -204,7 +241,7 @@ TEST_F(Test2D, rangeQueryFuzz){
         double qx = dist(rng);
         double qy = dist(rng);
         std::vector<Point2Dd> inRadius = pointsInRadius(points, {qx,qy}, r);
-        std::vector<Point2Dd> points = t.range(r, {qx,qy});
+        std::vector<Point2Dd> points = t.radialRangeQuery(r, {qx,qy});
         auto matcher = UnorderedElementsAreArray(inRadius.begin(), inRadius.end());
         ASSERT_THAT(points, matcher);
     }
