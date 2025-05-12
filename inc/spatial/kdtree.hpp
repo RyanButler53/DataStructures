@@ -14,7 +14,6 @@
 enum class DistanceFunction {
     Euclidean = 0,
     Manhattan = 1
-    // Hamming, Minkowski?
 };    
 
 
@@ -35,7 +34,7 @@ struct Node;
 public:
     using key_t = std::array<T, K>;
 
-    // This wrapper around a map mapping dimension to lower and upper bounds
+    // This is a wrapper around a map mapping dimension to lower and upper bounds
     class RectangleRQ {
 
         std::map<size_t, std::pair<T,T>> bounds_;

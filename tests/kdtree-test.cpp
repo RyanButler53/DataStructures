@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <map>
 #include <random>
+#include <ranges>
 
 using ::testing::UnorderedElementsAreArray;
 using Point2D = std::array<int, 2>;
@@ -64,7 +65,7 @@ class Test2D : public testing::Test {
     }
 
     void nearestNeighborTest(const Tree2D<int>& t, std::vector<Point2D> points, const Point2D& q){
-        std::map<double, Point2D> distances;
+        std::multimap<double, Point2D> distances;
         for (Point2D pt : points){
             distances.insert({dist(pt, q), pt});
         }
@@ -197,7 +198,6 @@ TEST_F(Test2D, RectangleBoundingBox){
 
     // bounds the x dimension, all y values are valid. 
     bounds.insert(0, 59, 95);
-    //
     ASSERT_TRUE(bounds.keyInside({60, 150}));
     ASSERT_TRUE(bounds.keyInside({80, -150}));
     ASSERT_FALSE(bounds.keyInside({30, 75}));
@@ -248,12 +248,216 @@ TEST_F(Test2D, rangeQueryFuzz){
 
 }
 
+/// FUZZ TEST WITH N DIMENSIONS (is it possible to do a typed test), k = 3
+// template <size_t K>
+class KDTreeTest : public testing::TestWithParam<int>{
+    
+    public:
+    // template <size_t K>÷
+    using Point = std::array<int, 3>;
+
+    template <typename T>
+    double dist(std::array<T,3> p1, std::array<T,3> p2){
+
+        T sum = 0;
+        for (size_t i = 0; i < 3; ++i){
+            T diff = p1[i] - p2[i];
+            sum += (diff * diff);
+        }
+        return std::sqrt(sum);
+    }
+
+    KDTree<int, 3>::RectangleRQ getBB(){
+        std::uniform_int_distribution<int> lower(-320, 0);
+        std::uniform_int_distribution<int> upper(0, 320);
+        KDTree<int, 3>::RectangleRQ rq;
+        for (size_t dim = 0; dim < 3; ++dim){
+            int low = lower(rng_);
+            int high = upper(rng_);
+            rq.insert(dim, low, high);
+        }
+        return rq;
+    }
+
+    double getRadius(){
+        std::uniform_real_distribution<double> rdist(10, 80);
+        return rdist(rng_);
+
+    }
+
+    Point getPoint(){
+        Point p;
+        for (size_t dim = 0; dim < 3; ++dim){
+            double coord = dist_(rng_);
+            p[dim] = coord;
+        }
+        return p;
+    };
+
+    void getRandomPoints(int n, std::vector<Point>& points){
+
+        for (size_t i = 0; i < n; ++i){
+            Point p = getPoint();
+            points.push_back(p);
+        }
+
+    }
+
+    std::vector<Point> knearest(std::vector<Point>& points, const Point& q, size_t k){
+        std::multimap<double, Point> distances;
+        for (Point pt : points){
+            distances.insert({dist(pt, q), pt});
+        }
+        if (distances.size() != points.size()){
+            std::cout << "DUPLICATE DISTANCE" << std::endl;
+        }
+        auto iter = distances.begin();
+        std::vector<Point> nearest;
+        for (size_t i = 0; i < k; ++i){
+            nearest.push_back(iter->second);
+            ++iter;
+        }
+        return nearest;
+    }
+
+    std::vector<Point> inRadius(std::vector<Point>& points, const Point& q, double r){
+        std::vector<Point> in;
+        for (Point& p : points){
+            if (dist(p, q) <= r){
+                in.push_back(p);
+            }
+        }
+        return in;
+    }
+
+    std::vector<Point> inBox(std::vector<Point>& points, KDTree<int, 3>::RectangleRQ q){
+        std::vector<Point> in;
+        for (auto p : points){
+            if (q.keyInside(p)){
+                in.push_back(p);
+            }
+        }
+        return in;
+    }
+
+    void checkNN(std::vector<Point> actual, std::vector<Point> exp, Point q){
+        // If the same -- be done
+
+    }
+
+    void SetUp() override {
+        size_t seed = time(nullptr);
+        rng_ = std::mt19937(seed);
+        dist_ = std::uniform_real_distribution<double>(-300, 300);
+    }
+
+    // std::mt19937 rng_;
+    std::mt19937 rng_;//(time(nullptr));
+    std::uniform_real_distribution<double> dist_;//(-300, 300);
+    // Fuzz Testable Items: 
+    // Nearest Neighbors
+    // K nearest Neighbors
+    // Radius Range Queries
+    // Bounding Box Range queries
+
+};
 
 
-TEST(Test3d, insertion3D){
-    Tree3D<int> t3;
+TEST_P(KDTreeTest, NearestNeighbor){
+    std::vector<Point> points;
+    int n = this->GetParam();
+    getRandomPoints(n, points);
+    KDTree<int, 3> t;
+
+    for (auto p : points){
+        t.insert(p);
+    }
+
+    for (size_t query_i = 0; query_i < 5; ++query_i){
+        Point q = getPoint();
+        Point actual = knearest(points,q , 1)[0];
+        Point exp = t.nearestNeighbor(q);
+        ASSERT_EQ(actual, exp);
+    }
 }
 
+TEST_P(KDTreeTest, KNearestNeighbors){
+    std::vector<Point> points;
+    int n = this->GetParam();
+    getRandomPoints(n, points);
+    KDTree<int, 3> t;
+
+    for (auto p : points){
+        t.insert(p);
+    }
+    for (size_t query_i = 0; query_i < 100; ++query_i){
+        Point q = getPoint();
+        std::vector<Point> actual = knearest(points,q , 20);
+        
+        std::vector<Point> exp = t.kNearestNeighbors(q, 20); //10446
+        if (std::ranges::equal(actual, exp)){
+            ASSERT_EQ(actual, exp);
+            return;
+        } else { // Check if there is a duplicate distance 
+            for (size_t i = 0; i < actual.size(); ++i){
+                ASSERT_EQ(dist(actual[i], q), dist(exp[i], q));
+            }
+        }
+    }
+}
+
+TEST_P(KDTreeTest, RadiusQuery){
+    std::vector<Point> points;
+    int n = this->GetParam();
+    getRandomPoints(n, points);
+    KDTree<int, 3> t;
+
+    for (auto p : points){
+        t.insert(p);
+    }
+    for (size_t query_i = 0; query_i < 5; ++query_i){
+        double r = getRadius();
+        Point q = getPoint();
+        std::vector<Point> actual = inRadius(points, q, r);
+        std::vector<Point> exp = t.radialRangeQuery(r, q);
+        
+        auto matcher = UnorderedElementsAreArray(actual.begin(), actual.end());
+        ASSERT_THAT(exp, matcher);
+    }
+}
+
+TEST_P(KDTreeTest, BoundingBoxQuery){
+    int n = this->GetParam();
+    std::vector<Point> points;
+    getRandomPoints(n, points);
+    KDTree<int, 3> t;
+
+    for (auto p : points){
+        t.insert(p);
+    }
+    for (size_t query_i = 0; query_i < 5; ++query_i){
+        KDTree<int, 3>::RectangleRQ bbox = getBB();
+        std::vector<Point> actual = inBox(points, bbox);
+        std::vector<Point> exp = t.rectangleRangeQuery(bbox);
+        
+        auto matcher = UnorderedElementsAreArray(actual.begin(), actual.end());
+        ASSERT_THAT(exp, matcher);
+    }
+
+}
+
+// TEST_P(KDTreeTest, pointwiseMatch){
+//     std::vector<std::array<int, 3>> exp{{8,10,0}, {12, 10,0}};
+//     std::vector<std::array<int, 3>> actual{{8, 10,0}, {10,8,0}};
+//     Point3D q = {10,10,0};
+
+//     // MATCHER_P(EquidistantPoint, q, {return dist(q)})
+//     ASSERT_EQ(exp, actual);
+// }
+
+INSTANTIATE_TEST_SUITE_P(KDFuzzTest,
+    KDTreeTest,
+    testing::Values(1000));
 
 int main(){
     ::testing::InitGoogleTest();
