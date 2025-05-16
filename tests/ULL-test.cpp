@@ -14,7 +14,7 @@ std::vector<T> toVec(UnrolledLinkedList<T,K>& ull){
     return values;
 }
 
-TEST(PushFront, overloadBlock){
+TEST(UnrolledLinkedList, overloadBlock){
     UnrolledLinkedList<int, 8> ull;
     std::vector v{0, 1, 2, 3, 4, 5, 6, 7, 8};
     for (auto &x : v)
@@ -24,7 +24,7 @@ TEST(PushFront, overloadBlock){
     ASSERT_EQ(ull.size(), 9);
 }
 
-TEST(PushFront, FrontOperator){
+TEST(UnrolledLinkedList, FrontOperator){
     UnrolledLinkedList<int, 4> ull;
     ull.push_front(4);
     ull.push_front(3);
@@ -34,7 +34,7 @@ TEST(PushFront, FrontOperator){
     ASSERT_EQ(x, 4);    
 }
 
-TEST(PushFront, PushFront3){
+TEST(UnrolledLinkedList, PushFront3){
     UnrolledLinkedList<int, 8> ull;
     for (size_t i = 0; i < 9; ++i){
         ull.push_front(10000+i);
@@ -48,7 +48,7 @@ TEST(PushFront, PushFront3){
     ASSERT_EQ(comp, toVec(ull));
 }
 
-TEST(AccessOperators, backOperator){
+TEST(UnrolledLinkedList, backOperator){
     UnrolledLinkedList<int, 4> ull;
     ull.push_back(4);
     ull.push_back(3);
@@ -58,7 +58,7 @@ TEST(AccessOperators, backOperator){
     ASSERT_EQ(x, 3);    
 }
 
-TEST(AccessOperators, testClear){
+TEST(UnrolledLinkedList, testClear){
     UnrolledLinkedList<int, 4> ull;
     for (int i = 0; i < 16; ++i){
         ull.push_back(i);
@@ -70,7 +70,7 @@ TEST(AccessOperators, testClear){
     ASSERT_EQ(ull.back(), 14);
 }
 
-TEST(Insertion, InsertIterator){
+TEST(UnrolledLinkedList, InsertIterator){
     UnrolledLinkedList<int, 4> ull;
     for (int i = 0; i < 8; ++i){
         ull.push_back(i);
@@ -122,7 +122,7 @@ TEST(Insertion, InsertIterator){
     comp = {8, 0, 1, 2, 9, 10, 11, 3, 4, 5, 6, 12, 7, 13, 14};
     ASSERT_EQ(comp, toVec(ull)); 
 }
-TEST(Insertion, testInsertion2){
+TEST(UnrolledLinkedList, testInsertion2){
     UnrolledLinkedList<int, 5> ull;
     for (int i = 0; i < 6; ++i){
         ull.push_back(i);
@@ -133,7 +133,7 @@ TEST(Insertion, testInsertion2){
     ASSERT_EQ(comp, toVec(ull));
 }
 
-TEST(Insertion, InsertIterator2){
+TEST(UnrolledLinkedList, InsertIterator2){
     UnrolledLinkedList<int, 5> ull;
     for (int i = 0; i < 7; ++i){
         ull.push_back(i);
@@ -157,14 +157,14 @@ TEST(Insertion, InsertIterator2){
     ASSERT_EQ(comp, toVec(ull));
 }
 // Tests sneaky case of reusing the iterator after pushing front on empty list
-TEST(Insertion, IteratorInsertion){
+TEST(UnrolledLinkedList, IteratorInsertion){
     UnrolledLinkedList<int, 4> ull;
     auto it = ull.begin();
     ull.insert(it, 1500);
     ull.insert(it, 400);
 }
 
-TEST(Deletion, PopBack){
+TEST(UnrolledLinkedList, PopBack){
     UnrolledLinkedList<int, 5> ull;
     std::vector<int> comp;
     for (int i = 0; i < 6; ++i)
@@ -190,7 +190,7 @@ TEST(Deletion, PopBack){
     ASSERT_EQ(ull.size(), 0);
 }
 
-TEST(Deletion, PopBackAndFront){
+TEST(UnrolledLinkedList, PopBackAndFront){
     UnrolledLinkedList<int, 5> ull;
     std::vector<int> comp;
     for (int i = 0; i < 6; ++i)
@@ -203,7 +203,7 @@ TEST(Deletion, PopBackAndFront){
     }    
 }
 
-TEST(Deletion, EmptyListException){
+TEST(UnrolledLinkedList, EmptyListException){
     UnrolledLinkedList<int, 5> ull;
     std::vector<int> comp;
     for (int i = 0; i < 6; ++i)
@@ -227,7 +227,7 @@ TEST(Deletion, EmptyListException){
     }
 }
 
-TEST(Deletion, EraseIter1){
+TEST(UnrolledLinkedList, EraseIter1){
     UnrolledLinkedList<int, 5> ull;
     std::vector<int> comp;
     for (int i = 0; i < 11; ++i)
@@ -248,7 +248,7 @@ TEST(Deletion, EraseIter1){
     ASSERT_EQ(comp, toVec(ull));
 }
 
-TEST(Deletion, InsertDelete){
+TEST(UnrolledLinkedList, InsertDelete){
     UnrolledLinkedList<int, 4> ull;
     auto it = ull.begin();
     ull.insert(it, 10000);
@@ -265,7 +265,7 @@ TEST(Deletion, InsertDelete){
     }
 }
 
-TEST(Deletion, ReturnEnd){
+TEST(UnrolledLinkedList, ReturnEnd){
     UnrolledLinkedList<int, 4> ull;
 
     auto it = ull.begin();
@@ -276,7 +276,7 @@ TEST(Deletion, ReturnEnd){
 }
 
 
-TEST(Fuzz, compareList){
+TEST(UnrolledLinkedList, compareList){
     UnrolledLinkedList<int, 4> ull;
     std::list<int> ll;
     size_t seed = time(nullptr);

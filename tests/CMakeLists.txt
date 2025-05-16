@@ -1,10 +1,11 @@
-cmake_minimum_required(VERSION 3.24)
+cmake_minimum_required(VERSION 4.0.0)
 
 add_subdirectory(googletest)
+include(GoogleTest)
 
-set (CMAKE_CURRENT_BINARY_DIR bin)
+string(TOUPPER ${CMAKE_BUILD_TYPE} buildType)
 
-if (CMAKE_BUILD_TYPE STREQUAL "DEBUG")
+if (buildType STREQUAL "DEBUG")
     add_compile_options(-fsanitize=address)
     add_link_options(-fsanitize=address)
 
@@ -14,20 +15,31 @@ if (CMAKE_BUILD_TYPE STREQUAL "DEBUG")
 endif()
 
 
+macro (DS_add_test testname src)
+    add_executable("${testname}Test" ${src})
+    target_link_libraries("${testname}Test" PRIVATE GTest::gtest)
+    gtest_discover_tests("${testname}Test")
+endmacro()
+
+macro(add_typed_test testname src)
+    add_executable("${testname}Test" ${src})
+    target_link_libraries("${testname}Test" PRIVATE GTest::gtest)
+    gtest_discover_tests("${testname}Test" TEST_LIST .TYPED)
+endmacro()
+
+# Non gtests tests
 add_executable(cuckoo-hash cuckoo-test.cpp)
 add_executable(launching-threadpool launching-threadpool-test.cpp)
-add_executable(scapegoat-tree scapegoat-test.cpp)
-add_executable(splay-tree splay-tree-test.cpp)
-add_executable(tree tree-test.cpp)
-add_executable(unrolled-ll ULL-test.cpp)
-add_executable(heap heap-test.cpp)
-add_executable(median median-test.cpp)
 
-# Link to google test if necessary
-target_link_libraries(unrolled-ll gtest) 
-target_link_libraries(splay-tree gtest)
-target_link_libraries(heap gtest)
-target_link_libraries(tree gtest)
-target_link_libraries(median gtest)
-target_link_libraries(scapegoat-tree gtest)
+# KD Tree test requires gmock
+add_executable(kdtreeTest kdtree-test.cpp)
+target_link_libraries(kdtreeTest gtest gmock)
+gtest_discover_tests(kdtreeTest)
 
+
+DS_add_test(unrolled-ll ULL-test.cpp)
+DS_add_test(splay-tree splay-tree-test.cpp)
+DS_add_test(scapegoat-tree scapegoat-test.cpp)
+DS_add_test(median median-test.cpp)
+add_typed_test(tree tree-test.cpp)
+add_typed_test(heap heap-test.cpp)
