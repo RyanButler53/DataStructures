@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.24.0)
 
 
-
 set (BENCHMARK_LIB_SRC
     lib/benchmark.cpp)
 
@@ -39,6 +38,7 @@ add_executable(scapegoatTrees scapegoat-trees.cpp)
 add_executable(dijkstra dijkstra.cpp)
 add_executable(heaps heaps.cpp)
 add_executable(medians medians.cpp)
+add_executable(kdtree kd-tree.cpp)
 
 # Link with appropriate libraries
 target_link_libraries(queue benchmark)
@@ -49,3 +49,4 @@ target_link_libraries(dijkstra graph benchmark matplot)
 target_link_libraries(heaps benchmark)
 target_link_libraries(medians benchmark)
 target_link_libraries(scapegoatTrees treeutils benchmark)
+target_link_libraries(kdtree benchmark)

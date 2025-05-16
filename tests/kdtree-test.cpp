@@ -185,26 +185,26 @@ TEST_F(Test2D, kNearestNeighbor1){
 }
 
 TEST_F(Test2D, RectangleBoundingBox){
-    KDTree<int,2>::RectangleRQ bounds;
+    Rectangle<int,2> bounds;
     bounds.insert(0, 59, 95);
     bounds.insert(1, 39, 81);
-    ASSERT_TRUE(bounds.keyInside({60,80}));
-    ASSERT_TRUE(bounds.keyInside({80,40}));
+    ASSERT_TRUE(bounds.contains({60,80}));
+    ASSERT_TRUE(bounds.contains({80,40}));
  
     // Empty bounds means entire space
     bounds.clear();
     // Previously outside of the bounds should be in bounds
-    ASSERT_TRUE(bounds.keyInside({20,60}));
+    ASSERT_TRUE(bounds.contains({20,60}));
 
     // bounds the x dimension, all y values are valid. 
     bounds.insert(0, 59, 95);
-    ASSERT_TRUE(bounds.keyInside({60, 150}));
-    ASSERT_TRUE(bounds.keyInside({80, -150}));
-    ASSERT_FALSE(bounds.keyInside({30, 75}));
+    ASSERT_TRUE(bounds.contains({60, 150}));
+    ASSERT_TRUE(bounds.contains({80, -150}));
+    ASSERT_FALSE(bounds.contains({30, 75}));
 }
 
 TEST_F(Test2D, RectangleRange){
-    KDTree<int, 2>::RectangleRQ bounds;
+    Rectangle<int, 2> bounds;
     bounds.insert(0, 59, 95);
     bounds.insert(1, 39, 81);
     std::vector<Point2D> points = t2.rectangleRangeQuery(bounds);
@@ -212,7 +212,7 @@ TEST_F(Test2D, RectangleRange){
     auto matcher = UnorderedElementsAreArray(exp.begin(), exp.end());
     ASSERT_THAT(points, matcher);
 
-    KDTree<int, 2>::RectangleRQ bounds2;
+    Rectangle<int, 2> bounds2;
     bounds2.insert(0, 33, 65);
     points = t2.rectangleRangeQuery(bounds2);
     exp = {{60,80}, {35, 60}, {50,30}};
@@ -221,7 +221,7 @@ TEST_F(Test2D, RectangleRange){
 }
 
 /// FUZZ TEST WITH N DIMENSIONS
-class KDTreeTest : public testing::TestWithParam<int>{
+class KDTreeTest : public testing::TestWithParam<size_t>{
     
     public:
 
@@ -239,10 +239,10 @@ class KDTreeTest : public testing::TestWithParam<int>{
         return std::sqrt(sum);
     }
 
-    KDTree<int, DIM>::RectangleRQ getBB(){
+    Rectangle<int, DIM> getBB(){
         std::uniform_int_distribution<int> lower(-11000, 0);
         std::uniform_int_distribution<int> upper(0, 11000);
-        KDTree<int, DIM>::RectangleRQ rq;
+        Rectangle<int, DIM> rq;
         for (size_t dim = 0; dim < DIM; ++dim){
             int low = lower(rng_);
             int high = upper(rng_);
@@ -299,10 +299,10 @@ class KDTreeTest : public testing::TestWithParam<int>{
         return in;
     }
 
-    std::vector<Point> inBox(std::vector<Point>& points, KDTree<int, DIM>::RectangleRQ q){
+    std::vector<Point> inBox(std::vector<Point>& points, Rectangle<int, DIM>q){
         std::vector<Point> in;
         for (auto p : points){
-            if (q.keyInside(p)){
+            if (q.contains(p)){
                 in.push_back(p);
             }
         }
@@ -394,7 +394,7 @@ TEST_P(KDTreeTest, BoundingBoxQuery){
         t.insert(p);
     }
     for (size_t query_i = 0; query_i < 10; ++query_i){
-        KDTree<int, DIM>::RectangleRQ bbox = getBB();
+        Rectangle<int, DIM> bbox = getBB();
         std::vector<Point> actual = inBox(points, bbox);
         std::vector<Point> exp = t.rectangleRangeQuery(bbox);
         

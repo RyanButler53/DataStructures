@@ -16,6 +16,40 @@ enum class DistanceFunction {
     Manhattan = 1
 };    
 
+/**
+ * @class Rectangle class. Rectangle class that supports n dimensional rectangles
+ * A wrapper around a map that maps dimensions to lower and upper bounds. 
+ * A dimension not in the map is essentially 
+ */
+template <typename T, size_t K>
+class Rectangle {
+
+    std::map<size_t, std::pair<T,T>> bounds_;
+
+    public:
+    void insert(size_t dim, T low, T high){
+        if (dim > K){throw std::invalid_argument("Invalid Dimension");}
+        bounds_[dim] = std::make_pair(low, high);
+    }
+
+    std::pair<T,T> operator[](size_t dim){return bounds_[dim];}
+
+    bool contains(const std::array<T,K>& key) const {
+        for (auto [dim, bound] : bounds_){
+            // If any key is out of the bounds, return false
+            if (key[dim] < bound.first or key[dim] > bound.second){
+                return false;
+            }
+        }
+        // All dimensions are valid!
+        return true;
+    }
+
+
+    bool contains (size_t dim){return bounds_.contains(dim);} 
+
+    void clear(){bounds_.clear();}
+};
 
 
 /**
@@ -35,33 +69,6 @@ public:
     using key_t = std::array<T, K>;
 
     // This is a wrapper around a map mapping dimension to lower and upper bounds
-    class RectangleRQ {
-
-        std::map<size_t, std::pair<T,T>> bounds_;
-
-        public:
-        void insert(size_t dim, T low, T high){
-            if (dim > K){throw std::invalid_argument("Invalid Dimension");}
-            bounds_[dim] = std::make_pair(low, high);
-        }
-
-        bool keyInside(const key_t& key) const {
-            for (auto [dim, bound] : bounds_){
-                // If any key is out of the bounds, return false
-                if (key[dim] < bound.first or key[dim] > bound.second){
-                    return false;
-                }
-            }
-            // All dimensions are valid!
-            return true;
-        }
-
-        std::pair<T,T> operator[](size_t dim){return bounds_[dim];}
-
-        bool contains (size_t dim){return bounds_.contains(dim);} 
-
-        void clear(){bounds_.clear();}
-    };
 
     // Constructor and destructors
     KDTree();
@@ -95,7 +102,7 @@ public:
     /**
      * @brief Returns all points within the K dimensional bounding box. All dimensions need not be speified. 
      */
-    std::vector<key_t> rectangleRangeQuery(RectangleRQ bounds) const;
+    std::vector<key_t> rectangleRangeQuery(Rectangle<T,K> bounds) const;
 
     private:
 
@@ -152,7 +159,7 @@ public:
 
     void rangeHelper(double r, const key_t& query, Node* curNode, size_t dim, std::vector<key_t>& keys, DistanceFunction fn) const;
 
-    void rectangleRangeHelper(RectangleRQ bounds, Node* curNode, size_t dim, std::vector<key_t>& keys) const;
+    void rectangleRangeHelper(Rectangle<T,K> bounds, Node* curNode, size_t dim, std::vector<key_t>& keys) const;
 
     double dist(DistanceFunction fn, const key_t& p1, const key_t& p2) const;
 

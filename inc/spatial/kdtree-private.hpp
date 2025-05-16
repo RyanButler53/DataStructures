@@ -261,17 +261,17 @@ void KDTree<T,K>::rangeHelper(double r, const key_t& query, Node* curNode, size_
 }
 
 template <typename T, size_t K>
-std::vector<typename KDTree<T,K>::key_t> KDTree<T,K>::rectangleRangeQuery(RectangleRQ bounds) const {
+std::vector<typename KDTree<T,K>::key_t> KDTree<T,K>::rectangleRangeQuery(Rectangle<T,K> bounds) const {
     std::vector<key_t> keys;
     rectangleRangeHelper(bounds, root_, 0, keys);
     return keys;
 }
 
 template <typename T, size_t K>
-void KDTree<T,K>::rectangleRangeHelper(RectangleRQ bounds, Node* curNode, size_t dim, std::vector<key_t>& keys) const {
+void KDTree<T,K>::rectangleRangeHelper(Rectangle<T,K> bounds, Node* curNode, size_t dim, std::vector<key_t>& keys) const {
     if (!curNode){ // no node, return nothing
         return;
-    } else if (bounds.keyInside(curNode->data_)){ // in bounding box: add it to keys
+    } else if (bounds.contains(curNode->data_)){ // in bounding box: add it to keys
         keys.push_back(curNode->data_);
     }
     // If boundary for current dimension is not specified, recurse both sides
