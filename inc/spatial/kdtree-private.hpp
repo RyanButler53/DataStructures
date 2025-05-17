@@ -275,11 +275,10 @@ void KDTree<T,K>::rectangleRangeHelper(Rectangle<T,K> bounds, Node* curNode, siz
         keys.push_back(curNode->data_);
     }
     // If boundary for current dimension is not specified, recurse both sides
-    if (!bounds.contains(dim)){
+    if (!bounds.dimensionDefined(dim)){
         rectangleRangeHelper(bounds, curNode->left_, (dim+1)%K, keys);
         rectangleRangeHelper(bounds, curNode->right_, (dim+1)%K, keys);
-    }
-    if (curNode->data_[dim] < bounds[dim].first) { // current dimension is too low, try right 
+    } else if (curNode->data_[dim] < bounds[dim].first) { // current dimension is too low, try right 
         rectangleRangeHelper(bounds, curNode->right_, (dim+1)%K, keys);
     } else if (curNode->data_[dim] > bounds[dim].second){ // cur dimension is too high, try left
         rectangleRangeHelper(bounds, curNode->left_, (dim+1)%K, keys);

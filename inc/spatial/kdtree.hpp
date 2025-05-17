@@ -9,47 +9,13 @@
 #include <algorithm>
 #include <numeric>
 #include <functional>
+#include "rectangle.hpp"
 
 
 enum class DistanceFunction {
     Euclidean = 0,
     Manhattan = 1
 };    
-
-/**
- * @class Rectangle class. Rectangle class that supports n dimensional rectangles
- * A wrapper around a map that maps dimensions to lower and upper bounds. 
- * A dimension not in the map is essentially 
- */
-template <typename T, size_t K>
-class Rectangle {
-
-    std::map<size_t, std::pair<T,T>> bounds_;
-
-    public:
-    void insert(size_t dim, T low, T high){
-        if (dim > K){throw std::invalid_argument("Invalid Dimension");}
-        bounds_[dim] = std::make_pair(low, high);
-    }
-
-    std::pair<T,T> operator[](size_t dim){return bounds_[dim];}
-
-    bool contains(const std::array<T,K>& key) const {
-        for (auto [dim, bound] : bounds_){
-            // If any key is out of the bounds, return false
-            if (key[dim] < bound.first or key[dim] > bound.second){
-                return false;
-            }
-        }
-        // All dimensions are valid!
-        return true;
-    }
-
-
-    bool contains (size_t dim){return bounds_.contains(dim);} 
-
-    void clear(){bounds_.clear();}
-};
 
 
 /**
