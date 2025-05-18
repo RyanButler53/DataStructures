@@ -78,3 +78,17 @@ concept RunningMedian = requires(Heap &heap,
     heap.findMedian();
     heap.deleteMedian();
 };
+
+template <typename Tree>
+concept SpatialStructure  =requires(Tree& tree, 
+                                Tree::key_t query,
+                                size_t k,
+                                double radius,
+                                Tree::rect_t rect
+                                ){
+    tree.insert(query);
+    tree.nearestNeighbor(query);
+    tree.nearestNeighbor(query, k);
+    tree.rangeQuery(query, radius);
+    tree.rangeQuery(rect);
+    };
