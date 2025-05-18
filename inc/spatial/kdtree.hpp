@@ -11,6 +11,7 @@
 #include <functional>
 #include "rectangle.hpp"
 
+#include <iostream>
 
 enum class DistanceFunction {
     Euclidean = 0,
@@ -30,45 +31,70 @@ class KDTree
 
 struct Node;
 
-
 public:
+    /// @brief Keys are std::arrays of size K holding type T. All point types must be homogenous
     using key_t = std::array<T, K>;
 
-    // This is a wrapper around a map mapping dimension to lower and upper bounds
+    /// @brief Rectangle Type is a bounding box. 
+    using rect_t = Rectangle<T, K>;
 
     // Constructor and destructors
     KDTree();
     ~KDTree();
 
-    // Inserts a key represented as an std::array
+    /**
+     * @brief inserts a key into the tree
+     * @param key Key is an std::array<T, K> 
+     */
     void insert(const key_t& key);
 
-    // Deletes a "random node"
+    /**
+     * Removes a key from the tree
+     */
     void remove(const key_t& key);
 
+    /**
+     * Checks if the specified key is in the tree
+     */
     bool contains(const key_t& key);
 
+    /**
+     * @brief Finds the minimum value along dimension dim
+     * @param dim 
+     */
     T findMin(size_t dim);
-
 
     // QUERIES
 
     /**
-     * @brief returns the single key that is the closest neighbor to 
+     * @brief returns the single key that is the closest neighbor to the query key
+     * @param query Key to find the single closest neighbor point to the query. 
+     * @note If the tree contains the query point, it will be returned.
+     * @param fn [optional] Distance function. Defaults to Euclidean Distance. 
      */
     key_t nearestNeighbor(const key_t& query, DistanceFunction fn = DistanceFunction::Euclidean) const ;
 
-    std::vector<key_t> kNearestNeighbors(const key_t& query, size_t k, DistanceFunction fn = DistanceFunction::Euclidean) const;
+    /** 
+     * @brief Overload of the NearestNeighbors function but finds the K nearest neighbors. 
+     * @param query Key to find closest neighbors
+     * @param k Number of closest neighbors to find.
+     * @param fn [optional] Distance function to use. Defaults to Euclidean, Manhattan distance also available. 
+    */
+    std::vector<key_t> nearestNeighbor(const key_t& query, size_t k, DistanceFunction fn = DistanceFunction::Euclidean) const;
 
     /**
-     * @brief Finds the vector of points within a k-dimensional sphere of radius r from point key
+     * @brief Radial Range query. Finds all points within a radius of r from a given key
+     * @param query Key to find all points nearby
+     * @param r Radius to search 
+     * @param fn [optional] Distance function. Defaults ot Euclidean
      */
-    std::vector<key_t> radialRangeQuery(double r, const key_t& key, DistanceFunction fn = DistanceFunction::Euclidean) const;
+    std::vector<key_t> rangeQuery(const key_t& query, double r, DistanceFunction fn = DistanceFunction::Euclidean) const;
 
     /**
-     * @brief Returns all points within the K dimensional bounding box. All dimensions need not be speified. 
+     * @brief Rectangle Range Query. Finds all points in a rectangle
+     * @param bounds. Bounding Rectangle of the search mem
      */
-    std::vector<key_t> rectangleRangeQuery(Rectangle<T,K> bounds) const;
+    std::vector<key_t> rangeQuery(Rectangle<T,K> bounds) const;
 
     private:
 

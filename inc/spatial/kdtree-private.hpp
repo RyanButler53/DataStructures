@@ -1,9 +1,7 @@
 #include "kdtree.hpp"
 
 template <typename T, size_t K>
-KDTree<T, K>::KDTree():size_{0}, root_{nullptr}
-{
-}
+KDTree<T, K>::KDTree():size_{0}, root_{nullptr}{}
 
 template <typename T, size_t K>
 KDTree<T, K>::~KDTree() {
@@ -20,6 +18,7 @@ void KDTree<T,K>::destructorHelper(Node*& tree){
             destructorHelper(tree->right_);
         }
         delete tree;
+        tree = nullptr;
     }
 }
 
@@ -167,12 +166,12 @@ double KDTree<T,K>::dist(DistanceFunction fn, const key_t& p1, const key_t& p2) 
 template <typename T, size_t K>
 typename KDTree<T,K>::key_t KDTree<T,K>::nearestNeighbor(const key_t& query, DistanceFunction fn) const {
     if (!root_) throw std::invalid_argument ("Cannot find a nearest neighbor in an empty tree!");
-    std::vector<key_t> nn = kNearestNeighbors(query, 1, fn);
+    std::vector<key_t> nn = nearestNeighbor(query, 1, fn);
     return nn[0];
 }
 
 template <typename T, size_t K>
-std::vector<typename KDTree<T,K>::key_t> KDTree<T,K>::kNearestNeighbors(const key_t& query, size_t k, DistanceFunction fn) const {
+std::vector<typename KDTree<T,K>::key_t> KDTree<T,K>::nearestNeighbor(const key_t& query, size_t k, DistanceFunction fn) const {
     // Handle edge cases
     if (k > size_){
         k = size_;
@@ -184,7 +183,7 @@ std::vector<typename KDTree<T,K>::key_t> KDTree<T,K>::kNearestNeighbors(const ke
     BoundedPQ pq(k);
     pq.push({std::numeric_limits<double>::max(), nullptr});
     // run recursive helper
-    knearestNeighborHelper(query, root_, 0,fn, pq);
+    knearestNeighborHelper(query, root_, 0, fn, pq);
     
     // Get the closest K points
     std::vector<key_t> neighbors;
@@ -229,7 +228,7 @@ void KDTree<T,K>::knearestNeighborHelper(const key_t& query, Node*n, size_t dim,
 // RANGE QUERIES
 
 template <typename T, size_t K>
-std::vector<typename KDTree<T,K>::key_t> KDTree<T,K>::radialRangeQuery(double r, const key_t& query, DistanceFunction fn) const {
+std::vector<typename KDTree<T,K>::key_t> KDTree<T,K>::rangeQuery(const key_t& query, double r,  DistanceFunction fn) const {
 
     std::vector<key_t> keys;
     rangeHelper(r, query, root_, 0, keys, fn);
@@ -261,7 +260,7 @@ void KDTree<T,K>::rangeHelper(double r, const key_t& query, Node* curNode, size_
 }
 
 template <typename T, size_t K>
-std::vector<typename KDTree<T,K>::key_t> KDTree<T,K>::rectangleRangeQuery(Rectangle<T,K> bounds) const {
+std::vector<typename KDTree<T,K>::key_t> KDTree<T,K>::rangeQuery(Rectangle<T,K> bounds) const {
     std::vector<key_t> keys;
     rectangleRangeHelper(bounds, root_, 0, keys);
     return keys;

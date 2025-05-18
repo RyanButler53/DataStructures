@@ -33,8 +33,6 @@ class Test2D : public testing::Test {
         for (auto k : v4) {
             t4.insert(k);
         }
-
-
     }
 
     void TearDown() override{}
@@ -59,7 +57,7 @@ class Test2D : public testing::Test {
 
     void rangeQueryTest(const Tree2D<int>& t, std::vector<Point2D> points, Point2D q, double r){
         std::vector<Point2D> inRadius = pointsInRadius(points,q,r);
-        std::vector<Point2D> pts = t.radialRangeQuery(r, q, DistanceFunction::Euclidean);
+        std::vector<Point2D> pts = t.rangeQuery(q, r, DistanceFunction::Euclidean);
         auto matcher = UnorderedElementsAreArray(inRadius.begin(), inRadius.end());
         ASSERT_THAT(pts, matcher);
     }
@@ -136,7 +134,7 @@ TEST_F(Test2D, delete1){
 }
 TEST_F(Test2D, rangeQuery){
 
-    std::vector<Point2D> q = t4.radialRangeQuery(4.0, {10,7});
+    std::vector<Point2D> q = t4.rangeQuery({10,7}, 4.0);
     ASSERT_EQ(q.size(), 4);
     std::vector<Point2D> expected{{8,10}, {12,7}, {8,6}, {11,6}};
 
@@ -180,7 +178,7 @@ TEST_F(Test2D, nearestNeighbor2){
 TEST_F(Test2D, kNearestNeighbor1){
     Point2D query = {35, 30};
     std::vector<Point2D> exp{{50,30},{20,20}, {20,45}};
-    std::vector<Point2D> nn = t2.kNearestNeighbors(query, 3);
+    std::vector<Point2D> nn = t2.nearestNeighbor(query, 3);
     ASSERT_EQ(nn, exp);
 }
 
@@ -207,14 +205,14 @@ TEST_F(Test2D, RectangleRange){
     Rectangle<int, 2> bounds;
     bounds.insert(0, 59, 95);
     bounds.insert(1, 39, 81);
-    std::vector<Point2D> points = t2.rectangleRangeQuery(bounds);
+    std::vector<Point2D> points = t2.rangeQuery(bounds);
     std::vector<Point2D> exp{{60,80}, {80,40}, {90,60}};
     auto matcher = UnorderedElementsAreArray(exp.begin(), exp.end());
     ASSERT_THAT(points, matcher);
 
     Rectangle<int, 2> bounds2;
     bounds2.insert(0, 33, 65);
-    points = t2.rectangleRangeQuery(bounds2);
+    points = t2.rangeQuery(bounds2);
     exp = {{60,80}, {35, 60}, {50,30}};
     matcher = UnorderedElementsAreArray(exp.begin(), exp.end());
     ASSERT_THAT(points, matcher);
@@ -352,7 +350,7 @@ TEST_P(KDTreeTest, KNearestNeighbors){
         Point q = getPoint();
         std::vector<Point> actual = knearest(points,q , 20);
         
-        std::vector<Point> exp = t.kNearestNeighbors(q, 20);
+        std::vector<Point> exp = t.nearestNeighbor(q, 20);
         if (std::ranges::equal(actual, exp)){
             ASSERT_EQ(actual, exp);
             return;
@@ -377,7 +375,7 @@ TEST_P(KDTreeTest, RadiusQuery){
         double r = getRadius();
         Point q = getPoint();
         std::vector<Point> actual = inRadius(points, q, r);
-        std::vector<Point> exp = t.radialRangeQuery(r, q);
+        std::vector<Point> exp = t.rangeQuery(q, r);
         
         auto matcher = UnorderedElementsAreArray(actual.begin(), actual.end());
         ASSERT_THAT(exp, matcher);
@@ -396,7 +394,7 @@ TEST_P(KDTreeTest, BoundingBoxQuery){
     for (size_t query_i = 0; query_i < 10; ++query_i){
         Rectangle<int, DIM> bbox = getBB();
         std::vector<Point> actual = inBox(points, bbox);
-        std::vector<Point> exp = t.rectangleRangeQuery(bbox);
+        std::vector<Point> exp = t.rangeQuery(bbox);
         
         auto matcher = UnorderedElementsAreArray(actual.begin(), actual.end());
         ASSERT_THAT(exp, matcher);
