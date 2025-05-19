@@ -80,7 +80,7 @@ concept RunningMedian = requires(Heap &heap,
 };
 
 template <typename Tree>
-concept SpatialStructure  =requires(Tree& tree, 
+concept SpatialStructure = requires(Tree& tree, 
                                 Tree::key_t query,
                                 size_t k,
                                 double radius,
@@ -92,3 +92,17 @@ concept SpatialStructure  =requires(Tree& tree,
     tree.rangeQuery(query, radius);
     tree.rangeQuery(rect);
     };
+
+
+// Only working with Hash sets, not hash maps
+template <typename HashTable>
+concept HashSet = requires(HashTable& hashtable,
+                           HashTable::key_type key
+                           ){
+    hashtable.empty();
+    hashtable.size();
+    hashtable.clear();
+    hashtable.insert(key);
+    hashtable.contains(key);
+    hashtable.remove(key);
+                           };
