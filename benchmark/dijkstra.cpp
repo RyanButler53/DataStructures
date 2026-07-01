@@ -15,9 +15,6 @@
 #include "heap/pairing.hpp"
 #include "interfaces.hpp"
 
-// Matplot++
-#include <matplot/matplot.h>
-
 
 
 /**
@@ -62,34 +59,6 @@ std::vector<uint16_t> dijkstra(Graph *g){
     return paths;
 }
 
-void plot(BenchmarkSuite& suite, std::string filename){
-    // Plotting results: Need to group by the test name. 
-    //Test name has xs, avgs, stdevs
-    using namespace matplot;
-
-
-    // title(suite.suiteName_);
-    xlabel("Input Size");
-    ylabel("Time (s)");
-    auto groupedResults = suite.getGroupedResults();
-    
-    for (auto &[name, g] : groupedResults)
-    {
-        hold(on);
-        error_bar_handle h = errorbar(g.inputSizes_, g.times_, g.stdevs_, "-");
-        h->display_name(name);
-        h->line_width(1.5);
-        hold(off);
-    }
-    legend_handle l = ::matplot::legend({});
-    l->location(legend::general_alignment::topleft);
-
-    if (filename == ""){
-        show();
-    } else {
-        save(filename, "jpeg");
-    }
-}
 
 int main(){
 

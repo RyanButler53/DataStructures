@@ -27,8 +27,6 @@ target_include_directories(treeutils PUBLIC inc)
 # All benchmark suites need this include directory
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/inc)
 
-add_subdirectory(matplotplusplus)
-
 function(addBenchmark benchmarkname src)
     add_executable(${benchmarkname} ${src})
     target_link_libraries(${benchmarkname} benchmark ${ARGN})
@@ -39,7 +37,7 @@ addBenchmark(quack quack.cpp)
 addBenchmark(iteration listIteration.cpp)
 addBenchmark(trees balancedTrees.cpp treeutils)
 addBenchmark(scapegoatTrees scapegoat-trees.cpp treeutils)
-addBenchmark(dijkstra dijkstra.cpp graph matplot)
+addBenchmark(dijkstra dijkstra.cpp graph)
 addBenchmark(heaps heaps.cpp)
 addBenchmark(medians medians.cpp)
 addBenchmark(kdtree kd-tree.cpp)

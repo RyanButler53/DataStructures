@@ -325,9 +325,3 @@ TEST(UnrolledLinkedList, compareList){
     std::vector<int> v = toVec(ull);
     ASSERT_TRUE(std::ranges::equal(v, ll));
 }
-
-int main(int argc, char** argv){
-    ::testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
-
-}
