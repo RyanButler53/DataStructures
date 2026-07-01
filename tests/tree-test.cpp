@@ -149,8 +149,3 @@ TYPED_TEST(TreeTest, largeSortedInput){
         this->tree_.insert({i, i+100});
     }
 }
-
-int main(){
-    ::testing::InitGoogleTest();
-    return RUN_ALL_TESTS();
-}

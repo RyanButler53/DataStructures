@@ -60,9 +60,3 @@ TEST(Scapegoat, reshuffle2){
     }
     // cout << sg << endl;
 }
-
-
-int main(){
-    testing::InitGoogleTest();
-    return RUN_ALL_TESTS();
-}

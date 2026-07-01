@@ -405,8 +405,3 @@ TEST_P(KDTreeTest, BoundingBoxQuery){
 INSTANTIATE_TEST_SUITE_P(KDFuzzTest,
     KDTreeTest,
     testing::Values(100, 1000, 5000));
-
-int main(){
-    ::testing::InitGoogleTest();
-    return RUN_ALL_TESTS();
-}

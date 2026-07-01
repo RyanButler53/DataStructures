@@ -26,3 +26,7 @@ Heap
 
 Threading: 
 - Launching Threadpool (Submit jobs, launch at once)
+
+Spatial: 
+- KD-Tree
+- Interval Tree
