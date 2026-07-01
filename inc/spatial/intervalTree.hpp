@@ -57,23 +57,23 @@ class Interval
 };
 
 
-template <typename T, Interval I>
+template <Interval I>
 class IntervalTree {
 
-  private:
+    using T = I::value_type;
       // Interval Tree Node Struct
-      struct Node
-      {
-          std::vector<size_t> intervals_; // Vector indexes of stored intervals
-          Node *left_;
-          Node *right_;
-          T value_;
-          T min_;       // Minimum value in subtree
-          T max_;       // Maximum value in subtree
-          bool isLeaf_; // Accessing value_ in leaf nodes is underfined
+    struct Node
+    {
+        std::vector<size_t> intervals_; // Vector indexes of stored intervals
+        Node *left_;
+        Node *right_;
+        T value_;
+        T min_;       // Minimum value in subtree
+        T max_;       // Maximum value in subtree
+        bool isLeaf_; // Accessing value_ in leaf nodes is underfined
 
-          // Constructors
-          Node(T min, T max);
+        // Constructors
+        Node(T min, T max);
     };
 
     // Tree Data

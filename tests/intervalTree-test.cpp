@@ -6,7 +6,7 @@
 class IntervalTreeTest : public ::testing::Test {
 
     protected:
-    IntervalTree<int, ITree::Interval<int>> itree_;
+    IntervalTree<ITree::Interval<int>> itree_;
 
     void SetUp() override {
         int min = std::numeric_limits<int>::min();
