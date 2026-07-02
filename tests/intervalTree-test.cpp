@@ -6,17 +6,17 @@
 
 
 // Interval that holds some data
-class IntervalWithMidpoint : public ITree::Interval<float>{
+class IntervalWithMidpoint : public SimpleInterval<float>{
     // Data
     float midpoint_;
 
     public: 
 
     IntervalWithMidpoint(float low, float high):
-        ITree::Interval<float>(low, high), 
+        SimpleInterval<float>(low, high), 
         midpoint_{static_cast<float>((high + low)/ 2.0)}{}
     IntervalWithMidpoint(float low, float high, float data):
-        ITree::Interval<float>(low, high), midpoint_{data}{}
+        SimpleInterval<float>(low, high), midpoint_{data}{}
     IntervalWithMidpoint(const IntervalWithMidpoint &other) = default;
     ~IntervalWithMidpoint() = default;
     float midpoint() const {return midpoint_;}
@@ -26,7 +26,7 @@ class IntervalWithMidpoint : public ITree::Interval<float>{
 class IntervalTreeTest : public ::testing::Test {
 
     protected:
-    IntervalTree<ITree::Interval<int>> itree_;
+    IntervalTree<SimpleInterval<int>> itree_;
 
     void SetUp() override {
         int min = std::numeric_limits<int>::min();
@@ -35,7 +35,7 @@ class IntervalTreeTest : public ::testing::Test {
         int upperBounds[] = {20, 25, 22, 22,23,15,20,40,20,13, max};
 
         for (size_t i = 0; i < 11; ++i) {
-            ITree::Interval<int> bounds {lowerBounds[i], upperBounds[i]};
+            SimpleInterval<int> bounds {lowerBounds[i], upperBounds[i]};
             itree_.insert(bounds);
         }
     }
@@ -43,27 +43,27 @@ class IntervalTreeTest : public ::testing::Test {
 };
 
 TEST_F(IntervalTreeTest, Query){
-    std::vector<ITree::Interval<int>> overlaps = itree_.findOverlaps(13);
+    std::vector<SimpleInterval<int>> overlaps = itree_.findOverlaps(13);
     ASSERT_EQ(overlaps.size(), 5);
-    EXPECT_EQ(overlaps[0], ITree::Interval<int>(12, 13));
-    EXPECT_EQ(overlaps[1], ITree::Interval<int>(12, 22));
-    EXPECT_EQ(overlaps[2], ITree::Interval<int>(9, 15));
-    EXPECT_EQ(overlaps[3], ITree::Interval<int>(10, 20));
-    EXPECT_EQ(overlaps[4], ITree::Interval<int>(-2147483648, 2147483647));
+    EXPECT_EQ(overlaps[0], SimpleInterval<int>(12, 13));
+    EXPECT_EQ(overlaps[1], SimpleInterval<int>(12, 22));
+    EXPECT_EQ(overlaps[2], SimpleInterval<int>(9, 15));
+    EXPECT_EQ(overlaps[3], SimpleInterval<int>(10, 20));
+    EXPECT_EQ(overlaps[4], SimpleInterval<int>(-2147483648, 2147483647));
 }
 
 TEST_F(IntervalTreeTest, Supersets){
-    std::vector<ITree::Interval<int>> supersets = itree_.findSupersets(17, 21);
+    std::vector<SimpleInterval<int>> supersets = itree_.findSupersets(17, 21);
     ASSERT_EQ(supersets.size(), 3);
-    EXPECT_EQ(supersets[0], ITree::Interval<int>(12, 22));
-    EXPECT_EQ(supersets[1], ITree::Interval<int>(15, 25));
-    EXPECT_EQ(supersets[2], ITree::Interval<int>(-2147483648, 2147483647));
+    EXPECT_EQ(supersets[0], SimpleInterval<int>(12, 22));
+    EXPECT_EQ(supersets[1], SimpleInterval<int>(15, 25));
+    EXPECT_EQ(supersets[2], SimpleInterval<int>(-2147483648, 2147483647));
 }
 
 TEST_F(IntervalTreeTest, SupersetsMax){
-    std::vector<ITree::Interval<int>> supersets = itree_.findSupersets(-2147483648, 2147483647);
+    std::vector<SimpleInterval<int>> supersets = itree_.findSupersets(-2147483648, 2147483647);
     ASSERT_EQ(supersets.size(), 1);
-    EXPECT_EQ(supersets[0], ITree::Interval<int>(-2147483648, 2147483647));
+    EXPECT_EQ(supersets[0], SimpleInterval<int>(-2147483648, 2147483647));
 }
 
 class IntervalTreeWithData : public ::testing::Test {
@@ -89,4 +89,39 @@ TEST_F(IntervalTreeWithData, testData){
     [](const IntervalWithMidpoint& i){return i.midpoint();});
     std::ranges::sort(midpoints);
     ASSERT_EQ(midpoints, std::vector<float>({1.56, 1.6, 2.0, 2.0}));
+}
+
+TEST_F(IntervalTreeWithData, duplicateIntervals){
+    itree_.insert({1.5, 2.5, 3.0});
+    std::vector<IntervalWithMidpoint> intervals = itree_.findOverlaps(2.0);
+    EXPECT_EQ(intervals.size(), 5);
+
+    std::vector<float> midpoints;
+    std::transform(intervals.begin(), intervals.end(), std::back_inserter(midpoints), 
+    [](const IntervalWithMidpoint& i){return i.midpoint();});
+    std::ranges::sort(midpoints);
+}
+
+TEST(DuplicateData, duplicateIntervals2){
+    IntervalTree<IntervalWithMidpoint> itree_;
+    itree_.insert({0, 20, 0});
+    itree_.insert({50, 80, 0});
+    itree_.insert({0, 55, 1});
+    itree_.insert({75, 100, 1});
+    itree_.insert({0, 55, 2});
+    itree_.insert({80, 100, 2});
+
+    std::vector<IntervalWithMidpoint> overlaps = itree_.findOverlaps(15);
+    ASSERT_EQ(overlaps.size(), 3);
+    EXPECT_EQ(overlaps[0], IntervalWithMidpoint(0, 55, 2));
+    EXPECT_EQ(overlaps[1], IntervalWithMidpoint(0, 55, 1));
+    EXPECT_EQ(overlaps[2], IntervalWithMidpoint(0, 20, 0));
+
+    overlaps = itree_.findOverlaps(40);
+    ASSERT_EQ(overlaps.size(), 2);
+    EXPECT_EQ(overlaps[0], IntervalWithMidpoint(0, 55, 2));
+    EXPECT_EQ(overlaps[1], IntervalWithMidpoint(0, 55, 1));
+
+    std::vector<IntervalWithMidpoint> superset = itree_.findSupersets(15, 40);
+    EXPECT_EQ(overlaps, superset);
 }

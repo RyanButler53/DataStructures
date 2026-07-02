@@ -135,13 +135,13 @@ std::vector<I> IntervalTree<I>::findSupersets(const T &low, const T &high){
 // Struct Functions
 
 template <typename T>
-ITree::Interval<T>::Interval(T low, T high):
+SimpleInterval<T>::SimpleInterval(T low, T high):
     low_{low}, high_{high}{
         // Nothing here
 }
 
 template <typename T>
-bool ITree::Interval<T>::operator==(const Interval<T>& other) const {
+bool SimpleInterval<T>::operator==(const SimpleInterval<T>& other) const {
     return (low_ == other.low_) && (high_ == other.high_);
 }
 

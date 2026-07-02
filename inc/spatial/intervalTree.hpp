@@ -29,13 +29,12 @@ concept Interval = requires(IntervalType &interval,
 
 
 
-namespace ITree {
 /**
  * @brief Simple implementation of the Interval concept. Used for holding ranges of numbers. 
  * 
  */
 template <typename T>
-class Interval
+class SimpleInterval
 {
     // Data
     T low_;
@@ -45,15 +44,14 @@ class Interval
 
     using value_type = T;
     // Constructors / Destructor
-    Interval(T low, T high);
-    Interval(const Interval &other) = default;
-    ~Interval() = default;
+    SimpleInterval(T low, T high);
+    SimpleInterval(const SimpleInterval &other) = default;
+    virtual ~SimpleInterval() = default;
 
     T low() const {return low_;};
     T high() const {return high_;}
 
-    bool operator==(const Interval& other) const;
-};
+    bool operator==(const SimpleInterval& other) const;
 };
 
 
