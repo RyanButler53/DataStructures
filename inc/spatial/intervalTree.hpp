@@ -106,14 +106,12 @@ class IntervalTree {
     void insertInterval(size_t intervalInd, Node*& node);
 
     /**
-     * @brief Helper function for finding overlapping intervals
+     * @brief Recursive helper function for finding overlapping intervals
      * 
-     * @param queryPoint Point to find overlaps for
+     * @param interval Interval to find overlaps for
      * @param intervals Set of interval indexes. Modified over time
      * @param n Current node
      */
-    void query(const T &queryPoint, std::unordered_set<size_t>& intervals, Node* n) const;
-
     void query(const I& interval, std::unordered_set<size_t>& intervals, Node* n) const;
 public:
 

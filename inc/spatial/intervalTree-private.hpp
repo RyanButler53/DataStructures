@@ -98,21 +98,6 @@ void IntervalTree<I>::insertInterval(size_t intervalInd, Node*&node){
 }
 
 template <Interval I>
-void IntervalTree<I>::query(const T& queryPoint,std::unordered_set<size_t>& intervals, Node* n) const{
-    intervals.insert(n->intervals_.begin(), n->intervals_.end());
-    if (n->isLeaf_) {
-        return;
-    }  
-    // if queryPoint == n->value_, recurse on both sides.
-    if (queryPoint <= n->value_) {
-        query(queryPoint, intervals, n->left_);
-    } 
-    if (queryPoint >= n->value_) {
-        query(queryPoint, intervals, n->right_);
-    } 
-}
-
-template <Interval I>
 void IntervalTree<I>::query(const I& interval,std::unordered_set<size_t>& intervals, Node* n) const{
     intervals.insert(n->intervals_.begin(), n->intervals_.end());
     if (n->isLeaf_) {
@@ -136,7 +121,8 @@ void IntervalTree<I>::query(const I& interval,std::unordered_set<size_t>& interv
 template <Interval I>
 std::vector<I> IntervalTree<I>::findOverlaps(const T& queryPoint){
     std::unordered_set<size_t> overlapInds;
-    query(queryPoint, overlapInds,root_);
+    query({queryPoint, queryPoint}, overlapInds, root_);
+
     std::vector<I> overlapIntervals;
     for (size_t intervalInd : overlapInds)
     {
@@ -161,8 +147,8 @@ template <Interval I>
 std::vector<I> IntervalTree<I>::findSupersets(const T &low, const T &high){
     std::unordered_set<size_t> overlapLow;
     std::unordered_set<size_t> overlapHigh;
-    query(low, overlapLow, root_);
-    query(high, overlapHigh, root_);
+    query({low, low}, overlapLow, root_);
+    query({high, high}, overlapHigh, root_);
     std::vector<I> overlapIntervals;
     // Find Intersection of sets
     for (size_t intervalInd : overlapHigh){
