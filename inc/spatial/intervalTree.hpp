@@ -114,6 +114,7 @@ class IntervalTree {
      */
     void query(const T &queryPoint, std::unordered_set<size_t>& intervals, Node* n) const;
 
+    void query(const I& interval, std::unordered_set<size_t>& intervals, Node* n) const;
 public:
 
     // Constructors
@@ -121,6 +122,12 @@ public:
     ~IntervalTree();
 
     // Interface Functions:
+
+    /**
+     * @brief Clears the interval tree
+     * 
+     */
+    void clear();
 
     /**
      * @brief Inserts an interval into the interval tree
@@ -145,6 +152,15 @@ public:
      * of all intervals that contain queryPoint param
      */
     std::vector<I> findOverlaps(const T& queryPoint);
+
+    /**
+     * @brief Range Query: Finds all intervals that overlap with the given interval. 
+     * 
+     * @param interval Interval to find intervals overlapping
+     * @return std::vector<I> Vector to return the overlapping intervals. Not gauranteed sorted in any order. 
+     */
+    std::vector<I> findOverlaps(const I& interval);
+
     /**
      * @brief Finds all intervals that fully contain the low and high bound
      * 

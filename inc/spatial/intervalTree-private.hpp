@@ -26,6 +26,15 @@ void IntervalTree<I>::destroyTree(Node* n){
 }
 
 template <Interval I>
+void IntervalTree<I>::clear(){
+    destroyTree(root_);
+    root_ = new Node(std::numeric_limits<T>::min(), std::numeric_limits<T>::max());
+    allEndpoints_.clear();
+    allIntervals_.clear();
+    size_ = 0;
+}
+
+template <Interval I>
 void IntervalTree<I>::insert(const T &low, const T &high){
     insert(I{low, high});
 }
@@ -104,7 +113,40 @@ void IntervalTree<I>::query(const T& queryPoint,std::unordered_set<size_t>& inte
 }
 
 template <Interval I>
+void IntervalTree<I>::query(const I& interval,std::unordered_set<size_t>& intervals, Node* n) const{
+    intervals.insert(n->intervals_.begin(), n->intervals_.end());
+    if (n->isLeaf_) {
+        return;
+    }
+    // If query upper bound is less than current node value, intervals will be in left subtree
+    if (interval.high() < n->value_){
+        query(interval, intervals, n->left_);
+    }
+    // If query lower bound is greater than node value, intervals will be in right subtree
+    if (interval.low() > n->value_){
+        query(interval, intervals, n->right_);
+    }
+
+    // If node value is INSIDE the interval or on the endpoints, recurse on both sides
+    if (interval.low() <= n->value_ and interval.high() >= n->value_){
+        query(interval, intervals, n->left_);
+        query(interval, intervals, n->right_);
+    }
+}
+template <Interval I>
 std::vector<I> IntervalTree<I>::findOverlaps(const T& queryPoint){
+    std::unordered_set<size_t> overlapInds;
+    query(queryPoint, overlapInds,root_);
+    std::vector<I> overlapIntervals;
+    for (size_t intervalInd : overlapInds)
+    {
+        overlapIntervals.push_back(allIntervals_[intervalInd]);
+    }
+    return overlapIntervals;
+}
+
+template <Interval I>
+std::vector<I> IntervalTree<I>::findOverlaps(const I& queryPoint){
     std::unordered_set<size_t> overlapInds;
     query(queryPoint, overlapInds,root_);
     std::vector<I> overlapIntervals;
