@@ -20,6 +20,7 @@ void KDTree<T,K>::destructorHelper(Node*& tree){
         }
         delete tree;
         tree = nullptr;
+        size_ = 0;
     }
 }
 
@@ -83,6 +84,11 @@ template <typename T, size_t K>
 bool KDTree<T, K>::contains(const key_t& key){
     auto [n, dim] = find(key, root_, 0);
     return !!n;
+}
+
+template <typename T, size_t K>
+void KDTree<T, K>::clear(){
+    destructorHelper(root_);
 }
 
 template <typename T, size_t K>

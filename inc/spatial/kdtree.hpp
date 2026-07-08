@@ -103,6 +103,11 @@ public:
      */
     size_t size() const {return size_;};
 
+    /**
+     * @brief Clears all nodes in the tree
+     * 
+     */
+    void clear();
     private:
 
     struct Node {
