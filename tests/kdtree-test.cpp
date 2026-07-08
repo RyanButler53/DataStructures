@@ -77,7 +77,7 @@ class Test2D : public testing::Test {
     std::vector<Point2D> v3{{10,20}, {11,5}, {5,10}, {5,8}, {15,2}, {20,1}};
     std::vector<Point2D> v4{{8,10}, {12,7}, {8,6}, {11,6}, {10,2}};
     
-    Tree2D<int> t1;  // Simpler tree
+    Tree2D<int> t1; // Simpler tree
     Tree2D<int> t2; // More complicated deletion from lecture
     Tree2D<int> t3; // First example from lecture
     Tree2D<int> t4; // Breaking the invariant from lecture
@@ -107,16 +107,25 @@ TEST_F(Test2D, findMin){
     ASSERT_EQ(t1.findMin(1), -1);
 }
 
+TEST_F(Test2D, size){
+    EXPECT_EQ(t1.size(), 8);
+    EXPECT_EQ(t2.size(), 10);
+    EXPECT_EQ(t3.size(), 6);
+    EXPECT_EQ(t4.size(), 5);
+}
+
 TEST_F(Test2D, contains){
     ASSERT_TRUE(t1.contains({60,75}));
     t1.insert({16,27});
     ASSERT_TRUE(t1.contains({16, 27}));
     ASSERT_TRUE(t1.contains({90,5}));
+    EXPECT_EQ(t1.size(), 9);
 }
 TEST_F(Test2D, delete2){
     t3.remove({10,20});
     ASSERT_EQ(t3.findMin(0), 5);
     ASSERT_EQ(t3.findMin(1), 1);
+    EXPECT_EQ(t3.size(), 5);
 }
 
 TEST_F(Test2D, delete1){
@@ -127,9 +136,11 @@ TEST_F(Test2D, delete1){
     t2.remove({10, 35});
     ASSERT_FALSE(t2.contains({10, 35}));
     ASSERT_EQ(t2.findMin(0),20);
+    EXPECT_EQ(t2.size(), 8);
 
     t3.remove({10,20});
     ASSERT_FALSE(t3.contains({10,20}));
+    EXPECT_EQ(t3.size(), 5);
     
 }
 TEST_F(Test2D, rangeQuery){

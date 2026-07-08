@@ -1,6 +1,7 @@
 #pragma once
 
 #include <concepts>
+#include <cstddef>
 
 // Interface for a Tree Map structure
 template <typename TreeType>

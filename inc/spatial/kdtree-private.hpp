@@ -1,4 +1,5 @@
 #include "kdtree.hpp"
+#include <cmath>
 
 template <typename T, size_t K>
 KDTree<T, K>::KDTree():size_{0}, root_{nullptr}{}
@@ -157,7 +158,7 @@ double KDTree<T,K>::dist(DistanceFunction fn, const key_t& p1, const key_t& p2) 
         }
         return sum;
     default:
-        break;
+        return sum;
     }
 }
 

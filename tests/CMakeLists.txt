@@ -23,7 +23,6 @@ macro(add_typed_test testname src)
 endmacro()
 
 # Non gtests tests
-add_executable(cuckoo-hash cuckoo-test.cpp)
 add_executable(launching-threadpool launching-threadpool-test.cpp)
 
 # KD Tree test requires gmock
@@ -31,7 +30,7 @@ add_executable(kdtreeTest kdtree-test.cpp)
 target_link_libraries(kdtreeTest GTest::gtest GTest::gmock GTest::gtest_main)
 gtest_discover_tests(kdtreeTest)
 
-
+DS_add_test(cuckoo-hash cuckoo-test.cpp)
 DS_add_test(unrolled-ll ULL-test.cpp)
 DS_add_test(splay-tree splay-tree-test.cpp)
 DS_add_test(scapegoat-tree scapegoat-test.cpp)

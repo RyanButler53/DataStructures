@@ -18,7 +18,7 @@ void exp1(size_t n){
 }
 
 template <Queue Container>
-void experiment2(size_t n){
+void exp2(size_t n){
     Container q;
     for (int i = 0; i < n; ++i){
         q.push_back(i);

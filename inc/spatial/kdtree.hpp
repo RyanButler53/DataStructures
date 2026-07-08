@@ -96,6 +96,13 @@ public:
      */
     std::vector<key_t> rangeQuery(Rectangle<T,K> bounds) const;
 
+    /**
+     * @brief Returns the number of nodes in the tree
+     * 
+     * @return size_t 
+     */
+    size_t size() const {return size_;};
+
     private:
 
     struct Node {

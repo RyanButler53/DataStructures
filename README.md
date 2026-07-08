@@ -30,3 +30,6 @@ Threading:
 Spatial: 
 - KD-Tree
 - Interval Tree
+
+### Known Bugs: 
+Cuckoo Hash Set size does not work correctly

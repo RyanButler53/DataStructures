@@ -27,7 +27,6 @@ class Rectangle {
     Rectangle() {clear(); }
     Rectangle(std::array<std::pair<T,T>,K> bounds):bounds_{bounds}{}
 
-    public:
     /**
      * @brief Inserts or overrides a bound in the rectangle. 
      * @throw Throws an exception if the dimension is out of bounds. 
