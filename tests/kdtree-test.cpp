@@ -229,6 +229,17 @@ TEST_F(Test2D, RectangleRange){
     ASSERT_THAT(points, matcher);
 }
 
+TEST_F(Test2D, clear){
+    t1.clear();
+    EXPECT_EQ(t1.size(), 0);
+    t1.insert({15, 20});
+    EXPECT_EQ(t1.findMin(0), 15);
+    EXPECT_EQ(t1.size(), 1);
+    // Remove for empty tree
+    t1.remove({15, 20});
+    EXPECT_EQ(t1.size(), 0);
+}
+
 /// FUZZ TEST WITH N DIMENSIONS
 class KDTreeTest : public testing::TestWithParam<size_t>{
     
