@@ -38,3 +38,5 @@ DS_add_test(median median-test.cpp)
 DS_add_test(interval-tree intervalTree-test.cpp)
 add_typed_test(tree tree-test.cpp)
 add_typed_test(heap heap-test.cpp)
+
+add_executable(reflection reflection.cpp)
