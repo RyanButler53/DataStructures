@@ -9,6 +9,7 @@
 #include "interfaces.hpp"
 #include "benchmark.hpp"
 
+namespace quack {
 template <Queue Container>
 void exp1(size_t n){
     Container q;
@@ -51,6 +52,7 @@ void exp4(size_t n){
         q.pop_front();
     }
 }
+}
 
 int main(int argc, char **argv) {
 
@@ -60,15 +62,15 @@ int main(int argc, char **argv) {
 
     BenchmarkSuite suite("Quack vs List");
     suite.setConfig(n, numExperiments);
-    suite.addConfiguredTest("List: Push Backs", exp1<std::list<int>>, std::ref(n));
-    suite.addConfiguredTest("List: Pushes then pop backs", exp2<std::list<int>>, std::ref(n));
-    suite.addConfiguredTest("List: Pushes then pop fronts", exp3<std::list<int>>, std::ref(n));
-    suite.addConfiguredTest("List: Alternating pops", exp4<std::list<int>>, std::ref(n));
+    suite.addConfiguredTest("List: Push Backs", quack::exp1<std::list<int>>, std::ref(n));
+    suite.addConfiguredTest("List: Pushes then pop backs", quack::exp2<std::list<int>>, std::ref(n));
+    suite.addConfiguredTest("List: Pushes then pop fronts", quack::exp3<std::list<int>>, std::ref(n));
+    suite.addConfiguredTest("List: Alternating pops", quack::exp4<std::list<int>>, std::ref(n));
 
-    suite.addConfiguredTest("Quack: Push Backs", exp1<QuackAdapter<int>>, std::ref(n));
-    suite.addConfiguredTest("Quack: Pushes then pop backs", exp2<QuackAdapter<int>>, std::ref(n));
-    suite.addConfiguredTest("Quack: Pushes then pop fronts", exp3<QuackAdapter<int>>, std::ref(n));
-    suite.addConfiguredTest("Quack: Alternating pops", exp4<QuackAdapter<int>>, std::ref(n));
+    suite.addConfiguredTest("Quack: Push Backs", quack::exp1<QuackAdapter<int>>, std::ref(n));
+    suite.addConfiguredTest("Quack: Pushes then pop backs", quack::exp2<QuackAdapter<int>>, std::ref(n));
+    suite.addConfiguredTest("Quack: Pushes then pop fronts", quack::exp3<QuackAdapter<int>>, std::ref(n));
+    suite.addConfiguredTest("Quack: Alternating pops", quack::exp4<QuackAdapter<int>>, std::ref(n));
 
     suite.run();
     suite.resultsToCSV("quack.csv");

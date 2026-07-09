@@ -39,4 +39,6 @@ DS_add_test(interval-tree intervalTree-test.cpp)
 add_typed_test(tree tree-test.cpp)
 add_typed_test(heap heap-test.cpp)
 
+if (WITH_PYTHON_BINDINGS)
 add_executable(reflection reflection.cpp)
+endif()

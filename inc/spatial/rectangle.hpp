@@ -4,6 +4,7 @@
 #include <optional>
 #include <utility>
 #include <numeric>
+#include <stdexcept>
 
 /**
  * @class Rectangle class. Rectangle class that supports n dimensional rectangles

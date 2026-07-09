@@ -1,4 +1,5 @@
 #include "intervalTree.hpp"
+#include <stdexcept>
 
 template <Interval I>
 IntervalTree<I>::IntervalTree():

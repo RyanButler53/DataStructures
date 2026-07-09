@@ -8,7 +8,7 @@
  * 
  */
 #include <vector>
-#include <tuple>
+#include <utility>
 
 #ifndef SCAPEGOAT_HPP_INCLUDED
 #define SCAPEGOAT_HPP_INCLUDED
@@ -186,7 +186,7 @@ private:
      * @param elements Vector to update with all the elements
      * @param tree Node in which to get all the elements under
      */
-    void getElements(std::vector<std::tuple<key_t, value_t>>& elements, Node *tree);
+    void getElements(std::vector<std::pair<key_t, value_t>>& elements, Node *tree);
 
     /**
      * @brief Recursive helper for printinf the tree
@@ -203,7 +203,7 @@ private:
      * @param start Start ind of vector
      * @param end End ind of vector
      */
-    void insertBalanced(std::vector<std::tuple<key_t, value_t>>& elements, 
+    void insertBalanced(std::vector<std::pair<key_t, value_t>>& elements, 
     Node*& tree, size_t start, size_t end);
 
     /**

@@ -157,7 +157,7 @@ public:
     // Finds and returns the NODE and the dimension it is on
     NodePair find(const key_t& key, Node* node, size_t dim);
 
-    NodePair findMinHelper(size_t dim, Node* node, size_t cur_dim);
+    NodePair findMinHelper(size_t dim, Node* node, size_t cur_dim) const;
 
     void removeHelper(const key_t& key, Node*& node, size_t dim);
 

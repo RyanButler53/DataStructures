@@ -141,7 +141,6 @@ TEST_F(Test2D, delete1){
     t3.remove({10,20});
     ASSERT_FALSE(t3.contains({10,20}));
     EXPECT_EQ(t3.size(), 5);
-    
 }
 TEST_F(Test2D, rangeQuery){
 

@@ -55,7 +55,7 @@ T KDTree<T, K>::findMin(size_t dim){
 }
 
 template <typename T, size_t K>
-KDTree<T,K>::NodePair KDTree<T, K>::findMinHelper(size_t dim, Node* node, size_t cur_dim){
+KDTree<T,K>::NodePair KDTree<T, K>::findMinHelper(size_t dim, Node* node, size_t cur_dim) const {
     if (node == nullptr){
         return {node, dim};
     } else if (cur_dim == dim) {
@@ -110,7 +110,15 @@ void KDTree<T,K>::remove(const key_t& key){
     if (!n) {
         throw std::runtime_error("Cannot delete a key that doesn't exist");
     }
-    removeHelper(key, n, ndim);
+
+    // Unique edge case where the only node is the root. n is not a reference
+    // and updating the node will not set the root_ variable to nullptr
+    if (size_ == 1){
+        clear();
+    } else {
+        removeHelper(key, n, ndim);
+    }
+
 }
 
 template <typename T, size_t K>

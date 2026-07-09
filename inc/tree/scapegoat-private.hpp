@@ -160,7 +160,7 @@ template <typename key_t, typename value_t>
 template<class InputIt> 
 void ScapegoatTree<key_t, value_t>::insert(InputIt first, InputIt last){
     for (InputIt it = first; it != last; ++it){
-        insert(*it);
+        insert({it->first, it->second});
     }
 }
 
@@ -192,7 +192,7 @@ size_t ScapegoatTree<key_t, value_t>::erase(const key_t& key){
 
 template<typename key_t, typename value_t>
 void ScapegoatTree<key_t, value_t>::rebuild(Node*& n){
-    vector<tuple<key_t, value_t>> elements;
+    vector<pair<key_t, value_t>> elements;
     getElements(elements, n);
     // destroy entire old tree
     destructorHelper(n);
@@ -202,10 +202,10 @@ void ScapegoatTree<key_t, value_t>::rebuild(Node*& n){
 }
 
 template<typename key_t, typename value_t>
-void ScapegoatTree<key_t, value_t>::getElements(vector<tuple<key_t,value_t>>& elements, Node* tree){
+void ScapegoatTree<key_t, value_t>::getElements(vector<pair<key_t,value_t>>& elements, Node* tree){
     if (tree != nullptr){
         getElements(elements, tree->left_);
-        elements.push_back(tuple(tree->value_.first, tree->value_.second));
+        elements.push_back(pair(tree->value_.first, tree->value_.second));
         getElements(elements, tree->right_);
     }
 }
@@ -262,7 +262,7 @@ size_t ScapegoatTree<key_t, value_t>::removeHelper(const key_t& key, Node*& tree
     }
 }
 template<typename key_t, typename value_t>
-void ScapegoatTree<key_t, value_t>::insertBalanced(std::vector<std::tuple<key_t, value_t>>& elements,
+void ScapegoatTree<key_t, value_t>::insertBalanced(std::vector<std::pair<key_t, value_t>>& elements,
          Node*& tree, size_t start, size_t end){
     if (start != end) { 
         size_t mid = start + (end - start) / 2;

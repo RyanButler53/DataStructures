@@ -81,7 +81,7 @@ TYPED_TEST(TreeTest, insertion1){
 
 TYPED_TEST(TreeTest, finding){
     this->tree_.clear();
-    std::vector<std::tuple<int,int>>keys{{50, 150}, {40,140}, {5,105}};
+    std::vector<std::pair<int,int>>keys{{50, 150}, {40,140}, {5,105}};
     // Test range insertion
     this->tree_.insert(keys.begin(), keys.end());
 
