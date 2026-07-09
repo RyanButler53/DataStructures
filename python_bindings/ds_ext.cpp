@@ -2,9 +2,16 @@
 #include <nanobind/stl/vector.h>
 #include <nanobind/stl/array.h>
 #include <nanobind/stl/string.h>
+#include <nanobind/stl/tuple.h>
 #include <nanobind/operators.h>
 #include <sstream>
 #include <string>
+#include <format>
+#include <array>
+#include <utility>
+#include <tuple>
+#include <print>
+#include <meta>
 #include "spatial/kdtree.hpp"
 namespace nb = nanobind;
 
@@ -17,25 +24,72 @@ nb::class_<Tree2D<int>> bindKdTree(nb::module_& m, std::string name){
     cls.def("size", &Tree2D<int>::size, "gets the size of the tree");
     cls.def("insert", &Tree2D<int>::insert, "key"_a, "insert");
     cls.def("remove", &Tree2D<int>::remove, "key"_a, "remove");
-    cls.def("contains", &Tree2D<int>::contains, "key"_a, "contains");
+    cls.def("contains", &Tree2D<int>::contains, nb::arg("key"), "contains");
 
     return cls;
 }
 
 
+template <typename Structure>
+nb::class_<Structure> bindStructure(nb::module_& m, std::string name){
+    nb::class_<Structure> cls(m, name.c_str());
+    constexpr std::meta::info r = ^^Structure;
+    constexpr auto ctx = std::meta::access_context::unprivileged();
+    static constexpr auto members = std::define_static_array(std::meta::members_of(r, ctx));
+    template for (constexpr std::meta::info m : members){
+        if constexpr (std::meta::is_nonstatic_data_member(m)){
+            std::println("Data Memeber: {}",  std::meta::identifier_of(m));
+            cls.def_ro(std::meta::identifier_of(m), [:m:], "");
+        } else if constexpr (std::meta::is_operator_function(m)){
+            constexpr std::meta::operators op = std::meta::operator_of(m);
+            // std::println("Operator: {}", std::meta::symbol_of(op));
+            // No operators yet...
+        }  else if constexpr (std::meta::is_constructor(m)){
+            std::println("Constructor: {}", std::meta::display_string_of(m));
+            // Get the parameter names, pybind doesn't need the types!
+            // static constexpr auto params = std::define_static_array(std::meta::parameters_of(m));
+            nb::init<>(); // Default ctor only
+        } else if constexpr (std::meta::is_destructor(m)){
+            // std::println("Destructor: {}", std::meta::display_string_of(m));
+        } else if constexpr (std::meta::is_class_member(m) && std::meta::is_function(m)){
+            std::println("Member Function: {}", std::meta::identifier_of(m));
+            // printFunctionArgs<m>();
+            static constexpr auto name = std::meta::identifier_of(m);
+            static constexpr auto params = std::define_static_array(std::meta::parameters_of(m));
+
+
+            // Second lambda is used to change the context 
+            auto f = [&]<std::meta::info member>(){
+                [&]<size_t... Indexes>(std::index_sequence<Indexes...>){
+                    cls.def(name.data(), &[:member:], nb::arg(std::meta::identifier_of(params[Indexes]).data())...);
+                }(std::make_index_sequence<params.size()>{});
+            };
+          
+            f.template operator()<m>();
+
+            // Cannot use a template for since all the args need to be there up front
+
+        } else {
+            std::println("Something else: {}", std::meta::display_string_of(m));
+        }
+    }
+    return cls;
+
+}
+int add_ints(int a, int b) {
+    return a + b;
+}
+
 
 NB_MODULE(ds_ext, m) {
     m.doc() = "Bindings for Various Data Structures";
-    bindKdTree(m, "IntTree2D");
-
+    // bindKdTree(m, "IntTree2D");
+    bindStructure<KDTree<int, 2>>(m, "IntTree2D");
     // nb::class_<KDTree<int, 2>>(m, "IntTree2D", "2 dimension with ints")
     // .def(nb::init<>())
     // .def("size", &KDTree<int,2>::size, "gets the size of the tree");
 
-
-    // m.def("addInts", [](int a, int b){
-    //     return a + b;
-    // }, "a"_a, "b"_a ,"adds two numbers");
+    // m.def("addInts", &add_ints, args);
 }
     // // toplines 
     // nb::class_<Fraction>(m, "Fraction", "Class Representing a Fraction")
