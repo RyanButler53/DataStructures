@@ -1,6 +1,7 @@
 #include <meta>
 #include <print>
 #include "spatial/kdtree.hpp"
+#include "tree/scapegoat.hpp"
 
 // Goal is to print member functions, member vars (public only), operators and the types of the function arguments
 template <std::meta::info m>
@@ -11,7 +12,7 @@ constexpr void printFunctionArgs(){
         if constexpr (std::meta::has_identifier(p)){
             std::println("  Arg: {}", std::meta::identifier_of(p));
         } else {
-            std::println("  Argument without identifier");
+            std::println("  Argument without identifier: {}", std::meta::display_string_of(m));
         }
     }
 
@@ -31,6 +32,16 @@ void printMembers(){
         }  else if constexpr (std::meta::is_constructor(m)){
             std::println("Constructor: {}", std::meta::display_string_of(m));
             // Get the parameter names, pybind doesn't need the types!
+            // Pybind needs the types for ctors!
+            static constexpr auto params = std::define_static_array(std::meta::parameters_of(m));
+            template for (constexpr std::meta::info p : params){
+                if constexpr (std::meta::has_identifier(p)){
+                    static constexpr auto t = std::meta::type_of(p);
+                    std::println("  Arg: {}, type: {}", std::meta::identifier_of(p), std::meta::display_string_of(t));
+                } else {
+                    std::println("  Argument without identifier: {}", std::meta::display_string_of(p));
+                }
+            }
             printFunctionArgs<m>();
         } else if constexpr (std::meta::is_destructor(m)){
             std::println("Destructor: {}", std::meta::display_string_of(m));
@@ -44,7 +55,8 @@ void printMembers(){
 }
 
 int main(){
-    printMembers<Tree3D<long>>();
+    printMembers<Rectangle<long, 2>>();
+    // printMembers<ScapegoatTree<int, std::string>>();
     // std::println();
     // printMembers<Rectangle<int, 5>>();
 }

@@ -26,7 +26,11 @@ class Rectangle {
     public: 
 
     Rectangle() {clear(); }
-    Rectangle(std::array<std::pair<T,T>,K> bounds):bounds_{bounds}{}
+    Rectangle(std::array<std::pair<T,T>,K> bounds){
+        for (size_t i = 0; i < K; ++i){
+            bounds_[i] = bounds[i];
+        }
+    }
 
     /**
      * @brief Inserts or overrides a bound in the rectangle. 
