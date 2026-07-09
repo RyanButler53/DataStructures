@@ -57,17 +57,10 @@ nb::class_<Structure> bindStructure(nb::module_& m, std::string name){
             static constexpr auto name = std::meta::identifier_of(m);
             static constexpr auto params = std::define_static_array(std::meta::parameters_of(m));
 
+            [&]<std::meta::info M, size_t... Indexes>(std::index_sequence<Indexes...>){
+                    cls.def(name.data(), &[:M:], nb::arg(std::meta::identifier_of(params[Indexes]).data())...);
+                }.template operator()<m>(std::make_index_sequence<params.size()>{});
 
-            // Second lambda is used to change the context 
-            auto f = [&]<std::meta::info member>(){
-                [&]<size_t... Indexes>(std::index_sequence<Indexes...>){
-                    cls.def(name.data(), &[:member:], nb::arg(std::meta::identifier_of(params[Indexes]).data())...);
-                }(std::make_index_sequence<params.size()>{});
-            };
-          
-            f.template operator()<m>();
-
-            // Cannot use a template for since all the args need to be there up front
 
         } else {
             std::println("Something else: {}", std::meta::display_string_of(m));
