@@ -69,11 +69,10 @@ NB_MODULE(ds_ext, m) {
     m.doc() = "Bindings for Various Data Structures";
     // bindKdTree(m, "IntTree2D");
     bindEnum<DistanceFunction>(m, "DistanceFunction");
-    bindStructure<KDTree<int, 2>>(m, "IntTree2D");
-    bindStructure<Rectangle<int, 2>>(m, "IntRectangle2D");
-    // nb::class_<KDTree<int, 2>>(m, "IntTree2D", "2 dimension with ints")
-    // .def(nb::init<>())
-    // .def("size", &KDTree<int,2>::size, "gets the size of the tree");
-
-    // m.def("addInts", &add_ints, args);
+    template for (constexpr size_t dim : std::views::iota(2UL, 3UL)){
+        bindStructure<KDTree<int, dim>>(m, std::format("IntKDTree{}D", dim));
+        bindStructure<KDTree<double, dim>>(m, std::format("FloatKDTree{}D", dim));
+        bindStructure<Rectangle<int, dim>>(m, std::format("IntRectangle{}D", dim));
+        bindStructure<Rectangle<double, dim>>(m, std::format("FloatRectangle{}D", dim));
+    }
 }

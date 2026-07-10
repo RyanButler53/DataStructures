@@ -1,1 +1,2 @@
-from .ds_ext import *
+from .ds_ext import DistanceFunction
+from .factory import KDTree, Rectangle

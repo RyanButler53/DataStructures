@@ -27,10 +27,10 @@ class TreeContext:
         self.v4 = [(8, 10), (12, 7), (8, 6), (11, 6), (10, 2)]
 
         # Assuming IntTree2D is exposed via your nanobind reflection engine
-        self.t1 = ds.IntTree2D()
-        self.t2 = ds.IntTree2D()
-        self.t3 = ds.IntTree2D()
-        self.t4 = ds.IntTree2D()
+        self.t1 = ds.KDTree(int, 2)
+        self.t2 = ds.KDTree(int, 2)
+        self.t3 = ds.KDTree(int, 2)
+        self.t4 = ds.KDTree(int, 2)
 
         # Populate trees mimicking SetUp()
         for k in self.v1: self.t1.insert(k)
@@ -168,7 +168,7 @@ def test_k_nearest_neighbor1(env):
 
 def test_rectangle_bounding_box():
     # Instantiating your bound Rectangle class
-    bounds = ds.IntRectangle2D()
+    bounds = ds.Rectangle(int, 2)
     
     # Python arguments map down to (dimension, min, max)
     bounds.insert(0, 59, 95)
@@ -189,7 +189,7 @@ def test_rectangle_bounding_box():
 
 
 def test_rectangle_range(env):
-    bounds = ds.IntRectangle2D()
+    bounds = ds.Rectangle(int, 2)
     bounds.insert(0, 59, 95)
     bounds.insert(1, 39, 81)
     
@@ -197,7 +197,7 @@ def test_rectangle_range(env):
     expected = [(60, 80), (80, 40), (90, 60)]
     assert set(tuple(p) for p in points) == set(expected)
 
-    bounds2 = ds.IntRectangle2D()
+    bounds2 = ds.Rectangle(int, 2)
     bounds2.insert(0, 33, 65)
     
     points = env.t2.rangeQuery(bounds2)

@@ -52,5 +52,9 @@ ds_ext.cpp
 )
 
 target_include_directories(ds_ext PRIVATE ${PROJECT_SOURCE_DIR}/inc)
+
+# Silence ABI compatibility warnings with gcc.
+target_compile_options(ds_ext PRIVATE "-Wno-psabi")
+
 # Install directive for scikit-build-core
 install(TARGETS ds_ext LIBRARY DESTINATION py_data_structures)

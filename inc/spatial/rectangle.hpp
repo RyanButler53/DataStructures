@@ -38,7 +38,7 @@ class Rectangle {
      */
     void insert(size_t dim, T low, T high){
         if (dim > K){throw std::invalid_argument("Invalid Dimension");}
-        bounds_[dim] = std::make_pair(low, high);
+        bounds_[dim] = {low, high};
     }
 
     /**
@@ -78,7 +78,7 @@ class Rectangle {
      * @brief Accesses the bounds at the specified dimension
      * @throw Will throw an exception if the dimension is not specified
      */
-    std::pair<T,T> operator[](size_t dim){
+    std::pair<T,T>& operator[](size_t dim){
         if (!dimensionDefined(dim)){
             throw std::invalid_argument("Dimension not specified");
         }
