@@ -46,12 +46,12 @@ class TreeContext:
         actual = tree.rangeQuery(q, r, ds.DistanceFunction.Euclidean)
         
         # Unordered elements match can be checked via sets of tuples
-        assert set(actual) == set(expected)
+        assert set(tuple(p) for p in actual) == set(expected)
 
     def assert_nearest_neighbor(self, tree, points, q):
         """Verifies nearestNeighbor matches a sorted distance scan."""
         # Sort points by their distance from query point q
-        actual_nn = min(points, key=lambda pt: dist(pt, q))
+        actual_nn = list(min(points, key=lambda pt: dist(pt, q)))
         tree_nn = tree.nearestNeighbor(q, ds.DistanceFunction.Euclidean)
         assert tree_nn == actual_nn
 
@@ -144,13 +144,13 @@ def test_range_query3(env):
 
 def test_nearest_neighbor1(env):
     nn = env.t2.nearestNeighbor((50, 60))
-    assert nn == (35, 60)
+    assert nn == [35, 60]
 
     nn = env.t2.nearestNeighbor((35, 30))
-    assert nn == (50, 30)
+    assert nn == [50, 30]
 
     nn = env.t2.nearestNeighbor((100, 100))
-    assert nn == (90, 60)
+    assert nn == [90, 60]
 
 
 def test_nearest_neighbor2(env):

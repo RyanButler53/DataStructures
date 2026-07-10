@@ -5,3 +5,4 @@ build/
 papers/
 # Graphing scripts and results
 results/
+__pycache__

@@ -179,10 +179,20 @@ double KDTree<T,K>::dist(DistanceFunction fn, const key_t& p1, const key_t& p2) 
 // NEAREST NEIGHBOR
 
 template <typename T, size_t K>
+typename KDTree<T,K>::key_t KDTree<T,K>::nearestNeighbor(const key_t& query) const {
+    return nearestNeighbor(query, DistanceFunction::Euclidean);
+}
+
+template <typename T, size_t K>
 typename KDTree<T,K>::key_t KDTree<T,K>::nearestNeighbor(const key_t& query, DistanceFunction fn) const {
     if (!root_) throw std::invalid_argument ("Cannot find a nearest neighbor in an empty tree!");
     std::vector<key_t> nn = nearestNeighbor(query, 1, fn);
     return nn[0];
+}
+
+template <typename T, size_t K>
+std::vector<typename KDTree<T,K>::key_t> KDTree<T,K>::nearestNeighbor(const key_t& query, size_t k) const {
+    return nearestNeighbor(query, k, DistanceFunction::Euclidean);
 }
 
 template <typename T, size_t K>
@@ -241,6 +251,11 @@ void KDTree<T,K>::knearestNeighborHelper(const key_t& query, Node*n, size_t dim,
 }
 
 // RANGE QUERIES
+
+template <typename T, size_t K>
+std::vector<typename KDTree<T,K>::key_t> KDTree<T,K>::rangeQuery(const key_t& query, double r) const {
+    return rangeQuery(query, r, DistanceFunction::Euclidean);
+}
 
 template <typename T, size_t K>
 std::vector<typename KDTree<T,K>::key_t> KDTree<T,K>::rangeQuery(const key_t& query, double r,  DistanceFunction fn) const {

@@ -50,15 +50,13 @@ nb::class_<Structure> bindStructure(nb::module_& m, std::string name){
                 cls.def(nb::init<typename [: std::meta::type_of(params[Indexes]) :]...>());
             }(std::make_index_sequence<params.size()>{});
         } else if constexpr(std::meta::is_destructor(m)){
-            // Pass throguh 
+            // Pass through 
         } else if constexpr (std::meta::is_class_member(m) && std::meta::is_function(m)){
             static constexpr auto name = std::meta::identifier_of(m);
             static constexpr auto params = std::define_static_array(std::meta::parameters_of(m));
-
-            // This template wizardry gives the std::meta::info M its own constexpr scope and 
-            // expands the pack of indexes 
-            [&]<std::meta::info M, size_t... Indexes>(std::index_sequence<Indexes...>){
-                    cls.def(name.data(), &[:M:], nb::arg(std::meta::identifier_of(params[Indexes]).data())...);
+                using FuncType = decltype(&[:m:]);
+                [&]<std::meta::info M, size_t... Indexes>(std::index_sequence<Indexes...>){
+                    cls.def(name.data(), static_cast<FuncType>(&[:M:]), nb::arg(std::meta::identifier_of(params[Indexes]).data())...);
                 }.template operator()<m>(std::make_index_sequence<params.size()>{});
         }
     }
