@@ -118,8 +118,8 @@ NB_MODULE(ds_ext, m) {
     // Interval Tree
     bindStructure<SimpleInterval<int>>(m, "IntervalInt");
     bindStructure<IntervalTree<SimpleInterval<int>>>(m, "IntervalTreeInt");
-    bindStructure<SimpleInterval<float>>(m, "IntervalFloat");
-    bindStructure<IntervalTree<SimpleInterval<float>>>(m, "IntervalTreeFloat");
+    bindStructure<SimpleInterval<double>>(m, "IntervalFloat");
+    bindStructure<IntervalTree<SimpleInterval<double>>>(m, "IntervalTreeFloat");
 
     // Heaps
     bindHeaps(m);
