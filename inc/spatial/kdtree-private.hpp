@@ -1,4 +1,5 @@
 #include "kdtree.hpp"
+#include <cmath>
 
 template <typename T, size_t K>
 KDTree<T, K>::KDTree():size_{0}, root_{nullptr}{}
@@ -19,6 +20,7 @@ void KDTree<T,K>::destructorHelper(Node*& tree){
         }
         delete tree;
         tree = nullptr;
+        size_ = 0;
     }
 }
 
@@ -53,7 +55,7 @@ T KDTree<T, K>::findMin(size_t dim){
 }
 
 template <typename T, size_t K>
-KDTree<T,K>::NodePair KDTree<T, K>::findMinHelper(size_t dim, Node* node, size_t cur_dim){
+KDTree<T,K>::NodePair KDTree<T, K>::findMinHelper(size_t dim, Node* node, size_t cur_dim) const {
     if (node == nullptr){
         return {node, dim};
     } else if (cur_dim == dim) {
@@ -85,6 +87,11 @@ bool KDTree<T, K>::contains(const key_t& key){
 }
 
 template <typename T, size_t K>
+void KDTree<T, K>::clear(){
+    destructorHelper(root_);
+}
+
+template <typename T, size_t K>
 KDTree<T,K>::NodePair KDTree<T, K>::find(const key_t& key, Node* node, size_t cur_dim) {
     if (!node){
         return {node, cur_dim};
@@ -103,7 +110,15 @@ void KDTree<T,K>::remove(const key_t& key){
     if (!n) {
         throw std::runtime_error("Cannot delete a key that doesn't exist");
     }
-    removeHelper(key, n, ndim);
+
+    // Unique edge case where the only node is the root. n is not a reference
+    // and updating the node will not set the root_ variable to nullptr
+    if (size_ == 1){
+        clear();
+    } else {
+        removeHelper(key, n, ndim);
+    }
+
 }
 
 template <typename T, size_t K>
@@ -157,17 +172,27 @@ double KDTree<T,K>::dist(DistanceFunction fn, const key_t& p1, const key_t& p2) 
         }
         return sum;
     default:
-        break;
+        return sum;
     }
 }
 
 // NEAREST NEIGHBOR
 
 template <typename T, size_t K>
+typename KDTree<T,K>::key_t KDTree<T,K>::nearestNeighbor(const key_t& query) const {
+    return nearestNeighbor(query, DistanceFunction::Euclidean);
+}
+
+template <typename T, size_t K>
 typename KDTree<T,K>::key_t KDTree<T,K>::nearestNeighbor(const key_t& query, DistanceFunction fn) const {
     if (!root_) throw std::invalid_argument ("Cannot find a nearest neighbor in an empty tree!");
     std::vector<key_t> nn = nearestNeighbor(query, 1, fn);
     return nn[0];
+}
+
+template <typename T, size_t K>
+std::vector<typename KDTree<T,K>::key_t> KDTree<T,K>::nearestNeighbor(const key_t& query, size_t k) const {
+    return nearestNeighbor(query, k, DistanceFunction::Euclidean);
 }
 
 template <typename T, size_t K>
@@ -226,6 +251,11 @@ void KDTree<T,K>::knearestNeighborHelper(const key_t& query, Node*n, size_t dim,
 }
 
 // RANGE QUERIES
+
+template <typename T, size_t K>
+std::vector<typename KDTree<T,K>::key_t> KDTree<T,K>::rangeQuery(const key_t& query, double r) const {
+    return rangeQuery(query, r, DistanceFunction::Euclidean);
+}
 
 template <typename T, size_t K>
 std::vector<typename KDTree<T,K>::key_t> KDTree<T,K>::rangeQuery(const key_t& query, double r,  DistanceFunction fn) const {

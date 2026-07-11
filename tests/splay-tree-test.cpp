@@ -26,7 +26,9 @@ TEST(SplayTreeTest, structure){
     std::string insertTest{"(-, 5:105, ((-, 10:110, (((-, 20:120, -), 30:130, -), 35:135, -)), 38:138, ((((-, 40:140, (-, 50:150, -)), 55:155, -), 60:160, -), 65:165, -)))"};
     std::stringstream ss;
     ss << st;
+    std::string str = st.to_string();
     ASSERT_EQ(ss.str() , insertTest);
+    ASSERT_EQ(str, insertTest);
     ASSERT_EQ(st.erase(60), 1);
     ASSERT_EQ(st.erase(40), 1);
     ASSERT_EQ(st.erase(38), 1);

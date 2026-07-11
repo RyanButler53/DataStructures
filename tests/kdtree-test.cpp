@@ -77,7 +77,7 @@ class Test2D : public testing::Test {
     std::vector<Point2D> v3{{10,20}, {11,5}, {5,10}, {5,8}, {15,2}, {20,1}};
     std::vector<Point2D> v4{{8,10}, {12,7}, {8,6}, {11,6}, {10,2}};
     
-    Tree2D<int> t1;  // Simpler tree
+    Tree2D<int> t1; // Simpler tree
     Tree2D<int> t2; // More complicated deletion from lecture
     Tree2D<int> t3; // First example from lecture
     Tree2D<int> t4; // Breaking the invariant from lecture
@@ -107,16 +107,25 @@ TEST_F(Test2D, findMin){
     ASSERT_EQ(t1.findMin(1), -1);
 }
 
+TEST_F(Test2D, size){
+    EXPECT_EQ(t1.size(), 8);
+    EXPECT_EQ(t2.size(), 10);
+    EXPECT_EQ(t3.size(), 6);
+    EXPECT_EQ(t4.size(), 5);
+}
+
 TEST_F(Test2D, contains){
     ASSERT_TRUE(t1.contains({60,75}));
     t1.insert({16,27});
     ASSERT_TRUE(t1.contains({16, 27}));
     ASSERT_TRUE(t1.contains({90,5}));
+    EXPECT_EQ(t1.size(), 9);
 }
 TEST_F(Test2D, delete2){
     t3.remove({10,20});
     ASSERT_EQ(t3.findMin(0), 5);
     ASSERT_EQ(t3.findMin(1), 1);
+    EXPECT_EQ(t3.size(), 5);
 }
 
 TEST_F(Test2D, delete1){
@@ -127,10 +136,11 @@ TEST_F(Test2D, delete1){
     t2.remove({10, 35});
     ASSERT_FALSE(t2.contains({10, 35}));
     ASSERT_EQ(t2.findMin(0),20);
+    EXPECT_EQ(t2.size(), 8);
 
     t3.remove({10,20});
     ASSERT_FALSE(t3.contains({10,20}));
-    
+    EXPECT_EQ(t3.size(), 5);
 }
 TEST_F(Test2D, rangeQuery){
 
@@ -218,6 +228,17 @@ TEST_F(Test2D, RectangleRange){
     ASSERT_THAT(points, matcher);
 }
 
+TEST_F(Test2D, clear){
+    t1.clear();
+    EXPECT_EQ(t1.size(), 0);
+    t1.insert({15, 20});
+    EXPECT_EQ(t1.findMin(0), 15);
+    EXPECT_EQ(t1.size(), 1);
+    // Remove for empty tree
+    t1.remove({15, 20});
+    EXPECT_EQ(t1.size(), 0);
+}
+
 /// FUZZ TEST WITH N DIMENSIONS
 class KDTreeTest : public testing::TestWithParam<size_t>{
     
@@ -225,7 +246,7 @@ class KDTreeTest : public testing::TestWithParam<size_t>{
 
     static constexpr size_t DIM = 4;
 
-    using Point = std::array<int, DIM>;
+    using Point = std::array<double, DIM>;
     template <typename T>
     double dist(std::array<T,DIM> p1, std::array<T,DIM> p2){
 
@@ -237,13 +258,13 @@ class KDTreeTest : public testing::TestWithParam<size_t>{
         return std::sqrt(sum);
     }
 
-    Rectangle<int, DIM> getBB(){
-        std::uniform_int_distribution<int> lower(-11000, 0);
-        std::uniform_int_distribution<int> upper(0, 11000);
-        Rectangle<int, DIM> rq;
+    Rectangle<double, DIM> getBB(){
+        std::uniform_real_distribution<double> lower(-11000, 0);
+        std::uniform_real_distribution<double> upper(0, 11000);
+        Rectangle<double, DIM> rq;
         for (size_t dim = 0; dim < DIM; ++dim){
-            int low = lower(rng_);
-            int high = upper(rng_);
+            double low = lower(rng_);
+            double high = upper(rng_);
             rq.insert(dim, low, high);
         }
         return rq;
@@ -297,7 +318,7 @@ class KDTreeTest : public testing::TestWithParam<size_t>{
         return in;
     }
 
-    std::vector<Point> inBox(std::vector<Point>& points, Rectangle<int, DIM>q){
+    std::vector<Point> inBox(std::vector<Point>& points, Rectangle<double, DIM>q){
         std::vector<Point> in;
         for (auto p : points){
             if (q.contains(p)){
@@ -323,7 +344,7 @@ TEST_P(KDTreeTest, NearestNeighbor){
     std::vector<Point> points;
     int n = this->GetParam();
     getRandomPoints(n, points);
-    KDTree<int, DIM> t;
+    KDTree<double, DIM> t;
 
     for (auto p : points){
         t.insert(p);
@@ -341,7 +362,7 @@ TEST_P(KDTreeTest, KNearestNeighbors){
     std::vector<Point> points;
     int n = this->GetParam();
     getRandomPoints(n, points);
-    KDTree<int, DIM> t;
+    KDTree<double, DIM> t;
 
     for (auto p : points){
         t.insert(p);
@@ -366,7 +387,7 @@ TEST_P(KDTreeTest, RadiusQuery){
     std::vector<Point> points;
     int n = this->GetParam();
     getRandomPoints(n, points);
-    KDTree<int, DIM> t;
+    KDTree<double, DIM> t;
 
     for (auto p : points){
         t.insert(p);
@@ -386,13 +407,13 @@ TEST_P(KDTreeTest, BoundingBoxQuery){
     int n = this->GetParam();
     std::vector<Point> points;
     getRandomPoints(n, points);
-    KDTree<int, DIM> t;
+    KDTree<double, DIM> t;
 
     for (auto p : points){
         t.insert(p);
     }
     for (size_t query_i = 0; query_i < 10; ++query_i){
-        Rectangle<int, DIM> bbox = getBB();
+        Rectangle<double, DIM> bbox = getBB();
         std::vector<Point> actual = inBox(points, bbox);
         std::vector<Point> exp = t.rangeQuery(bbox);
         

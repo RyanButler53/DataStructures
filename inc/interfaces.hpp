@@ -1,6 +1,8 @@
 #pragma once
 
 #include <concepts>
+#include <cstddef>
+#include <vector>
 
 // Interface for a Tree Map structure
 template <typename TreeType>
@@ -8,7 +10,8 @@ concept Tree = requires(TreeType &tree,
                         TreeType::value_type &pair,
                         TreeType::const_iterator iter,
                         const TreeType::key_type &key,
-                        TreeType::mapped_type value) {
+                        TreeType::mapped_type value,
+                        std::vector<typename TreeType::value_type>::iterator it) {
     tree.insert(pair);
     iter = tree.find(key);
     iter = tree.begin();
@@ -17,7 +20,7 @@ concept Tree = requires(TreeType &tree,
     tree.find(key);
     tree.clear();
     tree.erase(key);
-    // tree.insert(in, in);
+    tree.insert(it, it);
 };
 
 // Interface for a Heap (Supporting Dijkstra)

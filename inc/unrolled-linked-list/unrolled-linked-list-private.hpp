@@ -1,5 +1,6 @@
 #include "unrolled-linked-list.hpp"
 #include <ranges>
+#include <algorithm>
 
 template<typename T, size_t K>
 UnrolledLinkedList<T, K>::UnrolledLinkedList():size_{0}{}

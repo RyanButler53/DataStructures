@@ -4,6 +4,7 @@
 #include <optional>
 #include <utility>
 #include <numeric>
+#include <stdexcept>
 
 /**
  * @class Rectangle class. Rectangle class that supports n dimensional rectangles
@@ -25,16 +26,19 @@ class Rectangle {
     public: 
 
     Rectangle() {clear(); }
-    Rectangle(std::array<std::pair<T,T>,K> bounds):bounds_{bounds}{}
+    Rectangle(std::array<std::pair<T,T>,K> bounds){
+        for (size_t i = 0; i < K; ++i){
+            bounds_[i] = bounds[i];
+        }
+    }
 
-    public:
     /**
      * @brief Inserts or overrides a bound in the rectangle. 
      * @throw Throws an exception if the dimension is out of bounds. 
      */
     void insert(size_t dim, T low, T high){
         if (dim > K){throw std::invalid_argument("Invalid Dimension");}
-        bounds_[dim] = std::make_pair(low, high);
+        bounds_[dim] = {low, high};
     }
 
     /**
@@ -74,7 +78,7 @@ class Rectangle {
      * @brief Accesses the bounds at the specified dimension
      * @throw Will throw an exception if the dimension is not specified
      */
-    std::pair<T,T> operator[](size_t dim){
+    std::pair<T,T>& operator[](size_t dim){
         if (!dimensionDefined(dim)){
             throw std::invalid_argument("Dimension not specified");
         }

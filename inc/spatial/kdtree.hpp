@@ -13,7 +13,7 @@
 
 #include <iostream>
 
-enum class DistanceFunction {
+enum class DistanceFunction : uint8_t{
     Euclidean = 0,
     Manhattan = 1
 };    
@@ -72,7 +72,8 @@ public:
      * @note If the tree contains the query point, it will be returned.
      * @param fn [optional] Distance function. Defaults to Euclidean Distance. 
      */
-    key_t nearestNeighbor(const key_t& query, DistanceFunction fn = DistanceFunction::Euclidean) const ;
+    key_t nearestNeighbor(const key_t& query) const ;
+    key_t nearestNeighbor(const key_t& query, DistanceFunction fn) const ;
 
     /** 
      * @brief Overload of the NearestNeighbors function but finds the K nearest neighbors. 
@@ -80,15 +81,17 @@ public:
      * @param k Number of closest neighbors to find.
      * @param fn [optional] Distance function to use. Defaults to Euclidean, Manhattan distance also available. 
     */
-    std::vector<key_t> nearestNeighbor(const key_t& query, size_t k, DistanceFunction fn = DistanceFunction::Euclidean) const;
+    std::vector<key_t> nearestNeighbor(const key_t& query, size_t k) const;
+    std::vector<key_t> nearestNeighbor(const key_t& query, size_t k, DistanceFunction fn) const;
 
     /**
      * @brief Radial Range query. Finds all points within a radius of r from a given key
      * @param query Key to find all points nearby
      * @param r Radius to search 
-     * @param fn [optional] Distance function. Defaults ot Euclidean
+     * @param fn [optional] Distance function. Defaults to Euclidean
      */
-    std::vector<key_t> rangeQuery(const key_t& query, double r, DistanceFunction fn = DistanceFunction::Euclidean) const;
+    std::vector<key_t> rangeQuery(const key_t& query, double r) const;
+    std::vector<key_t> rangeQuery(const key_t& query, double r, DistanceFunction fn) const;
 
     /**
      * @brief Rectangle Range Query. Finds all points in a rectangle
@@ -96,6 +99,18 @@ public:
      */
     std::vector<key_t> rangeQuery(Rectangle<T,K> bounds) const;
 
+    /**
+     * @brief Returns the number of nodes in the tree
+     * 
+     * @return size_t 
+     */
+    size_t size() const {return size_;};
+
+    /**
+     * @brief Clears all nodes in the tree
+     * 
+     */
+    void clear();
     private:
 
     struct Node {
@@ -145,7 +160,7 @@ public:
     // Finds and returns the NODE and the dimension it is on
     NodePair find(const key_t& key, Node* node, size_t dim);
 
-    NodePair findMinHelper(size_t dim, Node* node, size_t cur_dim);
+    NodePair findMinHelper(size_t dim, Node* node, size_t cur_dim) const;
 
     void removeHelper(const key_t& key, Node*& node, size_t dim);
 

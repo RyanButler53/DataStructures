@@ -82,27 +82,26 @@ TEST_F(IntervalTreeTest, SupersetsMax){
 
 TEST_F(IntervalTreeTest, RangeQuery){
     itree_.clear();
-    itree_.insert({1874,1951});
-    itree_.insert({1779,1828});
-    itree_.insert({1585,1672});
-    itree_.insert({1843,1907});
-    itree_.insert({1888,1971});
-    itree_.insert({1756,1791});
+    itree_.insert(1874,1951);
+    itree_.insert(1779,1828);
+    itree_.insert(1585,1672);
+    itree_.insert(1843,1907);
+    itree_.insert(1888,1971);
+    itree_.insert(1756,1791);
 
-    std::vector<SimpleInterval<int>> intervals = itree_.findOverlaps({1755, 1830});
+    std::vector<SimpleInterval<int>> intervals = itree_.findOverlaps(SimpleInterval<int>{1755, 1830});
     ASSERT_EQ(intervals.size(), 2);
     EXPECT_EQ(intervals[0], SimpleInterval<int>(1779, 1828));
     EXPECT_EQ(intervals[1], SimpleInterval<int>(1756, 1791));
 }
 
 TEST_F(IntervalTreeTest, RangeQuery2){
-    std::vector<SimpleInterval<int>> intervals = itree_.findOverlaps({17, 21});
+    std::vector<SimpleInterval<int>> intervals = itree_.findOverlaps(SimpleInterval<int>{17, 21});
     sortIntervals(intervals);
     ASSERT_EQ(intervals.size(), 8);
     std::array<int, 8> lower = {min_, 10, 12, 15, 17, 18, 19, 21}; // 21
     std::array<int, 8> upper = {max_, 20, 22, 25, 20, 22, 20, 23}; // 23
     for (int i : std::views::iota(0, 8)){
-        // std::cout << intervals[i].low() << " " << intervals[i].high() << std::endl;
         EXPECT_EQ(intervals[i], SimpleInterval<int>(lower[i], upper[i]));
     }
 

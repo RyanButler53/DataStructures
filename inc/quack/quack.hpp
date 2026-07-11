@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <ostream>
+#include <string>
 
 template <typename T>
 class Quack
@@ -15,6 +16,7 @@ private:
     
     // Functions
     void reshuffle(std::vector<T>& full, std::vector<T>& empty);
+    void printToStream(std::ostream &out) const;
 
 public:
     using value_type = T;
@@ -34,8 +36,7 @@ public:
     T front();
     T back();
     size_t size() const { return size_; }
-
-    void printToStream(std::ostream &out) const;
+    std::string to_string() const;
 };
 template <typename T>
 std::ostream& operator<<(std::ostream& os, const Quack<T>& q);

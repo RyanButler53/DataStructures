@@ -56,7 +56,14 @@ class SplayTree {
     const Iterator search(const key_t &key, std::vector<Node*>& path);
 
     /**
-     * @brief Helper functino for printing the tree. Used for testing. 
+     * @brief Public version of printing function used for printing
+     * 
+     * @param out Ostream to print to. 
+     */
+     void print(std::ostream &out) const;
+
+    /**
+     * @brief Helper function for printing the tree. Used for testing. 
      * 
      * @param tree Current node
      * @param out ostream to print to. 
@@ -124,9 +131,9 @@ public:
      * @brief Insert into the splay tree
      * 
      * @param key Key to inset
-     * @param value Value to insert
+     * @param val Value to insert
      */
-    std::pair<Iterator, bool>  insert(const value_type& value);
+    std::pair<Iterator, bool> insert(const value_type& val);
 
     /**
      * @brief Inserts keys from a range [first, last)
@@ -179,19 +186,19 @@ public:
     // Other functions
 
     /**
-     * @brief Public version of printing function used for printing
-     * 
-     * @param out Ostream to print to. 
-     */
-    void print(std::ostream &out) const;
-
-    /**
      * @brief Looks up an item. The Item MUST BE IN THE TREE
      * 
      * @param key key to look up
      * @return value_t& Value associated with the key
      */
     value_t& operator[](const key_t &key);
+
+    /**
+     * @brief Converts the splay tree into a string
+     * 
+     * @return std::string String representation of the tree. Exposes the internal splay structure
+     */
+    std::string to_string() const;
 
   private:
     class Iterator {

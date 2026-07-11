@@ -8,7 +8,7 @@
  * 
  */
 #include <vector>
-#include <tuple>
+#include <utility>
 
 #ifndef SCAPEGOAT_HPP_INCLUDED
 #define SCAPEGOAT_HPP_INCLUDED
@@ -96,15 +96,16 @@ class ScapegoatTree {
     const_iterator end() const;
 
     /**
-     * @brief clears the tree
+     * @brief Clears the tree
      */
     void clear();
 
     /**
-     * @brief Prints the tree
+     * @brief Converts the scapegoat tree into a string
      * 
+     * @return std::string String representation of the tree. Exposes the internal node structure
      */
-    void print(std::ostream& out) const;
+    std::string to_string() const;
 
     /**
      * @brief Looks up or inserts the value corresponding to the given key
@@ -186,7 +187,13 @@ private:
      * @param elements Vector to update with all the elements
      * @param tree Node in which to get all the elements under
      */
-    void getElements(std::vector<std::tuple<key_t, value_t>>& elements, Node *tree);
+    void getElements(std::vector<std::pair<key_t, value_t>>& elements, Node *tree);
+
+    /**
+     * @brief Prints the tree
+     * 
+     */
+     void print(std::ostream& out) const;
 
     /**
      * @brief Recursive helper for printinf the tree
@@ -203,7 +210,7 @@ private:
      * @param start Start ind of vector
      * @param end End ind of vector
      */
-    void insertBalanced(std::vector<std::tuple<key_t, value_t>>& elements, 
+    void insertBalanced(std::vector<std::pair<key_t, value_t>>& elements, 
     Node*& tree, size_t start, size_t end);
 
     /**
@@ -217,30 +224,30 @@ private:
     class Iterator {
       friend class ScapegoatTree;
 
-  private:
-      std::vector<Node *> stack_;
-      void pushToMin(Node *tree);
+      private:
+        std::vector<Node *> stack_;
+        void pushToMin(Node *tree);
 
-  public:
+      public:
 
-      // Required for std::iterator
-      using value_type = std::pair<key_t, value_t>;
-      using reference = const value_type&;
-      using pointer =  value_type*;
-      using difference_type = std::ptrdiff_t;
-      using iterator_category = std::forward_iterator_tag;
+        // Required for std::iterator
+        using value_type = std::pair<key_t, value_t>;
+        using reference = const value_type&;
+        using pointer =  value_type*;
+        using difference_type = std::ptrdiff_t;
+        using iterator_category = std::forward_iterator_tag;
 
-      Iterator() = default;
-      Iterator(Node *node, bool push = true);
-      Iterator(const Iterator &other) = default;
-      Iterator &operator=(const Iterator &other) = default;
-      ~Iterator() = default;
+        Iterator() = default;
+        Iterator(Node *node, bool push = true);
+        Iterator(const Iterator &other) = default;
+        Iterator &operator=(const Iterator &other) = default;
+        ~Iterator() = default;
 
-      value_type operator*() const;
-      Iterator &operator++();
-      pointer operator->() const;
-      bool operator==(const Iterator &other) const;
-      bool operator!=(const Iterator &other) const;
+        value_type operator*() const;
+        Iterator &operator++();
+        pointer operator->() const;
+        bool operator==(const Iterator &other) const;
+        bool operator!=(const Iterator &other) const;
       
   };
 };

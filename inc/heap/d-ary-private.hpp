@@ -1,5 +1,6 @@
 #include "d-ary.hpp"
 #include <algorithm>
+#include <stdexcept>
 
 template <typename T, typename priority_t, size_t D, typename Compare>
 DAryHeap<T, priority_t, D, Compare>::DAryHeap():size_{0}, comp_{}{}
