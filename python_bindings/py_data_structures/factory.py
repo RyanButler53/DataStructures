@@ -110,7 +110,8 @@ def DAryHeap(data_type, priority_type, d = 16, heapType = HeapCompare.MinHeap):
 def UnrolledLinkedList(data_type, k):
     type_map = {
         int: "Int",
-        float: "Float"
+        float: "Float",
+        str: "String"
     }
 
     if data_type not in type_map:
@@ -135,7 +136,8 @@ def UnrolledLinkedList(data_type, k):
 def _find_tree_class(key_type, value_type, clsname):
     type_map = {
         int: "Int",
-        float: "Float"
+        float: "Float",
+        str: "String"
     }
 
     if key_type not in type_map or value_type not in type_map:

@@ -117,7 +117,7 @@ bool CuckooHashMap<key_t, value_t>::contains(const key_t& key) const {
     size_t hash1 = getHash1(key);
     Item &item1 = table1_[hash1 % numBuckets_];
     if (item1.valid_ and item1.key_ == key){
-        return item1.value_;
+        return true;
     } else {
         // Only compute hash2 if not found in hash1. Hashing is expensive
         size_t hash2 = getHash2(hash1);

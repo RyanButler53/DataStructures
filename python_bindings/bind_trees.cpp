@@ -3,7 +3,9 @@
 #include "tree/scapegoat.hpp"
 #include <nanobind/nanobind.h>
 #include "interfaces.hpp"
+#include <string>
 #include <iterator>
+#include <ranges>
 
 namespace nb = nanobind;
 // Struct to do casting without copying. Needs to convert nb::handle to std::pair<K,V>
@@ -85,7 +87,17 @@ void bindTree(nb::module_& m, std::string name){
 
 void bindTrees(nb::module_ m){
 
-    bindTree<SplayTree<int, int>>(m, "SplayTreeIntInt");
-    bindTree<ScapegoatTree<int, int>>(m, "ScapegoatTreeIntInt");
-
+    static constexpr std::array data_types = {^^int, ^^float, ^^std::string};
+    static constexpr std::array data_names = {"Int", "Float", "String"};
+    template for (constexpr size_t ikey : std::views::iota(0UL, 3UL)){
+        template for (constexpr size_t ivalue : std::views::iota(0UL, 3UL)){
+        
+            static constexpr std::string_view key_name = data_names[ikey];
+            static constexpr std::string_view value_name = data_names[ivalue];
+            using key_t = typename [: data_types[ikey] :];
+            using value_t = typename [: data_types[ivalue] :];
+            bindTree<SplayTree<key_t, value_t>>(m, std::format("SplayTree{}{}", key_name, value_name));
+            bindTree<ScapegoatTree<key_t, value_t>>(m, std::format("ScapegoatTree{}{}", key_name, value_name));
+        }
+    }
 }
