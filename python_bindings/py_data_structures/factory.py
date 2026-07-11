@@ -70,8 +70,8 @@ def Interval(data_type, low, high):
 
 def _get_heap_class(data_type, priority_type, heapType, clsname):
     type_map = {
-        int: "Int",
-        float: "Float"
+        int: "int",
+        float: "float"
     }
     compare_map = {
         HeapCompare.MinHeap: "Min",
