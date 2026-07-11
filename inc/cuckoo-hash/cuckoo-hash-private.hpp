@@ -271,30 +271,30 @@ ostream& operator<<(ostream& os, const CuckooHashMap<key_t, value_t>& ch){
 // Iterator Functions
 
 template <typename key_t, typename value_t>
-typename CuckooHashMap<key_t, value_t>::const_iterator CuckooHashMap<key_t, value_t>::begin() const {
-    return const_iterator(0, numBuckets_, table1_, table2_);
+typename CuckooHashMap<key_t, value_t>::ConstIterator CuckooHashMap<key_t, value_t>::begin() const {
+    return ConstIterator(0, numBuckets_, table1_, table2_);
 }
 
 template <typename key_t, typename value_t>
-typename CuckooHashMap<key_t, value_t>::const_iterator CuckooHashMap<key_t, value_t>::end() const {
-    return const_iterator(2 * numBuckets_, numBuckets_, table1_, table2_);
+typename CuckooHashMap<key_t, value_t>::ConstIterator CuckooHashMap<key_t, value_t>::end() const {
+    return ConstIterator(2 * numBuckets_, numBuckets_, table1_, table2_);
 }
 
 template <typename key_t, typename value_t>
-CuckooHashMap<key_t, value_t>::const_iterator::const_iterator(size_t idx, size_t tableSize, Item* t1, Item* t2):
+CuckooHashMap<key_t, value_t>::ConstIterator::ConstIterator(size_t idx, size_t tableSize, Item* t1, Item* t2):
     t1_{t1}, t2_{t2}, idx_{idx}, tableSize_{tableSize}{
     iterateTable();
 }
 
 template <typename key_t, typename value_t>
-typename CuckooHashMap<key_t, value_t>::const_iterator& CuckooHashMap<key_t, value_t>::const_iterator::operator++() {
+typename CuckooHashMap<key_t, value_t>::ConstIterator& CuckooHashMap<key_t, value_t>::ConstIterator::operator++() {
     ++idx_;
     iterateTable();
     return *this;
 }
 
 template <typename key_t,typename value_t>
-void CuckooHashMap<key_t, value_t>::const_iterator::iterateTable(){
+void CuckooHashMap<key_t, value_t>::ConstIterator::iterateTable(){
     // First Table
     while (idx_ < tableSize_) {
         if (t1_[idx_].valid_){
@@ -314,7 +314,7 @@ void CuckooHashMap<key_t, value_t>::const_iterator::iterateTable(){
 }
 
 template <typename key_t, typename value_t>
-typename CuckooHashMap<key_t, value_t>::const_iterator::value_type CuckooHashMap<key_t, value_t>::const_iterator::operator*() const{
+typename CuckooHashMap<key_t, value_t>::ConstIterator::value_type CuckooHashMap<key_t, value_t>::ConstIterator::operator*() const{
     if (idx_ < tableSize_) {
         return {t1_[idx_].key_, t1_[idx_].value_};
 
@@ -325,17 +325,17 @@ typename CuckooHashMap<key_t, value_t>::const_iterator::value_type CuckooHashMap
 }
 
 template <typename key_t, typename value_t>
-bool CuckooHashMap<key_t, value_t>::const_iterator::operator==(const const_iterator& other) const {
+bool CuckooHashMap<key_t, value_t>::ConstIterator::operator==(const ConstIterator& other) const {
     return (idx_ == other.idx_) and (t1_ == other.t1_) and (t2_ == other.t2_);
 }
 
 template <typename key_t, typename value_t>
-bool CuckooHashMap<key_t, value_t>::const_iterator::operator!=(const const_iterator& other) const{
+bool CuckooHashMap<key_t, value_t>::ConstIterator::operator!=(const ConstIterator& other) const{
     return !(*this == other);
 }
 
 template <typename key_t, typename value_t>
-typename CuckooHashMap<key_t, value_t>::const_iterator::pointer CuckooHashMap<key_t, value_t>::const_iterator::operator->() const{
+typename CuckooHashMap<key_t, value_t>::ConstIterator::pointer CuckooHashMap<key_t, value_t>::ConstIterator::operator->() const{
     return &(**this);
 }
 
@@ -568,30 +568,30 @@ std::string CuckooHashSet<T>::to_string() const {
 }
 
 template <typename T>
-typename CuckooHashSet<T>::const_iterator CuckooHashSet<T>::begin() const {
-    return const_iterator(0, table1_, table2_, valid1_, valid2_);
+typename CuckooHashSet<T>::ConstIterator CuckooHashSet<T>::begin() const {
+    return ConstIterator(0, table1_, table2_, valid1_, valid2_);
 }
 
 template <typename T>
-typename CuckooHashSet<T>::const_iterator CuckooHashSet<T>::end() const {
-    return const_iterator(2 * numBuckets_, table1_, table2_, valid1_, valid2_);
+typename CuckooHashSet<T>::ConstIterator CuckooHashSet<T>::end() const {
+    return ConstIterator(2 * numBuckets_, table1_, table2_, valid1_, valid2_);
 }
 
 template <typename T>
-CuckooHashSet<T>::const_iterator::const_iterator(size_t idx, T* t1, T* t2, const vector<bool>& valid1, const vector<bool>& valid2):
+CuckooHashSet<T>::ConstIterator::ConstIterator(size_t idx, T* t1, T* t2, const vector<bool>& valid1, const vector<bool>& valid2):
     v1_{valid1}, v2_{valid2},idx_{idx},t1_{t1}, t2_{t2}{
     iterateTable();
 }
 
 template <typename T>
-typename CuckooHashSet<T>::const_iterator& CuckooHashSet<T>::const_iterator::operator++() {
+typename CuckooHashSet<T>::ConstIterator& CuckooHashSet<T>::ConstIterator::operator++() {
     ++idx_;
     iterateTable();
     return *this;
 }
 
 template <typename T>
-void CuckooHashSet<T>::const_iterator::iterateTable(){
+void CuckooHashSet<T>::ConstIterator::iterateTable(){
     // First Table
     size_t tableSize = v1_.size(); // Table size is the size of the valid vec
     while (idx_ < tableSize)
@@ -613,7 +613,7 @@ void CuckooHashSet<T>::const_iterator::iterateTable(){
 }
 
 template <typename T>
-typename CuckooHashSet<T>::const_iterator::value_type CuckooHashSet<T>::const_iterator::operator*() const{
+typename CuckooHashSet<T>::ConstIterator::value_type CuckooHashSet<T>::ConstIterator::operator*() const{
     size_t tableSize = v2_.size();
     if (idx_ < tableSize)
     {
@@ -624,17 +624,17 @@ typename CuckooHashSet<T>::const_iterator::value_type CuckooHashSet<T>::const_it
 }
 
 template <typename T>
-bool CuckooHashSet<T>::const_iterator::operator==(const const_iterator& other) const {
+bool CuckooHashSet<T>::ConstIterator::operator==(const ConstIterator& other) const {
     return (idx_ == other.idx_) and (t1_ == other.t1_) and (t2_ == other.t2_);
 }
 
 template <typename T>
-bool CuckooHashSet<T>::const_iterator::operator!=(const const_iterator& other) const{
+bool CuckooHashSet<T>::ConstIterator::operator!=(const ConstIterator& other) const{
     return !(*this == other);
 }
 
 template <typename T>
-typename CuckooHashSet<T>::const_iterator::pointer CuckooHashSet<T>::const_iterator::operator->() const{
+typename CuckooHashSet<T>::ConstIterator::pointer CuckooHashSet<T>::ConstIterator::operator->() const{
     return &(**this);
 }
 

@@ -22,7 +22,7 @@ template <typename key_t, typename value_t>
 class CuckooHashMap
 {
   private:
-    class const_iterator;
+    class ConstIterator;
 
     struct Item {
         key_t key_;
@@ -54,11 +54,18 @@ class CuckooHashMap
     void printToStream(std::ostream &os) const;
 
   public:
+
+    // Type Names: 
+    using value_type = std::pair<key_t, value_t>;
+    using key_type = key_t;
+    using mapped_type = value_t;
+    using const_iterator = ConstIterator;
+
     // Constructors
     CuckooHashMap();
     CuckooHashMap(double epsilon, float downsizeThresh);
     ~CuckooHashMap();
-    CuckooHashMap(const CuckooHashMap &other) = delete;
+    CuckooHashMap(const CuckooHashMap &other) = default;
 
     // Modification and Lookup;
     bool contains(const key_t &key) const;
@@ -73,13 +80,13 @@ class CuckooHashMap
     double loadFactor() const;
     std::string to_string() const;
     // Iterator Functions
-    const_iterator begin() const;
-    const_iterator end() const;
+    ConstIterator begin() const;
+    ConstIterator end() const;
 
     value_t &operator[](const key_t& key);
 
   private: 
-    class const_iterator {
+    class ConstIterator {
         friend class CuckooHashMap;
 
   private: 
@@ -100,17 +107,17 @@ class CuckooHashMap
         using difference_type = std::ptrdiff_t;
         using iterator_category = std::forward_iterator_tag;
 
-        const_iterator() = default;
-        const_iterator(size_t idx, size_t tableSize, Item* table1, Item* table2);
-        const_iterator(const const_iterator &other) = delete;
-        const_iterator &operator=(const const_iterator &other) = default;
-        ~const_iterator() = default;
+        ConstIterator() = default;
+        ConstIterator(size_t idx, size_t tableSize, Item* table1, Item* table2);
+        ConstIterator(const ConstIterator &other) = default;
+        ConstIterator &operator=(const ConstIterator &other) = default;
+        ~ConstIterator() = default;
 
         value_type operator*() const;
-        const_iterator &operator++();
+        ConstIterator &operator++();
         pointer operator->() const;
-        bool operator==(const const_iterator &other) const;
-        bool operator!=(const const_iterator &other) const;
+        bool operator==(const ConstIterator &other) const;
+        bool operator!=(const ConstIterator &other) const;
 
     };
 };
@@ -119,7 +126,7 @@ template<typename T>
 class CuckooHashSet
 {
   private:
-    class const_iterator;
+    class ConstIterator;
 
     // Data
     std::vector<bool> valid1_;
@@ -143,11 +150,16 @@ class CuckooHashSet
 
   public:
 
+    // Type Names: 
+    using value_type = T;
+    using key_type = T;
+    using const_iterator = ConstIterator;
+
     // Constructors
     CuckooHashSet();
     CuckooHashSet(double epsilon, float downsizeThresh);
     ~CuckooHashSet();
-    CuckooHashSet(const CuckooHashSet&other) = delete;
+    CuckooHashSet(const CuckooHashSet&other) = default;
 
     // Capacity
     bool empty() const;
@@ -161,14 +173,14 @@ class CuckooHashSet
     void clear();
 
     // Iterators
-    const_iterator begin() const;
-    const_iterator end() const;
+    ConstIterator begin() const;
+    ConstIterator end() const;
 
     std::string to_string() const;
     
   private:
 
-    class const_iterator {
+    class ConstIterator {
         friend class CuckooHashSet;
 
     private:
@@ -187,17 +199,17 @@ class CuckooHashSet
         using difference_type = std::ptrdiff_t;
         using iterator_category = std::forward_iterator_tag;
 
-        const_iterator() = default;
-        const_iterator(size_t idx, T* table1, T* table2, const std::vector<bool>& valid1, const std::vector<bool>& valid2);
-        const_iterator(const const_iterator &other) = delete;
-        const_iterator &operator=(const const_iterator &other) = default;
-        ~const_iterator() = default;
+        ConstIterator() = default;
+        ConstIterator(size_t idx, T* table1, T* table2, const std::vector<bool>& valid1, const std::vector<bool>& valid2);
+        ConstIterator(const ConstIterator &other) = default;
+        ConstIterator &operator=(const ConstIterator &other) = default;
+        ~ConstIterator() = default;
 
         value_type operator*() const;
-        const_iterator &operator++();
+        ConstIterator &operator++();
         pointer operator->() const;
-        bool operator==(const const_iterator &other) const;
-        bool operator!=(const const_iterator &other) const;
+        bool operator==(const ConstIterator &other) const;
+        bool operator!=(const ConstIterator &other) const;
     };
 };
 
