@@ -53,7 +53,7 @@ private:
     void pop();
     T top() const;
     void push(T item, P priority);
-    void changeKey(T item, P priority);
+    void changeKey(T item, P newPriority);
 };
 
 #include "binomial-private.hpp"

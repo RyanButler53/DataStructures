@@ -18,6 +18,10 @@
 // Data structures
 #include "spatial/kdtree.hpp"
 #include "spatial/intervalTree.hpp"
+#include "heap/pairing.hpp"
+#include "heap/d-ary.hpp"
+#include "heap/fibonacci.hpp"
+#include "heap/binomial.hpp"
 namespace nb = nanobind;
 
 using namespace nb::literals;
@@ -83,4 +87,14 @@ NB_MODULE(ds_ext, m) {
     // Interval Tree
     bindStructure<SimpleInterval<int>>(m, "IntervalInt");
     bindStructure<IntervalTree<SimpleInterval<int>>>(m, "IntervalTreeInt");
+
+    // Heaps
+    s
+    bindStructure<PairingHeap<int, int, std::less<int>>>(m, "PairingHeapIntIntMin");
+    bindStructure<DAryHeap<int, int, 2, std::less<int>>>(m, "DAryHeap2IntIntMin");
+    bindStructure<DAryHeap<int, int, 4, std::less<int>>>(m, "DAryHeap4IntIntMin");
+    bindStructure<DAryHeap<int, int, 4, std::less<int>>>(m, "DAryHeap10IntIntMin");
+    bindStructure<BinomialHeap<int, int, std::less<int>>>(m, "BinomialHeapIntIntMin");
+    bindStructure<FibonacciHeap<int, int, std::less<int>>>(m, "FibonacciHeapIntIntMin");
+
 }

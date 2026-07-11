@@ -86,7 +86,7 @@ T PairingHeap<T, P, Compare>::top() const{
 }
 
 template <typename T, typename P, typename Compare>
-void PairingHeap<T, P, Compare>::changeKey(T item, P priority){
+void PairingHeap<T, P, Compare>::changeKey(T item, P newPriority){
     // Cut the tree from its parent in the D-ary tree. 
     // then link the resulting trees. 
     if (!nodeMap_.contains(item)){
@@ -94,13 +94,13 @@ void PairingHeap<T, P, Compare>::changeKey(T item, P priority){
     }
     Node* n = nodeMap_.at(item);
     P curPriority = n->item_.priority_;
-    if (comp_(curPriority, priority)) {
+    if (comp_(curPriority, newPriority)) {
         throw std::invalid_argument("Cannot change key priority to this value");
     }
 
     // Case where the root is getting its key decreased
     if (n == root_){
-        n->item_.priority_ = priority;
+        n->item_.priority_ = newPriority;
         return;
     }
 
@@ -124,7 +124,7 @@ void PairingHeap<T, P, Compare>::changeKey(T item, P priority){
         }
     }
     n->parent_ = nullptr;
-    n->item_.priority_ = priority;
+    n->item_.priority_ = newPriority;
     // link
     root_ = link(n, root_);
 }

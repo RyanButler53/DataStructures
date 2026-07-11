@@ -1,4 +1,9 @@
 from . import ds_ext
+import enum
+
+class HeapCompare(enum.Enum):
+    MinHeap=0
+    MaxHeap=1
 
 def _find_kd_class(data_type, dimension, clsname, *args, **kwargs):
     type_map = {
@@ -60,4 +65,45 @@ def IntervalTree(data_type, *args, **kwargs):
 def Interval(data_type, low, high):
     Iclass = _find_interval_class(data_type, "Interval")
     return Iclass(low, high)
-    return _find_interval_class(data_type, "Interval", low=low, high=high, *args, **kwargs)
+
+# HEAPS
+
+def _get_heap_class(data_type, priority_type, heapType, clsname):
+    type_map = {
+        int: "Int",
+        float: "Float"
+    }
+    compare_map = {
+        HeapCompare.MinHeap: "Min",
+        HeapCompare.MaxHeap: "Max"
+    }
+
+    if data_type not in type_map or priority_type not in type_map:
+        raise TypeError(f"{clsname} does not support data type: {data_type} or priority type {priority_type}")
+    type_suffix = type_map[data_type]
+    compare_suffix = compare_map[heapType]
+
+    cpp_class_name = f"{clsname}{type_suffix}{type_suffix}{compare_suffix}"
+
+    # 3. Look up the class dynamically inside the compiled binary module
+    if not hasattr(ds_ext, cpp_class_name):
+        raise ValueError(
+            f"{clsname} type {data_type.__name__} is not compiled in the backend. "
+            f"Please verify available instantiations."
+        )
+    
+    # Extract the class constructor object
+    heapClass = getattr(ds_ext, cpp_class_name)
+    return heapClass()
+
+def PairingHeap(data_type, priority_type, heapType = HeapCompare.MinHeap):
+    return  _get_heap_class(data_type, priority_type, heapType, "PairingHeap")
+
+def BinomialHeap(data_type, priority_type, heapType = HeapCompare.MinHeap):
+    return _get_heap_class(data_type, priority_type, heapType, "BinomialHeap")
+
+def FibonacciHeap(data_type, priority_type, heapType = HeapCompare.MinHeap):
+    return _get_heap_class(data_type, priority_type, heapType, "FibonacciHeap")
+
+def DAryHeap(data_type, priority_type, d = 10, heapType = HeapCompare.MinHeap):
+    return _get_heap_class(data_type, priority_type, heapType, f"DAryHeap{d}")
