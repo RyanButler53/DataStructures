@@ -107,3 +107,28 @@ def FibonacciHeap(data_type, priority_type, heapType = HeapCompare.MinHeap):
 
 def DAryHeap(data_type, priority_type, d = 10, heapType = HeapCompare.MinHeap):
     return _get_heap_class(data_type, priority_type, heapType, f"DAryHeap{d}")
+
+
+
+def UnrolledLinkedList(data_type, k):
+    type_map = {
+        int: "Int",
+        float: "Float"
+    }
+
+    if data_type not in type_map:
+        raise TypeError(f"{clsname} does not support data type: {data_type} or K")
+    type_suffix = type_map[data_type]
+
+    cpp_class_name = f"ull{type_suffix}{k}"
+
+    # 3. Look up the class dynamically inside the compiled binary module
+    if not hasattr(ds_ext, cpp_class_name):
+        raise ValueError(
+            f"ull type {data_type.__name__} ({cpp_class_name}) is not compiled in the backend. "
+            f"Please verify available instantiations."
+        )
+    
+    # Extract the class constructor object
+    ullClass = getattr(ds_ext, cpp_class_name)
+    return ullClass()

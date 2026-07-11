@@ -1,3 +1,4 @@
+// Nanobind
 #include <nanobind/nanobind.h>
 #include <nanobind/stl/vector.h>
 #include <nanobind/stl/array.h>
@@ -6,6 +7,9 @@
 #include <nanobind/stl/pair.h>
 #include <nanobind/stl/optional.h>
 #include <nanobind/operators.h>
+#include <nanobind/make_iterator.h>
+
+// Stl
 #include <sstream>
 #include <string>
 #include <format>
@@ -22,6 +26,7 @@
 #include "heap/d-ary.hpp"
 #include "heap/fibonacci.hpp"
 #include "heap/binomial.hpp"
+#include "unrolled-linked-list/unrolled-linked-list.hpp"
 namespace nb = nanobind;
 
 using namespace nb::literals;
@@ -37,6 +42,19 @@ nb::enum_<Enum> bindEnum(nb::module_& m, std::string name){
     }
     return enu;
 }
+
+// Simpler function to bind iterators, no reflection needed
+template <typename Iterator>
+nb::class_<Iterator> bindIterator(nb::module_& m, std::string name){
+    nb::class_<Iterator> cls(m, name.c_str());
+    cls.def(nb::self == nb::self);
+    cls.def(nb::self != nb::self);
+    cls.def_prop_ro("value", [](const Iterator& it){return *it;});
+    cls.def("increment", &Iterator::operator++);
+    cls.def("decrement", &Iterator::operator--);
+    return cls;
+}
+// Iterators are a TYPE, that get exposed. The struct with an iterator must overload __iter__ 
 
 template <typename Structure>
 nb::class_<Structure> bindStructure(nb::module_& m, std::string name){
@@ -71,10 +89,24 @@ nb::class_<Structure> bindStructure(nb::module_& m, std::string name){
 
 }
 
+// Binds a structure that exposes a public iterator. 
+template <typename Structure>
+nb::class_<Structure> bindStructureIterator(nb::module_& m, std::string name){
+    nb::class_<Structure> cls = bindStructure<Structure>(m, name);
+    
+    // Add on an iterator
+    cls.def("__iter__", [](Structure& s){
+        return nb::make_iterator(nb::type<Structure>(), "iterator",
+        s.begin(), s.end());
+    }, nb::keep_alive<0, 1>());
+    return cls;
+}
+
 // Helper for binding enumes
 void bindHeaps(nb::module_ m){
 
-    static constexpr std::array data_types = {^^int, ^^float};
+    // static constexpr std::array data_types = {^^int, ^^float};
+    static constexpr std::array data_types = {^^int};
 
     template for (constexpr std::meta::info data_token : data_types){
         template for (constexpr std::meta::info priority_token : data_types){
@@ -123,5 +155,14 @@ NB_MODULE(ds_ext, m) {
 
     // Heaps
     bindHeaps(m);
+
+    // Unrolled Linked List
+    bindIterator<UnrolledLinkedList<int, 4>::iterator>(m, "ull-iterator4");
+    bindIterator<UnrolledLinkedList<int, 5>::iterator>(m, "ull-iterator5");
+    bindIterator<UnrolledLinkedList<int, 8>::iterator>(m, "ull-iterator8");
+
+    bindStructureIterator<UnrolledLinkedList<int, 4>>(m, "ullInt4");
+    bindStructureIterator<UnrolledLinkedList<int, 5>>(m, "ullInt5");
+    bindStructureIterator<UnrolledLinkedList<int, 8>>(m, "ullInt8");
     
 }
