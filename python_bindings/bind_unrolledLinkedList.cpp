@@ -1,11 +1,11 @@
 #include "bindStructure.hpp"
 #include "unrolled-linked-list/unrolled-linked-list.hpp"
+#include "bindings.hpp"
 #include <meta>
-
 #include <nanobind/nanobind.h>
 namespace nb = nanobind;
 
-void bindUnrolledLinkedList(nb::module_ m){
+void bindUnrolledLinkedList(nb::module_& m){
             // Unrolled Linked List
     template for(constexpr size_t k : {4, 8, 16, 64, 512}){
         bindIterator<typename UnrolledLinkedList<int, k>::iterator>(m, std::format("ullIntiterator{}", k));

@@ -18,4 +18,4 @@ void bindUnrolledLinkedList(nb::module_& m);
 void bindHeaps(nb::module_& m);
 void bindSpatial(nb::module_& m);
 void bindTrees(nb::module_& m);
-// void bindQuack(nb::module_& m);
+void bindQuack(nb::module_& m);

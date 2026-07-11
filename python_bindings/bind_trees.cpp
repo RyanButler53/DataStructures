@@ -3,6 +3,7 @@
 #include "tree/scapegoat.hpp"
 #include <nanobind/nanobind.h>
 #include "interfaces.hpp"
+#include "bindings.hpp"
 #include <string>
 #include <iterator>
 #include <ranges>
@@ -88,7 +89,7 @@ void bindTree(nb::module_& m, std::string name){
 }
 } // anonymous namespace
 
-void bindTrees(nb::module_ m){
+void bindTrees(nb::module_& m){
 
     static constexpr std::array data_types = {^^int, ^^float, ^^std::string};
     static constexpr std::array data_names = {"Int", "Float", "String"};

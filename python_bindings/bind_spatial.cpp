@@ -1,11 +1,12 @@
 #include "bindStructure.hpp"
 #include "spatial/kdtree.hpp"
 #include "spatial/intervalTree.hpp"
+#include "bindings.hpp"
 #include <nanobind/nanobind.h>
 
 namespace nb = nanobind;
 
-void bindSpatial(nb::module_ m){
+void bindSpatial(nb::module_& m){
      // KD Tree
     bindEnum<DistanceFunction>(m, "DistanceFunction");
     template for (constexpr size_t dim : std::views::iota(2UL, 6UL)){

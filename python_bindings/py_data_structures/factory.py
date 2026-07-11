@@ -194,4 +194,28 @@ def CuckooHashMap(key_type, value_type, epsilon = 0.4, downsizeThresh = 0.2):
 
 def CuckooHashSet(key_type, epsilon = 0.4, downsizeThresh = 0.2):
     hashset = _find_cuckoo_class(key_type, None, "CuckooHashSet")
-    return hashset(epsilon, downsizeThresh) 
+    return hashset(epsilon, downsizeThresh)
+
+def Quack(data_type):
+    type_map = {
+        int: "Int",
+        float: "Float",
+        str: "String"
+    }
+
+    if data_type not in type_map:
+        raise TypeError(f"Quack does not support data type: {data_type}.")
+    type_suffix = type_map[data_type]
+    cpp_class_name = f"Quack{type_suffix}"
+
+    # 3. Look up the class dynamically inside the compiled binary module
+    if not hasattr(ds_ext, cpp_class_name):
+        raise ValueError(
+            f"Quack type {data_type.__name__} is not compiled in the backend. "
+            f"Please verify available instantiations."
+        )
+    
+    # Extract the class constructor object
+    quack = getattr(ds_ext, cpp_class_name)
+    return quack()
+

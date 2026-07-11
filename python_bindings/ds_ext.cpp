@@ -31,5 +31,5 @@ NB_MODULE(ds_ext, m) {
     bindHeaps(m);
     bindUnrolledLinkedList(m);
     bindCuckooHash(m);
-    
+    bindQuack(m);
 }

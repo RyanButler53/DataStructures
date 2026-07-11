@@ -1,6 +1,9 @@
 #include "quack.hpp"
 #include <iostream>
 #include <algorithm>
+#include <stdexcept>
+#include <sstream>
+
 using namespace std;
 
 template <typename T>
@@ -10,9 +13,7 @@ Quack<T>::Quack() : queue_{}, stack_{},size_{0} {
 template <typename T>
 void Quack<T>::pop(){
     if (size_ == 0){
-        std::cerr << "Popping an empty quack" << endl;
-        throw("Popping an empty quack");
-        exit(1);
+        throw std::logic_error("Popping an empty quack");
     }
     if (stack_.size() == 0)
     {
@@ -25,9 +26,7 @@ void Quack<T>::pop(){
 template <typename T>
 void Quack<T>::dequeue(){
     if (size_ == 0){
-        cerr << "Dequeue on empty quack" << endl;
-        throw("Dequeue on empty quack");
-        exit(1);
+        throw std::logic_error("Dequeue on empty quack");
     }
     if (queue_.size() == 0){
         reshuffle(stack_, queue_);
@@ -66,8 +65,7 @@ void Quack<T>::reshuffle(vector<T> &full, vector<T> &empty){
 template <typename T>
 T Quack<T>::front() {
     if (size_ == 0){
-        cerr << "Calling front() on empty quack" << endl;
-        exit(1);
+        throw std::logic_error("Calling front() on empty quack" );
     } else if (queue_.empty()){
         reshuffle(stack_, queue_);
     }
@@ -77,8 +75,7 @@ T Quack<T>::front() {
 template <typename T>
 T Quack<T>::back() {
     if (size_ == 0){
-        cerr << "Calling back() on empty quack" << endl;
-        exit(1);
+        throw std::logic_error("Calling back() on an empty quack");
     } else if (stack_.empty()){
         reshuffle(queue_, stack_);
     }
@@ -96,7 +93,13 @@ void Quack<T>::printToStream(ostream& out) const{
         out << e << " ";
     }
     out << "\n";
+}
 
+template <typename T>
+std::string Quack<T>::to_string() const {
+    std::stringstream ss;
+    printToStream(ss);
+    return ss.str();
 }
 
 template <typename T>
@@ -106,6 +109,6 @@ bool Quack<T>::empty(){
 
 template <typename T>
 std::ostream& operator<<(std::ostream& os, const Quack<T>& q){
-    q.printToStream(os);
+    os << q.to_string();
     return os;
 }

@@ -3,11 +3,11 @@
 #include "heap/d-ary.hpp"
 #include "heap/fibonacci.hpp"
 #include "heap/binomial.hpp"
-
+#include "bindings.hpp"
 #include <nanobind/nanobind.h>
 namespace nb = nanobind;
 
-void bindHeaps(nb::module_ m){
+void bindHeaps(nb::module_& m){
 
     static constexpr std::array data_types = {^^int, ^^float};
 
