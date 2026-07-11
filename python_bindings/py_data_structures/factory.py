@@ -1,221 +1,93 @@
 from . import ds_ext
 import enum
 
+
 class HeapCompare(enum.Enum):
-    MinHeap=0
-    MaxHeap=1
+    MinHeap = 0
+    MaxHeap = 1
 
-def _find_kd_class(data_type, dimension, clsname, *args, **kwargs):
-    type_map = {
-        int: "Int",
-        float: "Float"
-    }
+# Central type name translation maps
+_TYPE_MAP = {int: "Int", float: "Float", str: "String", None: ""}
+_HEAP_VAL_MAP = {int: "int", float: "float"}
+_COMP_MAP = {HeapCompare.MinHeap: "Min", HeapCompare.MaxHeap: "Max"}
 
-    if data_type not in type_map:
-        raise TypeError(f"{clsname} does not support data type: {data_type}.")
-    type_suffix = type_map[data_type]
-    cpp_class_name = f"{type_suffix}{clsname}{dimension}D"
-
-    # 3. Look up the class dynamically inside the compiled binary module
+def _resolve_and_instantiate(cpp_class_name, clsname, *args, **kwargs):
+    """Unified dynamic loader and error injector for the compiled backend."""
     if not hasattr(ds_ext, cpp_class_name):
         raise ValueError(
-            f"{clsname} dimension {dimension}D for {data_type.__name__} is not compiled in the backend. "
+            f"{clsname} variant ({cpp_class_name}) is not compiled in the backend. "
             f"Please verify available instantiations."
         )
-    
-    # Extract the class constructor object
-    CppKDTreeClass = getattr(ds_ext, cpp_class_name)
-    
-    return CppKDTreeClass(*args, **kwargs)
+    return getattr(ds_ext, cpp_class_name)(*args, **kwargs)
 
-def _find_interval_class(data_type, clsname):
-    type_map = {
-        int: "Int",
-        float: "Float"
-    }
+def _validate_types(clsname, *types):
+    """Enforces common primitive support checks."""
+    for t in types:
+        if t not in _TYPE_MAP and t is not None:
+            raise TypeError(f"{clsname} does not support data type: {getattr(t, '__name__', str(t))}.")
 
-    if data_type not in type_map:
-        raise TypeError(f"{clsname} does not support data type: {data_type}.")
-    type_suffix = type_map[data_type]
-    cpp_class_name = f"{clsname}{type_suffix}"
+# --- Spatial & Interval Trees ---
 
-    # 3. Look up the class dynamically inside the compiled binary module
-    if not hasattr(ds_ext, cpp_class_name):
-        raise ValueError(
-            f"{clsname} type {data_type.__name__} is not compiled in the backend. "
-            f"Please verify available instantiations."
-        )
-    
-    # Extract the class constructor object
-    IntervalTreeClass = getattr(ds_ext, cpp_class_name)
-    return IntervalTreeClass
+def KDTree(data_type, dimensions):
+    _validate_types("KDTree", data_type)
+    return _resolve_and_instantiate(f"{_TYPE_MAP[data_type]}KDTree{dimensions}D", "KDTree")
 
+def Rectangle(data_type, dimensions):
+    _validate_types("Rectangle", data_type)
+    return _resolve_and_instantiate(f"{_TYPE_MAP[data_type]}Rectangle{dimensions}D", "Rectangle")
 
-def KDTree(data_type, dimensions, *args, **kwargs):
-   return _find_kd_class(data_type, dimensions, "KDTree")
-
-def Rectangle(data_type, dimensions, *args, **kwargs):
-    return _find_kd_class(data_type, dimensions, "Rectangle")
-
-def IntervalTree(data_type, *args, **kwargs):
-    Iclass = _find_interval_class(data_type, "IntervalTree")
-    return Iclass(*args, **kwargs)
+def IntervalTree(data_type):
+    _validate_types("IntervalTree", data_type)
+    return _resolve_and_instantiate(f"IntervalTree{_TYPE_MAP[data_type]}", "IntervalTree")
 
 def Interval(data_type, low, high):
-    Iclass = _find_interval_class(data_type, "Interval")
-    return Iclass(low, high)
+    _validate_types("Interval", data_type)
+    return _resolve_and_instantiate(f"Interval{_TYPE_MAP[data_type]}", "Interval", low, high)
 
-# HEAPS
+# --- Prioritized Heaps ---
 
-def _get_heap(data_type, priority_type, heapType, clsname):
-    type_map = {
-        int: "int",
-        float: "float"
-    }
-    compare_map = {
-        HeapCompare.MinHeap: "Min",
-        HeapCompare.MaxHeap: "Max"
-    }
-
-    if data_type not in type_map or priority_type not in type_map:
+def _build_heap(data_type, priority_type, heapType, clsname):
+    if data_type not in _HEAP_VAL_MAP or priority_type not in _HEAP_VAL_MAP:
         raise TypeError(f"{clsname} does not support data type: {data_type} or priority type {priority_type}")
-    type_suffix = type_map[data_type]
-    compare_suffix = compare_map[heapType]
+    suffix = f"{_HEAP_VAL_MAP[data_type]}{_HEAP_VAL_MAP[priority_type]}{_COMP_MAP[heapType]}"
+    return _resolve_and_instantiate(f"{clsname}{suffix}", clsname)
 
-    cpp_class_name = f"{clsname}{type_suffix}{type_suffix}{compare_suffix}"
+def PairingHeap(data_type, priority_type, heapType=HeapCompare.MinHeap):
+    return _build_heap(data_type, priority_type, heapType, "PairingHeap")
 
-    # 3. Look up the class dynamically inside the compiled binary module
-    if not hasattr(ds_ext, cpp_class_name):
-        raise ValueError(
-            f"{clsname} type {data_type.__name__} is not compiled in the backend. "
-            f"Please verify available instantiations."
-        )
-    
-    # Extract the class constructor object
-    heapClass = getattr(ds_ext, cpp_class_name)
-    return heapClass()
+def BinomialHeap(data_type, priority_type, heapType=HeapCompare.MinHeap):
+    return _build_heap(data_type, priority_type, heapType, "BinomialHeap")
 
-def PairingHeap(data_type, priority_type, heapType = HeapCompare.MinHeap):
-    return  _get_heap(data_type, priority_type, heapType, "PairingHeap")
+def FibonacciHeap(data_type, priority_type, heapType=HeapCompare.MinHeap):
+    return _build_heap(data_type, priority_type, heapType, "FibonacciHeap")
 
-def BinomialHeap(data_type, priority_type, heapType = HeapCompare.MinHeap):
-    return _get_heap(data_type, priority_type, heapType, "BinomialHeap")
+def DAryHeap(data_type, priority_type, d=16, heapType=HeapCompare.MinHeap):
+    return _build_heap(data_type, priority_type, heapType, f"DAryHeap{d}")
 
-def FibonacciHeap(data_type, priority_type, heapType = HeapCompare.MinHeap):
-    return _get_heap(data_type, priority_type, heapType, "FibonacciHeap")
-
-def DAryHeap(data_type, priority_type, d = 16, heapType = HeapCompare.MinHeap):
-    return _get_heap(data_type, priority_type, heapType, f"DAryHeap{d}")
+# --- Linear Containers & Search Trees ---
 
 def UnrolledLinkedList(data_type, k):
-    type_map = {
-        int: "Int",
-        float: "Float",
-        str: "String"
-    }
-
-    if data_type not in type_map:
-        raise TypeError(f"{clsname} does not support data type: {data_type}. K values supported are [4, 8, 16, 64, 512]")
-    type_suffix = type_map[data_type]
-
-    cpp_class_name = f"ull{type_suffix}{k}"
-
-    # 3. Look up the class dynamically inside the compiled binary module
-    if not hasattr(ds_ext, cpp_class_name):
-        raise ValueError(
-            f"ull type {data_type.__name__} ({cpp_class_name}) is not compiled in the backend. "
-            f"Please verify available instantiations."
-        )
-    
-    # Extract the class constructor object
-    ullClass = getattr(ds_ext, cpp_class_name)
-    return ullClass()
-
-# Splay and Scapegoat Trees
-
-def _find_tree_class(key_type, value_type, clsname):
-    type_map = {
-        int: "Int",
-        float: "Float",
-        str: "String"
-    }
-
-    if key_type not in type_map or value_type not in type_map:
-        raise TypeError(f"{clsname} does not support data type pair: ({key_type}, {value_type}).")
-    key_suffix = type_map[key_type]
-    value_suffix = type_map[value_type]
-    cpp_class_name = f"{clsname}{key_suffix}{value_suffix}"
-
-    # 3. Look up the class dynamically inside the compiled binary module
-    if not hasattr(ds_ext, cpp_class_name):
-        raise ValueError(
-            f"{clsname} type {key_type.__name__} is not compiled in the backend. "
-            f"Please verify available instantiations."
-        )
-    
-    # Extract the class constructor object
-    return getattr(ds_ext, cpp_class_name)
+    _validate_types("UnrolledLinkedList", data_type)
+    return _resolve_and_instantiate(f"ull{_TYPE_MAP[data_type]}{k}", "UnrolledLinkedList")
 
 def SplayTree(key_type, value_type):
-    tree = _find_tree_class(key_type, value_type, "SplayTree")
-    return tree()
+    _validate_types("SplayTree", key_type, value_type)
+    return _resolve_and_instantiate(f"SplayTree{_TYPE_MAP[key_type]}{_TYPE_MAP[value_type]}", "SplayTree")
 
-def ScapegoatTree(key_type, value_type, alpha:float = 2/3):
-    tree = _find_tree_class(key_type, value_type, "ScapegoatTree")
-    return tree()
+def ScapegoatTree(key_type, value_type, alpha: float = 2/3):
+    _validate_types("ScapegoatTree", key_type, value_type)
+    # Preservation notice: C++ signature doesn't take alpha, mirror original setup
+    return _resolve_and_instantiate(f"ScapegoatTree{_TYPE_MAP[key_type]}{_TYPE_MAP[value_type]}", "ScapegoatTree")
 
-def _find_cuckoo_class(key_type, value_type, clsname):
-    type_map = {
-        int: "Int",
-        float: "Float",
-        str:"String",
-        None: ""
-    }
+def CuckooHashMap(key_type, value_type, epsilon=0.4, downsizeThresh=0.2):
+    _validate_types("CuckooHashMap", key_type, value_type)
+    name = f"CuckooHashMap{_TYPE_MAP[key_type]}{_TYPE_MAP[value_type]}"
+    return _resolve_and_instantiate(name, "CuckooHashMap", epsilon, downsizeThresh)
 
-    if key_type not in type_map or value_type not in type_map:
-        raise TypeError(f"{clsname} does not support data type pair: ({key_type}, {value_type}).")
-    key_suffix = type_map[key_type]
-    value_suffix = type_map[value_type]
-    cpp_class_name = f"{clsname}{key_suffix}{value_suffix}"
-
-    # 3. Look up the class dynamically inside the compiled binary module
-    if not hasattr(ds_ext, cpp_class_name):
-        raise ValueError(
-            f"{clsname} type {key_type.__name__} is not compiled in the backend. "
-            f"Please verify available instantiations."
-        )
-    
-    # Extract the class constructor object
-    return getattr(ds_ext, cpp_class_name)
-
-def CuckooHashMap(key_type, value_type, epsilon = 0.4, downsizeThresh = 0.2):
-    hashmap = _find_cuckoo_class(key_type, value_type, "CuckooHashMap")
-    return hashmap(epsilon, downsizeThresh)
-
-def CuckooHashSet(key_type, epsilon = 0.4, downsizeThresh = 0.2):
-    hashset = _find_cuckoo_class(key_type, None, "CuckooHashSet")
-    return hashset(epsilon, downsizeThresh)
+def CuckooHashSet(key_type, epsilon=0.4, downsizeThresh=0.2):
+    _validate_types("CuckooHashSet", key_type)
+    return _resolve_and_instantiate(f"CuckooHashSet{_TYPE_MAP[key_type]}", "CuckooHashSet", epsilon, downsizeThresh)
 
 def Quack(data_type):
-    type_map = {
-        int: "Int",
-        float: "Float",
-        str: "String"
-    }
-
-    if data_type not in type_map:
-        raise TypeError(f"Quack does not support data type: {data_type}.")
-    type_suffix = type_map[data_type]
-    cpp_class_name = f"Quack{type_suffix}"
-
-    # 3. Look up the class dynamically inside the compiled binary module
-    if not hasattr(ds_ext, cpp_class_name):
-        raise ValueError(
-            f"Quack type {data_type.__name__} is not compiled in the backend. "
-            f"Please verify available instantiations."
-        )
-    
-    # Extract the class constructor object
-    quack = getattr(ds_ext, cpp_class_name)
-    return quack()
-
+    _validate_types("Quack", data_type)
+    return _resolve_and_instantiate(f"Quack{_TYPE_MAP[data_type]}", "Quack")
