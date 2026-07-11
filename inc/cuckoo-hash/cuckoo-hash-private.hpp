@@ -223,42 +223,12 @@ value_t& CuckooHashMap<key_t, value_t>::operator[](const key_t& key) {
 }
 
 template <typename key_t, typename value_t>
-void CuckooHashMap<key_t, value_t>::printToStream(ostream& out) const {
-    out << "Table 1: [ ";
-    for (Item *item = table1_; item < table1_ + numBuckets_; ++item)
-    {
-        if (item->valid_){
-            out << "(" << item->key_ << ": " << item->value_ << ") ";
-        } else {
-            out << "(-:-) ";
-        }
-    }
-    out << "]\nTable 2: [ ";
-
-    for (Item *item = table2_; item < table2_ + numBuckets_; ++item)
-    {
-        if (item->valid_){
-            out << "(" << item->key_ << ": " << item->value_ << ") ";
-        } else {
-            out << "(-:-) ";
-        }
-    }
-    out << "]\n Epsilon: " << epsilon_ << " Num Buckets: " << numBuckets_ << " Size: " << size_ << " Max Loops: " << maxLoop_;
-}
-
-template <typename key_t, typename value_t>
 CuckooHashMap<key_t, value_t>::Item::Item():valid_{false}{
 }
 
 template <typename key_t, typename value_t>
 CuckooHashMap<key_t, value_t>::Item::Item(key_t& key, value_t& value):
 key_{key}, value_{value},valid_{true}{}
-
-template <typename key_t, typename value_t>
-ostream& operator<<(ostream& os, const CuckooHashMap<key_t, value_t>& ch){
-    ch.printToStream(os);
-    return os;
-}
 
 // Iterator Functions
 
@@ -530,29 +500,6 @@ void CuckooHashSet<T>::clear(){
 }
 
 template <typename T>
-void CuckooHashSet<T>::printToStream(ostream &out) const{
-    out << "Table 1: [ ";
-    for (size_t i = 0; i < numBuckets_; ++i) {
-        if (valid1_[i]){
-            out << table1_[i] << ", ";
-        } else {
-            out << " ,";
-        }
-    }
-    out << "]\nTable 2: [ ";
-
-    for (size_t i = 0; i < numBuckets_; ++i)
-    {
-       if (valid2_[i]){
-            out << table2_[i] << ", ";
-        } else {
-            out << " ,";
-        }
-    }
-    out << "]\n Epsilon: " << epsilon_ << " Num Buckets: " << numBuckets_ << " Size: " << size_ << " Max Loops: " << maxLoop_;
-}
-
-template <typename T>
 typename CuckooHashSet<T>::const_iterator CuckooHashSet<T>::begin() const {
     return const_iterator(0, table1_, table2_, valid1_, valid2_);
 }
@@ -621,10 +568,4 @@ bool CuckooHashSet<T>::const_iterator::operator!=(const const_iterator& other) c
 template <typename T>
 typename CuckooHashSet<T>::const_iterator::pointer CuckooHashSet<T>::const_iterator::operator->() const{
     return &(**this);
-}
-
-template <typename T>
-ostream& operator<<(ostream& os, const CuckooHashSet<T>& cs){
-    cs.printToStream(os);
-    return os;
 }

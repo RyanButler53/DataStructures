@@ -76,7 +76,6 @@ class CuckooHashMap
     const_iterator end() const;
 
     value_t &operator[](const key_t& key);
-    void printToStream(std::ostream &os) const;
 
   private: 
     class const_iterator {
@@ -162,8 +161,6 @@ class CuckooHashSet
     // Iterators
     const_iterator begin() const;
     const_iterator end() const;
-
-    void printToStream(std::ostream &os) const;
     
   private:
 
@@ -200,11 +197,6 @@ class CuckooHashSet
     };
 };
 
-template<typename key_t,typename value_t>
-std::ostream &operator<<(std::ostream& os, const CuckooHashMap<key_t, value_t> &ch );
-
-template<typename T>
-std::ostream &operator<<(std::ostream& os, const CuckooHashSet<T> &ch );
 #include "cuckoo-hash-private.hpp"
 
 #endif // CUCKOO_HASH_HPP_INCLUDED
