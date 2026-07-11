@@ -5,6 +5,7 @@
 #include <list>
 #include <unordered_map>
 #include <vector>
+#include <algorithm>
 
 template <typename T, typename P, typename Compare = std::less<T>>
 class PairingHeap {

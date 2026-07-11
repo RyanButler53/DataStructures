@@ -116,7 +116,7 @@ def test_insert_iterator():
 
 
 def test_insertion2():
-    ull = make_list(chunk_size=5)
+    ull = make_list(chunk_size=4)
     for i in range(6):
         ull.push_back(i)
     comp = [0, 1, 2, 3, 4, 5]
@@ -124,7 +124,7 @@ def test_insertion2():
 
 
 def test_insert_iterator2():
-    ull = make_list(chunk_size=5)
+    ull = make_list(chunk_size=4)
     for i in range(7):
         ull.push_back(i)
     comp = [0, 1, 2, 3, 4, 5, 6]
@@ -151,7 +151,7 @@ def test_iterator_insertion():
 
 
 def test_pop_back():
-    ull = make_list(chunk_size=5)
+    ull = make_list(chunk_size=4)
     for i in range(6):
         ull.push_back(i)
         
@@ -174,7 +174,7 @@ def test_pop_back():
 
 
 def test_pop_back_and_front():
-    ull = make_list(chunk_size=5)
+    ull = make_list(chunk_size=4)
     for i in range(6):
         ull.push_back(i)
     for _ in range(3):
@@ -183,7 +183,7 @@ def test_pop_back_and_front():
 
 
 def test_empty_list_exception():
-    ull = make_list(chunk_size=5)
+    ull = make_list(chunk_size=4)
     for i in range(6):
         ull.push_back(i)
     for _ in range(3):
@@ -197,7 +197,7 @@ def test_empty_list_exception():
 
 
 def test_erase_iter1():
-    ull = make_list(chunk_size=5)
+    ull = make_list(chunk_size=4)
     for i in range(11):
         ull.push_back(i)
         

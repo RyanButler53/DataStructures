@@ -49,6 +49,9 @@ NB_STATIC
 
 # Source code goes here
 ds_ext.cpp
+bind_heaps.cpp
+bind_containers.cpp
+bind_trees.cpp
 )
 
 target_include_directories(ds_ext PRIVATE ${PROJECT_SOURCE_DIR}/inc)

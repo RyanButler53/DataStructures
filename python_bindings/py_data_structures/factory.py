@@ -117,7 +117,7 @@ def UnrolledLinkedList(data_type, k):
     }
 
     if data_type not in type_map:
-        raise TypeError(f"{clsname} does not support data type: {data_type} or K")
+        raise TypeError(f"{clsname} does not support data type: {data_type}. K values supported are [4, 8, 16, 64, 512]")
     type_suffix = type_map[data_type]
 
     cpp_class_name = f"ull{type_suffix}{k}"
