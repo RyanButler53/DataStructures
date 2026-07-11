@@ -51,6 +51,7 @@ class CuckooHashMap
     size_t getHash2(size_t hash1) const;
     void rehash(size_t numBuckets);
     void insert(const key_t& key, const value_t& value, bool updateValues);
+    void printToStream(std::ostream &os) const;
 
   public:
     // Constructors
@@ -70,7 +71,7 @@ class CuckooHashMap
     bool empty() const;
     size_t size() const;
     double loadFactor() const;
-
+    std::string to_string() const;
     // Iterator Functions
     const_iterator begin() const;
     const_iterator end() const;
@@ -138,6 +139,7 @@ class CuckooHashSet
     size_t getHash2(size_t hash1) const;
     void rehash(size_t numBuckets);
     void insert(const T& key, bool updateValues);
+    void printToStream(std::ostream &os) const;
 
   public:
 
@@ -161,6 +163,8 @@ class CuckooHashSet
     // Iterators
     const_iterator begin() const;
     const_iterator end() const;
+
+    std::string to_string() const;
     
   private:
 
@@ -197,6 +201,11 @@ class CuckooHashSet
     };
 };
 
+template<typename key_t,typename value_t>
+std::ostream &operator<<(std::ostream& os, const CuckooHashMap<key_t, value_t> &ch );
+
+template<typename T>
+std::ostream &operator<<(std::ostream& os, const CuckooHashSet<T> &ch );
 #include "cuckoo-hash-private.hpp"
 
 #endif // CUCKOO_HASH_HPP_INCLUDED
