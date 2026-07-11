@@ -14,7 +14,10 @@
 #include <tuple>
 #include <print>
 #include <meta>
+
+// Data structures
 #include "spatial/kdtree.hpp"
+#include "spatial/intervalTree.hpp"
 namespace nb = nanobind;
 
 using namespace nb::literals;
@@ -67,7 +70,8 @@ nb::class_<Structure> bindStructure(nb::module_& m, std::string name){
 
 NB_MODULE(ds_ext, m) {
     m.doc() = "Bindings for Various Data Structures";
-    // bindKdTree(m, "IntTree2D");
+
+    // KD Tree
     bindEnum<DistanceFunction>(m, "DistanceFunction");
     template for (constexpr size_t dim : std::views::iota(2UL, 3UL)){
         bindStructure<KDTree<int, dim>>(m, std::format("IntKDTree{}D", dim));
@@ -75,4 +79,8 @@ NB_MODULE(ds_ext, m) {
         bindStructure<Rectangle<int, dim>>(m, std::format("IntRectangle{}D", dim));
         bindStructure<Rectangle<double, dim>>(m, std::format("FloatRectangle{}D", dim));
     }
+
+    // Interval Tree
+    bindStructure<SimpleInterval<int>>(m, "IntervalInt");
+    bindStructure<IntervalTree<SimpleInterval<int>>>(m, "IntervalTreeInt");
 }

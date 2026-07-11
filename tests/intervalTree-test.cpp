@@ -102,7 +102,6 @@ TEST_F(IntervalTreeTest, RangeQuery2){
     std::array<int, 8> lower = {min_, 10, 12, 15, 17, 18, 19, 21}; // 21
     std::array<int, 8> upper = {max_, 20, 22, 25, 20, 22, 20, 23}; // 23
     for (int i : std::views::iota(0, 8)){
-        // std::cout << intervals[i].low() << " " << intervals[i].high() << std::endl;
         EXPECT_EQ(intervals[i], SimpleInterval<int>(lower[i], upper[i]));
     }
 

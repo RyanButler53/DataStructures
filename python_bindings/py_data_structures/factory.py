@@ -1,6 +1,6 @@
 from . import ds_ext
 
-def _find_class(data_type, dimension, clsname, *args, **kwargs):
+def _find_kd_class(data_type, dimension, clsname, *args, **kwargs):
     type_map = {
         int: "Int",
         float: "Float"
@@ -23,9 +23,41 @@ def _find_class(data_type, dimension, clsname, *args, **kwargs):
     
     return CppKDTreeClass(*args, **kwargs)
 
+def _find_interval_class(data_type, clsname):
+    type_map = {
+        int: "Int",
+        float: "Float"
+    }
+
+    if data_type not in type_map:
+        raise TypeError(f"{clsname} does not support data type: {data_type}.")
+    type_suffix = type_map[data_type]
+    cpp_class_name = f"{clsname}{type_suffix}"
+
+    # 3. Look up the class dynamically inside the compiled binary module
+    if not hasattr(ds_ext, cpp_class_name):
+        raise ValueError(
+            f"{clsname} type {data_type.__name__} is not compiled in the backend. "
+            f"Please verify available instantiations."
+        )
+    
+    # Extract the class constructor object
+    IntervalTreeClass = getattr(ds_ext, cpp_class_name)
+    return IntervalTreeClass
+
+
+
 def KDTree(data_type, dimensions, *args, **kwargs):
-   return _find_class(data_type, dimensions, "KDTree")
+   return _find_kd_class(data_type, dimensions, "KDTree")
 
 def Rectangle(data_type, dimensions, *args, **kwargs):
-    return _find_class(data_type, dimensions, "Rectangle")
+    return _find_kd_class(data_type, dimensions, "Rectangle")
 
+def IntervalTree(data_type, *args, **kwargs):
+    Iclass = _find_interval_class(data_type, "IntervalTree")
+    return Iclass(*args, **kwargs)
+
+def Interval(data_type, low, high):
+    Iclass = _find_interval_class(data_type, "Interval")
+    return Iclass(low, high)
+    return _find_interval_class(data_type, "Interval", low=low, high=high, *args, **kwargs)
