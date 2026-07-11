@@ -8,6 +8,8 @@
 #include <ranges>
 
 namespace nb = nanobind;
+
+namespace {
 // Struct to do casting without copying. Needs to convert nb::handle to std::pair<K,V>
 template <typename TargetType> 
 class NbCastingIterator {
@@ -84,6 +86,7 @@ void bindTree(nb::module_& m, std::string name){
     nb::class_<Structure> cls = bindStructureIterator<Structure>(m, name.c_str());
     bindInsert<Structure>(cls);
 }
+} // anonymous namespace
 
 void bindTrees(nb::module_ m){
 

@@ -17,15 +17,10 @@
 #include <utility>
 #include <tuple>
 #include <print>
-#include <meta>
+
+#include "bindings.hpp"
 
 namespace nb = nanobind;
-
-// Forward Declarations
-void bindTrees(nb::module_ m);
-void bindHeaps(nb::module_ m);
-void bindContainers(nb::module_ m);
-void bindSpatial(nb::module_ m);
 
 
 NB_MODULE(ds_ext, m) {
@@ -34,6 +29,7 @@ NB_MODULE(ds_ext, m) {
     bindTrees(m);
     bindSpatial(m);
     bindHeaps(m);
-    bindContainers(m);
+    bindUnrolledLinkedList(m);
+    bindCuckooHash(m);
     
 }
