@@ -54,6 +54,7 @@ bind_unrolledLinkedList.cpp
 bind_trees.cpp
 bind_spatial.cpp
 bind_cuckooHash.cpp
+bind_quack.cpp
 )
 
 target_include_directories(ds_ext PRIVATE ${PROJECT_SOURCE_DIR}/inc)
