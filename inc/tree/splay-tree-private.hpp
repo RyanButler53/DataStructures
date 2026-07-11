@@ -1,4 +1,5 @@
 #include "splay-tree.hpp"
+#include <sstream>
 
 using namespace std;
 
@@ -65,7 +66,7 @@ SplayTree<key_t, value_t>::search(const key_t &key, std::vector<Node*>& path){
 }
 
 template <typename key_t, typename value_t>
-void SplayTree<key_t, value_t>::printTree(Node* tree, ostream& out) const{
+void SplayTree<key_t, value_t>::printTree(Node* tree, ostream& out) const {
     if (tree == nullptr){
         out << "-";
     } else {
@@ -75,6 +76,13 @@ void SplayTree<key_t, value_t>::printTree(Node* tree, ostream& out) const{
         printTree(tree->right_, out);
         out << ")";
     }
+}
+
+template <typename key_t, typename value_t>
+std::string SplayTree<key_t, value_t>::to_string() const {
+    std::stringstream ss;
+    print(ss);
+    return ss.str();
 }
 
 template <typename key_t, typename value_t> 
@@ -377,6 +385,6 @@ SplayTree<key_t, value_t>::Node::Node(key_t key, value_t value):
 
 template <typename key_t, typename value_t>
 std::ostream& operator<<(std::ostream& out, const SplayTree<key_t, value_t> &splaytree){
-    splaytree.print(out);
+    out << splaytree.to_string();
     return out;
 }

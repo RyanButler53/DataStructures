@@ -239,13 +239,7 @@ def test_return_end():
     it = ull.begin()
     ull.insert(it, 15)
     
-    # Python doesn't support --it, so we assume your C++ loop bound a decrement method
-    # or you can look up your custom backward iteration steps.
-    if hasattr(it, "decrement"):
-        it = it.decrement()
-    else:
-        # Fallback if decrement isn't exposed: regenerate target position
-        it = ull.begin()
+    it = ull.begin()
         
     it = ull.erase(it)
     assert it == ull.end()

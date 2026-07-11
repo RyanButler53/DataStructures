@@ -1,3 +1,13 @@
+/**
+ * @file bindStructure.hpp
+ * @author Ryan Butler
+ * @brief Binds a C++ class with nanobind using static reflection.
+ * @version 0.1
+ * @date 2026-07-11
+ * 
+ * @copyright Copyright (c) 2026
+ * 
+ */
 #pragma once
 
 // Nanobind
@@ -42,10 +52,8 @@ nb::class_<Iterator> bindIterator(nb::module_& m, std::string name){
     cls.def(nb::self != nb::self);
     cls.def_prop_ro("value", [](const Iterator& it){return *it;});
     cls.def("increment", &Iterator::operator++);
-    cls.def("decrement", &Iterator::operator--);
     return cls;
 }
-// Iterators are a TYPE, that get exposed. The struct with an iterator must overload __iter__ 
 
 template <typename Structure>
 nb::class_<Structure> bindStructure(nb::module_& m, std::string name){
@@ -58,8 +66,18 @@ nb::class_<Structure> bindStructure(nb::module_& m, std::string name){
             cls.def_ro(std::meta::identifier_of(m), [:m:], "");
         } else if constexpr (std::meta::is_operator_function(m)){
             constexpr std::meta::operators op = std::meta::operator_of(m);
-            // std::println("Operator: {}", std::meta::symbol_of(op));
-            // No operators yet...
+            // Binding operator[]
+            if constexpr (std::meta::symbol_of(op) == "[]"){
+                // bracket operator is only for key-value pair structures, not indexes
+                static constexpr auto params = std::define_static_array(std::meta::parameters_of(m));
+                using Key_t = typename [: std::meta::type_of(params[0]) :];
+                using Value_t = typename [: std::meta::return_type_of(m) :];
+
+                cls.def("__getitem__", [](Structure& self, Key_t key){return self[key];});
+                cls.def("__setitem__", [](Structure& self, Key_t key, const std::remove_reference_t<Value_t>& value){
+                    self[key] = value;
+                });
+            }
         }  else if constexpr (std::meta::is_constructor(m)){
             static constexpr auto params = std::define_static_array(std::meta::parameters_of(m));
             [&]<size_t... Indexes>(std::index_sequence<Indexes...>){
@@ -69,15 +87,19 @@ nb::class_<Structure> bindStructure(nb::module_& m, std::string name){
             // Pass through 
         } else if constexpr (std::meta::is_class_member(m) && std::meta::is_function(m)){
             static constexpr auto name = std::meta::identifier_of(m);
-            static constexpr auto params = std::define_static_array(std::meta::parameters_of(m));
+            // Special Case: to_string() function maps to __repr__
+            if constexpr(name == "to_string"){
+                cls.def("__repr__", &Structure::to_string);
+            } else {
+                static constexpr auto params = std::define_static_array(std::meta::parameters_of(m));
                 using FuncType = decltype(&[:m:]);
                 [&]<std::meta::info M, size_t... Indexes>(std::index_sequence<Indexes...>){
                     cls.def(name.data(), static_cast<FuncType>(&[:M:]), nb::arg(std::meta::identifier_of(params[Indexes]).data())...);
                 }.template operator()<m>(std::make_index_sequence<params.size()>{});
+            }
         }
     }
     return cls;
-
 }
 
 // Binds a structure that exposes a public iterator. 

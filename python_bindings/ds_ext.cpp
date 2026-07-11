@@ -25,12 +25,14 @@ namespace nb = nanobind;
 void bindTrees(nb::module_ m);
 void bindHeaps(nb::module_ m);
 void bindContainers(nb::module_ m);
+void bindSpatial(nb::module_ m);
 
 
 NB_MODULE(ds_ext, m) {
     m.doc() = "Bindings for Various Data Structures";
 
     bindTrees(m);
+    bindSpatial(m);
     bindHeaps(m);
     bindContainers(m);
     

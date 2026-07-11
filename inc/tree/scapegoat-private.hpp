@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cmath>
 #include <iostream>
+#include <sstream>
 
 using namespace std;
 
@@ -382,7 +383,14 @@ void ScapegoatTree<key_t, value_t>::clear(){
 }
 
 template<typename key_t, typename value_t>
+std::string ScapegoatTree<key_t, value_t>::to_string() const {
+    std::stringstream ss;
+    print(ss);
+    return ss.str();
+}
+
+template<typename key_t, typename value_t>
 ostream& operator<<(ostream& out, const ScapegoatTree<key_t, value_t>& sg){
-    sg.print(out);
+    out << sg.to_string();
     return out;
 }

@@ -52,6 +52,7 @@ ds_ext.cpp
 bind_heaps.cpp
 bind_containers.cpp
 bind_trees.cpp
+bind_spatial.cpp
 )
 
 target_include_directories(ds_ext PRIVATE ${PROJECT_SOURCE_DIR}/inc)

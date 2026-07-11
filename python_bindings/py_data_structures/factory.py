@@ -51,7 +51,6 @@ def _find_interval_class(data_type, clsname):
     return IntervalTreeClass
 
 
-
 def KDTree(data_type, dimensions, *args, **kwargs):
    return _find_kd_class(data_type, dimensions, "KDTree")
 
@@ -68,7 +67,7 @@ def Interval(data_type, low, high):
 
 # HEAPS
 
-def _get_heap_class(data_type, priority_type, heapType, clsname):
+def _get_heap(data_type, priority_type, heapType, clsname):
     type_map = {
         int: "int",
         float: "float"
@@ -97,18 +96,16 @@ def _get_heap_class(data_type, priority_type, heapType, clsname):
     return heapClass()
 
 def PairingHeap(data_type, priority_type, heapType = HeapCompare.MinHeap):
-    return  _get_heap_class(data_type, priority_type, heapType, "PairingHeap")
+    return  _get_heap(data_type, priority_type, heapType, "PairingHeap")
 
 def BinomialHeap(data_type, priority_type, heapType = HeapCompare.MinHeap):
-    return _get_heap_class(data_type, priority_type, heapType, "BinomialHeap")
+    return _get_heap(data_type, priority_type, heapType, "BinomialHeap")
 
 def FibonacciHeap(data_type, priority_type, heapType = HeapCompare.MinHeap):
-    return _get_heap_class(data_type, priority_type, heapType, "FibonacciHeap")
+    return _get_heap(data_type, priority_type, heapType, "FibonacciHeap")
 
-def DAryHeap(data_type, priority_type, d = 10, heapType = HeapCompare.MinHeap):
-    return _get_heap_class(data_type, priority_type, heapType, f"DAryHeap{d}")
-
-
+def DAryHeap(data_type, priority_type, d = 16, heapType = HeapCompare.MinHeap):
+    return _get_heap(data_type, priority_type, heapType, f"DAryHeap{d}")
 
 def UnrolledLinkedList(data_type, k):
     type_map = {
@@ -132,3 +129,35 @@ def UnrolledLinkedList(data_type, k):
     # Extract the class constructor object
     ullClass = getattr(ds_ext, cpp_class_name)
     return ullClass()
+
+# Splay and Scapegoat Trees
+
+def _find_tree_class(key_type, value_type, clsname):
+    type_map = {
+        int: "Int",
+        float: "Float"
+    }
+
+    if key_type not in type_map or value_type not in type_map:
+        raise TypeError(f"{clsname} does not support data type pair: ({key_type}, {value_type}).")
+    key_suffix = type_map[key_type]
+    value_suffix = type_map[value_type]
+    cpp_class_name = f"{clsname}{key_suffix}{value_suffix}"
+
+    # 3. Look up the class dynamically inside the compiled binary module
+    if not hasattr(ds_ext, cpp_class_name):
+        raise ValueError(
+            f"{clsname} type {key_type.__name__} is not compiled in the backend. "
+            f"Please verify available instantiations."
+        )
+    
+    # Extract the class constructor object
+    return getattr(ds_ext, cpp_class_name)
+
+def SplayTree(key_type, value_type):
+    tree = _find_tree_class(key_type, value_type, "SplayTree")
+    return tree()
+
+def ScapegoatTree(key_type, value_type, alpha:float = 2/3):
+    tree = _find_tree_class(key_type, value_type, "ScapegoatTree")
+    return tree()

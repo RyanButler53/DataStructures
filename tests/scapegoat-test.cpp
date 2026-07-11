@@ -34,7 +34,6 @@ TEST(Scapegoat, insertion){
     ASSERT_EQ(sg.size(), 9);
     ASSERT_EQ(sg.size(), finalKeys.size());
     for (std::string s : std::vector<std::string>{"z", "d", "e", "i", "l", "p", "o", "r", "q"}){
-        std::cout << s << " " << sg[s] << " " << correct[s] << std::endl;
         ASSERT_EQ(sg[s], correct[s]);
     }
 
@@ -47,9 +46,7 @@ TEST(Scapegoat, reshuffle){
     for (int e : arr) {
         sg.insert({e, e/10.0});
     }
-    // cout << sg << endl;
     sg.insert({5, 9.0});
-    // cout << sg << endl;
 }
 
 TEST(Scapegoat, reshuffle2){
@@ -58,5 +55,4 @@ TEST(Scapegoat, reshuffle2){
     for (size_t x = 0; x < 26; ++x) {
         sg.insert({x, x+66});
     }
-    // cout << sg << endl;
 }
